@@ -1,0 +1,95 @@
+
+===========================
+🎯 EventGPT Dataset Overview
+===========================
+🔍 Starting analysis... ✨
+Analysis results saved to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/analysis_summary.txt
+Dataset({
+    features: ['id', 'event_data', 'conversations'],
+    num_rows: 40298
+})
+
+📂 Checking actual files on disk in 'event_npy'...
+   - Total .npy files found on disk: 35613
+   - Total instances in dataset object: 40298
+⚠️ Mismatch: Dataset has 40298 entries, but found 35613 .npy files.
+
+📄 Single Dataset (no explicit splits).
+
+============
+📊 Split: all
+============
+🔍 Starting analysis... ✨
+📈 Number of rows: 40298
+
+Feature schema:
+  - id: Value (dtype=string)
+  - event_data: Value (dtype=string)
+  - conversations: List
+
+🤷 No obvious label column found (looked for: label, labels, category, event_type).
+
+💬 Analyzing conversations for split 'all'...
+Saved conversation turns histogram to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/conv_turns_dist_all.png
+  - Average conversation turns: 2.00
+  - Max conversation turns: 2
+  - Min conversation turns: 2
+
+Showing 3 example rows:
+  [#0]
+    - id: 638700b0-e260-4cb4-90a8-ef4d61c01390
+    - event_data: zurich_city_11_c/001879.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat type of buildings are visible in the background of the scene?'}, {'from': 'gpt', 'value': 'There is a residential building visible in the background of th...
+  [#1]
+    - id: 719507fd-8bdd-4879-a040-ddbb58042e97
+    - event_data: zurich_city_05_b/000368.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat types of buildings are visible in the scene and what can be inferred about their use?'}, {'from': 'gpt', 'value': 'The scene includes residential building...
+  [#2]
+    - id: dab65416-c8f4-4c03-a512-824e38ce705f
+    - event_data: zurich_city_07_a/000049.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat do you observe about the road and its surroundings?'}, {'from': 'gpt', 'value': 'The road has multiple lanes with clear lane markings and traffic signs. T...
+
+⏱️ Analyzing event metrics for split 'all'...
+📂 Calculating event durations, counts, and densities from .npy files...
+Saved raw durations to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/durations_all.txt
+Saved raw counts to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/counts_all.txt
+Saved raw densities to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/densities_all.txt
+Saved detailed metrics JSON to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/detailed_metrics_all.json
+
+=========================
+Duration Stats (ms) - all
+=========================
+🔍 Starting analysis... ✨
+
+===================
+Duration statistics
+===================
+🔍 Starting analysis... ✨
+Count: 40298
+Min:   39.9990
+Max:   50.9990
+Mean:  49.9886
+Median:49.9990
+Quantile 0.25: 49.9990
+Quantile 0.50: 49.9990
+Quantile 0.75: 49.9990
+Quantile 0.90: 49.9990
+Quantile 0.95: 49.9990
+Saved Figure 1 (Duration) to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/figure1_duration_all.png
+
+========================
+Event Counts Stats - all
+========================
+🔍 Starting analysis... ✨
+Mean: 675187.05, Max: 2484485, Min: 42
+Saved Figure 2 (Counts) to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/figure2_counts_all.png
+
+=================================
+Event Density Stats (ev/ms) - all
+=================================
+🔍 Starting analysis... ✨
+Mean: 13505.27, Max: 49690.69, Min: 0.86
+Saved Figure 3 (Density) to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_egpt_dsce_split/figure3_density_all.png
+🎉 Metrics analysis complete for 'all' ✨
+
+🎊 Dataset analysis complete! ✨

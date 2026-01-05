@@ -1,0 +1,53 @@
+
+===========================
+🎯 EventGPT Dataset Overview
+===========================
+🔍 Starting analysis... ✨
+Analysis results saved to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/figures/analysis_summary.txt
+Dataset({
+    features: ['id', 'event_data', 'conversations'],
+    num_rows: 40298
+})
+
+📂 Checking actual files on disk in 'event_npy'...
+   - Total .npy files found on disk: 35613
+   - Total instances in dataset object: 40298
+⚠️ Mismatch: Dataset has 40298 entries, but found 35613 .npy files.
+
+📄 Single Dataset (no explicit splits).
+
+============
+📊 Split: all
+============
+🔍 Starting analysis... ✨
+📈 Number of rows: 40298
+
+Feature schema:
+  - id: Value (dtype=string)
+  - event_data: Value (dtype=string)
+  - conversations: List
+
+🤷 No obvious label column found (looked for: label, labels, category, event_type).
+
+💬 Analyzing conversations for split 'all'...
+Saved conversation turns histogram to: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/figures/conv_turns_dist_all.png
+  - Average conversation turns: 2.00
+  - Max conversation turns: 2
+  - Min conversation turns: 2
+
+Showing 3 example rows:
+  [#0]
+    - id: 638700b0-e260-4cb4-90a8-ef4d61c01390
+    - event_data: zurich_city_11_c/001879.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat type of buildings are visible in the background of the scene?'}, {'from': 'gpt', 'value': 'There is a residential building visible in the background of th...
+  [#1]
+    - id: 719507fd-8bdd-4879-a040-ddbb58042e97
+    - event_data: zurich_city_05_b/000368.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat types of buildings are visible in the scene and what can be inferred about their use?'}, {'from': 'gpt', 'value': 'The scene includes residential building...
+  [#2]
+    - id: dab65416-c8f4-4c03-a512-824e38ce705f
+    - event_data: zurich_city_07_a/000049.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat do you observe about the road and its surroundings?'}, {'from': 'gpt', 'value': 'The road has multiple lanes with clear lane markings and traffic signs. T...
+
+⏱️ Analyzing event metrics for split 'all'...
+📂 Calculating event durations, counts, and densities from .npy files...

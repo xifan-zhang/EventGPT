@@ -1,0 +1,39 @@
+DSEC Dataset Analysis Summary
+========================================
+
+Dataset path: /mnt/hdd/data/DSEC/train
+Number of sequences analyzed: 41
+Figures directory: /home/ps/Documents/code/EventGPT/feasible/analysis_datasets/results_dsce_train
+
+Overall Statistics:
+
+Dataset Overview:
+  Total sequences: 41
+  Sequences with left camera data: 41
+  Sequences with right camera data: 41
+
+Left Camera Statistics:
+  Total events (estimated): 36,658,305,742
+  Average events per sequence: 894,105,018
+  Total file size: 66530.5 MB
+  Average file size per sequence: 1622.7 MB
+
+Right Camera Statistics:
+  Total events (estimated): 30,759,305,902
+  Average events per sequence: 750,226,973
+  Total file size: 59059.2 MB
+  Average file size per sequence: 1440.5 MB
+
+Combined Statistics:
+  Total events (estimated): 67,417,611,644
+  Total file size: 125589.7 MB
+
+Note: Event duration and density statistics cannot be calculated without
+accessing the compressed event data (requires HDF5 decompression plugins).
+The above statistics are based on HDF5 file metadata only.
+
+Per-Sequence Summary:
+------------------------------------------------------------------------------------------------------------------------
+<25------------------------------------------------------------------------------------------------------------------------
+<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25<25
+Analysis completed successfully!

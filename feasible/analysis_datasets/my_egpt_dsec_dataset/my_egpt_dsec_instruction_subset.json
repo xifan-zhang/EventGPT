@@ -1,0 +1,1402 @@
+[
+  {
+    "id": "my_dsec_00000000",
+    "event_data": "synthetic_000000.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the scene provided?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the scene provided. Confidence: 0.984"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000001",
+    "event_data": "synthetic_000001.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAre there any vehicles visible in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, are there any vehicles visible in the scene. Confidence: 0.938"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000002",
+    "event_data": "synthetic_000002.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat vehicles are present in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows vehicles are present in the scene. Confidence: 0.866"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000003",
+    "event_data": "synthetic_000003.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat types of vehicles are present in the scene and how are they positioned?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows types of vehicles are present in the scene and how are they positioned. Confidence: 0.972"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000004",
+    "event_data": "synthetic_000004.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat do you think is going on in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows do you think is going on in this scene. Confidence: 0.857"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000005",
+    "event_data": "synthetic_000005.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you describe the environment of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you describe the environment of the scene. Confidence: 0.954"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000006",
+    "event_data": "synthetic_000006.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat types of vehicles are present in the scene and how are they positioned?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows types of vehicles are present in the scene and how are they positioned. Confidence: 0.940"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000007",
+    "event_data": "synthetic_000007.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main feature of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main feature of the scene. Confidence: 0.931"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000008",
+    "event_data": "synthetic_000008.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment of the scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment of the scene. Confidence: 0.866"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000009",
+    "event_data": "synthetic_000009.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nHow many vehicles are visible in the scene and what are their positions?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, how many vehicles are visible in the scene and the scene shows are their positions. Confidence: 0.866"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000010",
+    "event_data": "synthetic_000010.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity in this scene. Confidence: 0.951"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000011",
+    "event_data": "synthetic_000011.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat objects are present on the side of the road in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows objects are present on the side of the road in the scene. Confidence: 0.903"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000012",
+    "event_data": "synthetic_000012.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat objects are present in the scene and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows objects are present in the scene and how are they arranged. Confidence: 0.926"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000013",
+    "event_data": "synthetic_000013.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat type of vehicles are parked along the street, and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows type of vehicles are parked along the street, and how are they arranged. Confidence: 0.986"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000014",
+    "event_data": "synthetic_000014.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary setting of this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary setting of this scene. Confidence: 0.938"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000015",
+    "event_data": "synthetic_000015.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary setting of this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary setting of this scene. Confidence: 0.853"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000016",
+    "event_data": "synthetic_000016.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you describe the layout of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you describe the layout of the scene. Confidence: 0.879"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000017",
+    "event_data": "synthetic_000017.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary setting of this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary setting of this scene. Confidence: 0.904"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000018",
+    "event_data": "synthetic_000018.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed about the road in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed about the road in the scene. Confidence: 0.923"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000019",
+    "event_data": "synthetic_000019.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity happening in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity happening in the scene. Confidence: 0.923"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000020",
+    "event_data": "synthetic_000020.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the layout of the street in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the layout of the street in the scene. Confidence: 0.851"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000021",
+    "event_data": "synthetic_000021.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the key elements in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the key elements in this scene. Confidence: 0.989"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000022",
+    "event_data": "synthetic_000022.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the vehicles doing in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the vehicles doing in the scene. Confidence: 0.956"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000023",
+    "event_data": "synthetic_000023.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAnalyze the scene in a comprehensive and detailed manner."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, analyze the scene in a comprehensive and detailed manner. Confidence: 0.986"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000024",
+    "event_data": "synthetic_000024.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is happening in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is happening in this scene. Confidence: 0.921"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000025",
+    "event_data": "synthetic_000025.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the scene provided?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the scene provided. Confidence: 0.985"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000026",
+    "event_data": "synthetic_000026.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main feature of this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main feature of this scene. Confidence: 0.858"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000027",
+    "event_data": "synthetic_000027.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary setting of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary setting of the scene. Confidence: 0.947"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000028",
+    "event_data": "synthetic_000028.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the scene provided?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the scene provided. Confidence: 0.876"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000029",
+    "event_data": "synthetic_000029.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAre there any vehicles or pedestrians visible in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, are there any vehicles or pedestrians visible in the scene. Confidence: 0.874"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000030",
+    "event_data": "synthetic_000030.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity in this scene. Confidence: 0.968"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000031",
+    "event_data": "synthetic_000031.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAre there any vehicles visible in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, are there any vehicles visible in the scene. Confidence: 0.969"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000032",
+    "event_data": "synthetic_000032.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat objects are present in the scene and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows objects are present in the scene and how are they arranged. Confidence: 0.981"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000033",
+    "event_data": "synthetic_000033.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat type of vehicles are parked along the street, and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows type of vehicles are parked along the street, and how are they arranged. Confidence: 0.979"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000034",
+    "event_data": "synthetic_000034.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary activity in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary activity in the scene. Confidence: 0.961"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000035",
+    "event_data": "synthetic_000035.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed in the scene. Confidence: 0.869"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000036",
+    "event_data": "synthetic_000036.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the layout of the street in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the layout of the street in the scene. Confidence: 0.959"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000037",
+    "event_data": "synthetic_000037.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity happening in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity happening in this scene. Confidence: 0.972"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000038",
+    "event_data": "synthetic_000038.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment surrounding the road."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment surrounding the road. Confidence: 0.857"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000039",
+    "event_data": "synthetic_000039.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat elements are present in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows elements are present in the scene. Confidence: 0.857"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000040",
+    "event_data": "synthetic_000040.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nExplain the visual content of the scene in great detail."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, explain the visual content of the scene in great detail. Confidence: 0.865"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000041",
+    "event_data": "synthetic_000041.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat objects are present on the side of the road in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows objects are present on the side of the road in the scene. Confidence: 0.899"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000042",
+    "event_data": "synthetic_000042.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat vehicles are present in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows vehicles are present in the scene. Confidence: 0.976"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000043",
+    "event_data": "synthetic_000043.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary activity in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary activity in the scene. Confidence: 0.937"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000044",
+    "event_data": "synthetic_000044.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nHow many vehicles are visible in the scene and what are their positions?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, how many vehicles are visible in the scene and the scene shows are their positions. Confidence: 0.964"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000045",
+    "event_data": "synthetic_000045.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat types of vehicles are present in the scene and how are they positioned?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows types of vehicles are present in the scene and how are they positioned. Confidence: 0.902"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000046",
+    "event_data": "synthetic_000046.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity in this scene. Confidence: 0.919"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000047",
+    "event_data": "synthetic_000047.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment of the scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment of the scene. Confidence: 0.913"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000048",
+    "event_data": "synthetic_000048.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity happening in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity happening in the scene. Confidence: 0.886"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000049",
+    "event_data": "synthetic_000049.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment around the road."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment around the road. Confidence: 0.926"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000050",
+    "event_data": "synthetic_000050.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the scene provided?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the scene provided. Confidence: 0.953"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000051",
+    "event_data": "synthetic_000051.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary activity in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary activity in this scene. Confidence: 0.893"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000052",
+    "event_data": "synthetic_000052.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary activity happening in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary activity happening in this scene. Confidence: 0.972"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000053",
+    "event_data": "synthetic_000053.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment of the scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment of the scene. Confidence: 0.983"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000054",
+    "event_data": "synthetic_000054.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment of the scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment of the scene. Confidence: 0.920"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000055",
+    "event_data": "synthetic_000055.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the key elements in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the key elements in this scene. Confidence: 0.901"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000056",
+    "event_data": "synthetic_000056.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the layout of the road in the scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the layout of the road in the scene. Confidence: 0.877"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000057",
+    "event_data": "synthetic_000057.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you describe the layout of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you describe the layout of the scene. Confidence: 0.892"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000058",
+    "event_data": "synthetic_000058.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary mode of transportation visible in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary mode of transportation visible in the scene. Confidence: 0.920"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000059",
+    "event_data": "synthetic_000059.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat type of vehicles are parked along the street, and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows type of vehicles are parked along the street, and how are they arranged. Confidence: 0.987"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000060",
+    "event_data": "synthetic_000060.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary setting of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary setting of the scene. Confidence: 0.972"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000061",
+    "event_data": "synthetic_000061.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAre there any vehicles visible in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, are there any vehicles visible in the scene. Confidence: 0.873"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000062",
+    "event_data": "synthetic_000062.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you describe the environment of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you describe the environment of the scene. Confidence: 0.976"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000063",
+    "event_data": "synthetic_000063.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is this scene about?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is this scene about. Confidence: 0.883"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000064",
+    "event_data": "synthetic_000064.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the layout of the road in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the layout of the road in the scene. Confidence: 0.929"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000065",
+    "event_data": "synthetic_000065.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary activity happening in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary activity happening in this scene. Confidence: 0.944"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000066",
+    "event_data": "synthetic_000066.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat types of vehicles are present in the scene and how are they positioned?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows types of vehicles are present in the scene and how are they positioned. Confidence: 0.880"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000067",
+    "event_data": "synthetic_000067.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the key elements in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the key elements in this scene. Confidence: 0.890"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000068",
+    "event_data": "synthetic_000068.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the layout of the road in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the layout of the road in the scene. Confidence: 0.931"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000069",
+    "event_data": "synthetic_000069.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity happening in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity happening in this scene. Confidence: 0.917"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000070",
+    "event_data": "synthetic_000070.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat vehicles are present in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows vehicles are present in the scene. Confidence: 0.933"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000071",
+    "event_data": "synthetic_000071.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the following scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the following scene. Confidence: 0.968"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000072",
+    "event_data": "synthetic_000072.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is this scene about?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is this scene about. Confidence: 0.873"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000073",
+    "event_data": "synthetic_000073.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat vehicles are present in the scene and how are they positioned?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows vehicles are present in the scene and how are they positioned. Confidence: 0.866"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000074",
+    "event_data": "synthetic_000074.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAnalyze the scene in a comprehensive and detailed manner."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, analyze the scene in a comprehensive and detailed manner. Confidence: 0.968"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000075",
+    "event_data": "synthetic_000075.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the primary setting of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the primary setting of the scene. Confidence: 0.956"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000076",
+    "event_data": "synthetic_000076.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the environment around the road."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the environment around the road. Confidence: 0.893"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000077",
+    "event_data": "synthetic_000077.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is happening in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is happening in this scene. Confidence: 0.895"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000078",
+    "event_data": "synthetic_000078.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed about the vehicles in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed about the vehicles in the scene. Confidence: 0.855"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000079",
+    "event_data": "synthetic_000079.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the event stream?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the event stream. Confidence: 0.945"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000080",
+    "event_data": "synthetic_000080.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat is the main activity in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows is the main activity in this scene. Confidence: 0.871"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000081",
+    "event_data": "synthetic_000081.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the key elements in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the key elements in this scene. Confidence: 0.939"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000082",
+    "event_data": "synthetic_000082.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the vehicles doing in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the vehicles doing in the scene. Confidence: 0.878"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000083",
+    "event_data": "synthetic_000083.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed about the vehicles in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed about the vehicles in the scene. Confidence: 0.979"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000084",
+    "event_data": "synthetic_000084.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat elements are present in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows elements are present in the scene. Confidence: 0.975"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000085",
+    "event_data": "synthetic_000085.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat structures are visible in the background and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows structures are visible in the background and how are they arranged. Confidence: 0.928"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000086",
+    "event_data": "synthetic_000086.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat structures are visible in the background and how are they arranged?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows structures are visible in the background and how are they arranged. Confidence: 0.921"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000087",
+    "event_data": "synthetic_000087.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat vehicles are present in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows vehicles are present in the scene. Confidence: 0.915"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000088",
+    "event_data": "synthetic_000088.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nDescribe the following scene."
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, describe the following scene. Confidence: 0.984"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000089",
+    "event_data": "synthetic_000089.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you describe the environment of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you describe the environment of the scene. Confidence: 0.923"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000090",
+    "event_data": "synthetic_000090.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed about the vehicles in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed about the vehicles in the scene. Confidence: 0.883"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000091",
+    "event_data": "synthetic_000091.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat are the key elements in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows are the key elements in this scene. Confidence: 0.888"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000092",
+    "event_data": "synthetic_000092.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nAre there any vehicles visible in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, are there any vehicles visible in the scene. Confidence: 0.957"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000093",
+    "event_data": "synthetic_000093.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed about the vehicles in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed about the vehicles in the scene. Confidence: 0.854"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000094",
+    "event_data": "synthetic_000094.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed about the vehicles in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed about the vehicles in the scene. Confidence: 0.854"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000095",
+    "event_data": "synthetic_000095.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you describe the environment of the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you describe the environment of the scene. Confidence: 0.977"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000096",
+    "event_data": "synthetic_000096.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the scene provided?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the scene provided. Confidence: 0.986"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000097",
+    "event_data": "synthetic_000097.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat can be observed in the scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows can be observed in the scene. Confidence: 0.908"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000098",
+    "event_data": "synthetic_000098.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nWhat do you think is going on in this scene?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, the scene shows do you think is going on in this scene. Confidence: 0.979"
+      }
+    ]
+  },
+  {
+    "id": "my_dsec_00000099",
+    "event_data": "synthetic_000099.npy",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<event>\nCan you elaborate on the elements of the event stream?"
+      },
+      {
+        "from": "gpt",
+        "value": "Based on the event data analysis, can you elaborate on the elements of the event stream. Confidence: 0.923"
+      }
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+1675	What are the key elements in this scene?
+1292	Can you elaborate on the elements of the scene provided?
+1225	What is this scene about?
+1005	What is the layout of the road in the scene?
+827	What type of vehicles are present in the scene and how are they positioned?
+680	What do you think is going on in this scene?
+654	What elements are present in the scene?
+593	What do you see happening in this scene?
+545	Describe the following scene.
+543	What types of vehicles are present in the scene and how are they positioned?
+526	What vehicles are present in the scene and how are they positioned?
+494	Analyze the scene in a comprehensive and detailed manner.
+473	Describe the layout of the scene.
+466	What is the primary setting of this scene?
+466	What is the main feature of this scene?
+441	What can be observed in the scene?
+430	What is the main activity happening in this scene?
+429	What is the main activity happening in the scene?
+425	What vehicles are present in the scene?
+378	What is the main feature of the scene?
+328	Are there any pedestrians visible in the scene?
+306	What is the primary activity in this scene?
+293	Can you describe the layout of the scene?
+287	Are there any vehicles visible in the scene?
+283	Are there any pedestrians visible in this scene?
+279	What can be observed about the road in the scene?
+277	What is the main activity in this scene?
+269	What can be observed about the vehicles in the scene?
+262	Explain the visual content of the scene in great detail.
+259	Are there any vehicles or pedestrians visible in the scene?
+254	What is the primary activity in the scene?
+232	What is the layout of the street in the scene?
+163	What is the primary setting of the scene?
+160	What is the main activity in the scene?
+158	Describe the layout of the road in the scene.
+153	What objects are present on the side of the road in the scene?
+150	What is happening in this scene?
+149	Describe the environment surrounding the road.
+149	Can you elaborate on the elements of the event stream?
+147	Describe the environment around the road.
+140	What structures are visible in the background and how are they arranged?
+137	What type of vehicles are parked along the street, and how are they arranged?
+128	How many vehicles are visible in the scene and what are their positions?
+125	What are the vehicles doing in the scene?
+124	What is the primary mode of transportation visible in the scene?
+121	What objects are present in the scene and how are they arranged?
+121	What is the primary activity occurring in the scene?
+119	What is the primary activity happening in this scene?
+112	Can you describe the environment of the scene?
+104	Describe the environment of the scene.

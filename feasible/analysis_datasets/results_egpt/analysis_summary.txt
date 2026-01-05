@@ -1,0 +1,97 @@
+
+===========================
+🎯 EventGPT Dataset Overview
+===========================
+🔍 Starting analysis... ✨
+Analysis results saved to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/analysis_summary.txt
+Dataset({
+    features: ['id', 'event_data', 'conversations'],
+    num_rows: 89319
+})
+
+📂 Checking actual files on disk in 'event_npy'...
+   - Total .npy files found on disk: 35613
+   - Total instances in dataset object: 89319
+⚠️ Mismatch: Dataset has 89319 entries, but found 35613 .npy files.
+
+📄 Single Dataset (no explicit splits).
+
+============
+📊 Split: all
+============
+🔍 Starting analysis... ✨
+📈 Number of rows: 89319
+
+Feature schema:
+  - id: Value (dtype=string)
+  - event_data: Value (dtype=string)
+  - conversations: List
+
+🤷 No obvious label column found (looked for: label, labels, category, event_type).
+
+💬 Analyzing conversations for split 'all'...
+Saved conversation turns histogram to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/conv_turns_dist_all.png
+  - Average conversation turns: 2.00
+  - Max conversation turns: 2
+  - Min conversation turns: 2
+
+Showing 3 example rows:
+  [#0]
+    - id: 623ff486-74ff-43a5-ac27-9e70aea250d1
+    - event_data: n02708093/n02708093_483.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat time is displayed on the clock in the scene?'}, {'from': 'gpt', 'value': 'The clock in the scene displays a time of approximately 3:17.'}]
+  [#1]
+    - id: 638700b0-e260-4cb4-90a8-ef4d61c01390
+    - event_data: zurich_city_11_c/001879.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat type of buildings are visible in the background of the scene?'}, {'from': 'gpt', 'value': 'There is a residential building visible in the background of th...
+  [#2]
+    - id: b89a824b-b1c9-465e-ac05-189de32c231e
+    - event_data: n03792972/n03792972_5563.npy
+    - conversations: [{'from': 'human', 'value': '<event>\nWhat is the man doin
+=====Saved raw durations to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/durations_all.txt
+Saved raw counts to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/counts_all.txt
+Saved raw densities to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/densities_all.txt
+Saved detailed metrics JSON to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/detailed_metrics_all.json
+
+=========================
+Duration Stats (ms) - all
+=========================
+🔍 Starting analysis... ✨
+
+===================
+Duration statistics
+===================
+🔍 Starting analysis... ✨
+Count: 89319
+Min:   39.9990
+Max:   54.4580
+Mean:  49.9936
+Median:49.9990
+Quantile 0.25: 49.9220
+Quantile 0.50: 49.9990
+Quantile 0.75: 50.0040
+Quantile 0.90: 50.1140
+Quantile 0.95: 50.1730
+Saved Figure 1 (Duration) to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/figure1_duration_all.png
+
+========================
+Event Counts Stats - all
+========================
+🔍 Starting analysis... ✨
+Mean: 362000.79, Max: 2484485, Min: 42
+Saved Figure 2 (Counts) to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/figure2_counts_all.png
+
+=================================
+Event Density Stats (ev/ms) - all
+=================================
+🔍 Starting analysis... ✨
+Mean: 7240.73, Max: 49690.69, Min: 0.86
+Saved Figure 3 (Density) to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/figure3_density_all.png
+🎉 Metrics analysis complete for 'all' ✨
+
+🎊 Dataset analysis complete! ✨
+90.69, Min: 0.86
+Saved Figure 3 (Density) to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/figures/figure3_density_all.png
+🎉 Metrics analysis complete for 'all' ✨
+
+🎊 Dataset analysis complete! ✨

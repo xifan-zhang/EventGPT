@@ -63,7 +63,7 @@ def tokenizer_event_token(prompt, tokenizer, event_token_index=EVENT_TOKEN_INDEX
 
 def generate_event_image(x, y, p):
     height, width = y.max() + 1, x.max() + 1 
-    event_image = np.ones((height, width, 3), dtype=np.uint8) * 255
+    event_image = np.ones((height, width, 3), dtype=np.uint8) * 255 # one image?
 
     for x_, y_, p_ in zip(x, y, p):
         if p_ == 0:

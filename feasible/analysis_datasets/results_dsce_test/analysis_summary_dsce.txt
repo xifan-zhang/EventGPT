@@ -1,0 +1,94 @@
+
+=======================
+🎯 DSEC Dataset Overview
+=======================
+🔍 Starting analysis... ✨
+Analysis results saved to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/analysis_summary_dsce.txt
+Dataset path: /mnt/hdd/data/DSEC
+Figures directory: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test
+🔍 Scanning DSEC dataset at: /mnt/hdd/data/DSEC
+📂 Found 12 sequences: ['thun_01_a', 'zurich_city_15_a', 'interlaken_00_b', 'zurich_city_13_b', 'zurich_city_12_a']...
+
+⏱️ Analyzing events for sequence 'thun_01_a'...
+  📄 Left events file: 256.5 MB
+  📄 Right events file: 236.6 MB
+  📊 Left camera: ~131,482,728 events (estimated from metadata)
+  📊 Right camera: ~127,089,884 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_15_a'...
+  📄 Left events file: 1539.4 MB
+  📄 Right events file: 1498.2 MB
+  📊 Left camera: ~823,285,294 events (estimated from metadata)
+  📊 Right camera: ~759,930,564 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_b'...
+  📄 Left events file: 2690.8 MB
+  📄 Right events file: 2464.1 MB
+  📊 Left camera: ~1,546,817,686 events (estimated from metadata)
+  📊 Right camera: ~1,396,533,570 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_13_b'...
+  📄 Left events file: 360.1 MB
+  📄 Right events file: 311.2 MB
+  📊 Left camera: ~186,448,050 events (estimated from metadata)
+  📊 Right camera: ~145,809,558 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_12_a'...
+  📄 Left events file: 1367.7 MB
+  📄 Right events file: 1283.1 MB
+  📊 Left camera: ~913,842,547 events (estimated from metadata)
+  📊 Right camera: ~851,124,039 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_14_a'...
+  📄 Left events file: 428.2 MB
+  📄 Right events file: 359.3 MB
+  📊 Left camera: ~180,312,610 events (estimated from metadata)
+  📊 Right camera: ~143,950,892 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_14_b'...
+  📄 Left events file: 421.9 MB
+  📄 Right events file: 322.9 MB
+  📊 Left camera: ~165,699,099 events (estimated from metadata)
+  📊 Right camera: ~119,974,160 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_13_a'...
+  📄 Left events file: 347.4 MB
+  📄 Right events file: 299.9 MB
+  📊 Left camera: ~152,299,794 events (estimated from metadata)
+  📊 Right camera: ~119,089,744 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'thun_01_b'...
+  📄 Left events file: 1428.5 MB
+  📄 Right events file: 1492.8 MB
+  📊 Left camera: ~786,889,985 events (estimated from metadata)
+  📊 Right camera: ~785,078,578 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_a'...
+  📄 Left events file: 2247.9 MB
+  📄 Right events file: 2151.6 MB
+  📊 Left camera: ~1,337,092,612 events (estimated from metadata)
+  📊 Right camera: ~1,308,483,855 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_14_c'...
+  📄 Left events file: 1024.3 MB
+  📄 Right events file: 833.9 MB
+  📊 Left camera: ~454,461,709 events (estimated from metadata)
+  📊 Right camera: ~332,075,867 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_01_a'...
+  📄 Left events file: 2031.3 MB
+  📄 Right events file: 1804.9 MB
+  📊 Left camera: ~920,822,916 events (estimated from metadata)
+  📊 Right camera: ~777,624,766 events (estimated from metadata)
+💾 Saved detailed metrics JSON to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/detailed_sequence_metrics.json
+
+📊 Creating metadata-based visualizations...
+📊 Saved Event Counts Comparison to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/figure_event_counts_comparison.png
+📊 Saved File Sizes Comparison to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/figure_file_sizes_comparison.png
+📊 Saved Size vs Count Correlation to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/figure_size_vs_count_correlation.png
+✅ Metadata visualizations completed!
+⚠️ No valid left camera duration data found for temporal visualizations.
+⚠️ No valid right camera duration data found for temporal visualizations.
+⚠️ No valid combined duration data found for temporal visualizations.
+📝 Saved summary to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/dsce_summary.txt
+🎉 Analysis completed in 0.5 seconds!

@@ -1,0 +1,132 @@
+================================================================================
+Top 10 Questions Analysis - EventGPT DSEC Dataset
+================================================================================
+
+Total questions analyzed: 40298
+Total unique questions: 6577
+Total dataset entries: 40298
+
+--------------------------------------------------------------------------------
+Top 10 Questions:
+--------------------------------------------------------------------------------
+
+
+[1] What are the key elements in this scene?
+    Frequency: 1675 (4.16%)
+    Sample event files:
+      - zurich_city_02_c/001969.npy
+      - zurich_city_02_d/001549.npy
+      - zurich_city_04_c/001079.npy
+    Sample answers:
+      1. In the scene, there is a road with a vehicle ahead, surrounded by snow-covered trees and a guardrail on both sides. The road appears to be wet or icy, and there are streetlights along the side.
+      2. In the scene, there is a road with a series of orange traffic cones and barriers on the right side. The road has dashed yellow lines marking its lanes. There are trees and a hill on the left side of t...
+      3. In the scene, there is a tram on the left side of the street, moving along its tracks. There are multiple vehicles on the road, including a car and a van. The street is lined with buildings on both si...
+
+
+[2] Can you elaborate on the elements of the scene provided?
+    Frequency: 1292 (3.21%)
+    Sample event files:
+      - zurich_city_02_b/001034.npy
+      - zurich_city_02_b/000234.npy
+      - zurich_city_09_e/000039.npy
+    Sample answers:
+      1. The scene shows a street with multiple lanes, vehicles including a bus, and trees lining the sides. There are buildings on the right side of the street, and traffic lights are visible in the distance....
+      2. The scene features a multi-lane road with traffic lights and streetlights. On the left side, there is a building with balconies, and on the right side, there is another building with a different archi...
+      3. The scene features a nighttime urban street with multiple vehicles in motion. There are traffic lights and road signs indicating directions and possibly speed limits. The vehicles have their headlight...
+
+
+[3] What is this scene about?
+    Frequency: 1225 (3.04%)
+    Sample event files:
+      - zurich_city_05_a/000669.npy
+      - zurich_city_01_e/000439.npy
+      - zurich_city_02_c/002074.npy
+    Sample answers:
+      1. The scene shows a residential area with houses and a street. There are trees and bushes along the sidewalk, and a car is parked near one of the houses.
+      2. The scene shows a street intersection with a bus on the right side, a car in the middle of the road, and a pedestrian crossing. There are buildings on both sides of the street, and a roundabout in the...
+      3. The scene shows a road with multiple lanes, lined with trees and streetlights. There are vehicles on the road, and the environment suggests it is winter due to the presence of snow.
+
+
+[4] What is the layout of the road in the scene?
+    Frequency: 1005 (2.49%)
+    Sample event files:
+      - zurich_city_02_d/001629.npy
+      - zurich_city_02_e/000669.npy
+      - zurich_city_02_b/000674.npy
+    Sample answers:
+      1. The road is a two-lane highway with a dashed center line, running through a hilly area with barriers on the right side.
+      2. The road in the scene is a two-lane road with a dividing line in the middle, curving to the left. There are barriers on the right side and streetlights along the road.
+      3. The road has multiple lanes, with a dedicated lane for the bus and other vehicles moving in both directions.
+
+
+[5] What type of vehicles are present in the scene and how are they positioned?
+    Frequency: 827 (2.05%)
+    Sample event files:
+      - interlaken_00_d/000259.npy
+      - zurich_city_09_b/000126.npy
+      - zurich_city_02_b/001119.npy
+    Sample answers:
+      1. There are two cars on the road, both moving towards the camera. The car in the foreground is closer to the center of the road, while the other car is slightly behind and to the left.
+      2. There is a bus on the right side of the road, moving in the same direction as the viewer's perspective. On the left side, there are cars parked along the curb.
+      3. The scene includes a bus and several cars. The bus is positioned on the right side of the road, moving in the same direction as the viewer's perspective. The cars are scattered throughout the scene, w...
+
+
+[6] What do you think is going on in this scene?
+    Frequency: 680 (1.69%)
+    Sample event files:
+      - zurich_city_19_a/001116.npy
+      - zurich_city_19_a/000714.npy
+      - zurich_city_07_a/001194.npy
+    Sample answers:
+      1. The scene depicts a quiet street with a car parked in the middle of the road. The speed limit is 30 km/h, and there are buildings on both sides of the street.
+      2. The scene depicts a street with vehicles parked along the sides. There are buildings on both sides of the street, and the road appears to be clear with no pedestrians visible.
+      3. The scene depicts a street intersection with traffic lights and road markings. There are buildings on either side of the street, and a vehicle is approaching the intersection.
+
+
+[7] What elements are present in the scene?
+    Frequency: 654 (1.62%)
+    Sample event files:
+      - zurich_city_02_e/001059.npy
+      - zurich_city_16_a/000739.npy
+      - zurich_city_01_c/000529.npy
+    Sample answers:
+      1. The scene features a road with lane markings, streetlights, and buildings on either side. There is also a vehicle's tail light visible in the distance.
+      2. The scene features a multi-story building with multiple windows and a parking area in front of it. There is a small tree located near the building, and a staircase leading up to the entrance of the bu...
+      3. The scene features a street with multiple vehicles, including cars and trucks. There are buildings on either side of the street, and some trees are visible. Traffic lights are present at an intersecti...
+
+
+[8] What do you see happening in this scene?
+    Frequency: 593 (1.47%)
+    Sample event files:
+      - zurich_city_09_a/001578.npy
+      - interlaken_00_e/001688.npy
+      - zurich_city_04_a/000274.npy
+    Sample answers:
+      1. The scene depicts a quiet street at night with no visible traffic. The road is clearly marked with dashed lines, and there are streetlights providing illumination. A signpost is present on the right s...
+      2. The scene depicts a roadway with vehicles in motion. There is a car turning left at the intersection, and another car is positioned behind it, waiting to proceed. The road has a curve ahead, and there...
+      3. The scene depicts a street intersection with a traffic light displaying a green arrow for left turns. There is a white van parked on the side of the road, and a pedestrian crossing is marked with yell...
+
+
+[9] Describe the following scene.
+    Frequency: 545 (1.35%)
+    Sample event files:
+      - interlaken_00_e/000929.npy
+      - zurich_city_00_b/000654.npy
+      - zurich_city_01_a/000016.npy
+    Sample answers:
+      1. The scene presents a road with a car driving ahead in the same lane. There are trees and bushes lining both sides of the road, and a guardrail is visible on the left side.
+      2. The scene presents a city street with cars driving down the road and pedestrians walking along the sidewalks. Multiple vehicles are passing through a green light at the intersection, traveling in both...
+      3. The scene presents a quiet residential street with houses lining both sides. A car is approaching, and there are no pedestrians visible. The street has a marked speed limit of 30 km/h, and there are s...
+
+
+[10] What types of vehicles are present in the scene and how are they positioned?
+    Frequency: 543 (1.35%)
+    Sample event files:
+      - zurich_city_04_c/000529.npy
+      - zurich_city_04_d/000069.npy
+      - zurich_city_01_e/000289.npy
+    Sample answers:
+      1. There is a black car parked on the left side of the street, a white van also parked nearby, and a yellow truck further down the road. All vehicles are positioned parallel to the curb.
+      2. The scene includes a white van parked on the left side of the street and a black car driving towards the camera. There is also a white truck further down the road, positioned to the right of the black...
+      3. The scene includes a white van on the left side, moving in the same direction as the viewer. There are also multiple cars ahead, with their rear lights visible, indicating they are either stationary o...
+

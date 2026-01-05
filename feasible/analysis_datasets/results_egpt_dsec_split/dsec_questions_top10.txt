@@ -1,0 +1,10 @@
+1675	What are the key elements in this scene?
+1292	Can you elaborate on the elements of the scene provided?
+1225	What is this scene about?
+1005	What is the layout of the road in the scene?
+827	What type of vehicles are present in the scene and how are they positioned?
+680	What do you think is going on in this scene?
+654	What elements are present in the scene?
+593	What do you see happening in this scene?
+545	Describe the following scene.
+543	What types of vehicles are present in the scene and how are they positioned?

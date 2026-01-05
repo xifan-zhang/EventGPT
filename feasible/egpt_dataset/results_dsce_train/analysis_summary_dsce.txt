@@ -1,0 +1,272 @@
+
+=======================
+🎯 DSEC Dataset Overview
+=======================
+🔍 Starting analysis... ✨
+Analysis results saved to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/analysis_summary_dsce.txt
+Dataset path: /mnt/hdd/data/DSEC
+Figures directory: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test
+🔍 Scanning DSEC dataset at: /mnt/hdd/data/DSEC
+📂 Found 42 sequences: ['zurich_city_10_a', 'zurich_city_08_a', 'zurich_city_10_b', 'zurich_city_02_a', 'zurich_city_01_b']...
+
+⏱️ Analyzing events for sequence 'zurich_city_10_a'...
+  📄 Left events file: 3758.3 MB
+  📄 Right events file: 3462.7 MB
+  📊 Left camera: ~2,368,470,889 events (estimated from metadata)
+  📊 Right camera: ~2,054,164,996 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_08_a'...
+  📄 Left events file: 987.3 MB
+  📄 Right events file: 810.1 MB
+  📊 Left camera: ~509,828,476 events (estimated from metadata)
+  📊 Right camera: ~370,162,722 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_10_b'...
+  📄 Left events file: 4590.5 MB
+  📄 Right events file: 4227.5 MB
+  📊 Left camera: ~3,043,754,731 events (estimated from metadata)
+  📊 Right camera: ~2,636,517,904 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_02_a'...
+  📄 Left events file: 340.5 MB
+  📄 Right events file: 269.5 MB
+  📊 Left camera: ~177,115,033 events (estimated from metadata)
+  📊 Right camera: ~135,241,413 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_01_b'...
+  📄 Left events file: 1525.6 MB
+  📄 Right events file: 1319.6 MB
+  📊 Left camera: ~742,590,821 events (estimated from metadata)
+  📊 Right camera: ~599,699,433 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_00_b'...
+  📄 Left events file: 1239.9 MB
+  📄 Right events file: 1066.7 MB
+  📊 Left camera: ~558,906,801 events (estimated from metadata)
+  📊 Right camera: ~450,634,274 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_07_a'...
+  📄 Left events file: 1777.4 MB
+  📄 Right events file: 1543.1 MB
+  📊 Left camera: ~914,497,782 events (estimated from metadata)
+  📊 Right camera: ~739,034,836 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'thun_00_a'...
+  📄 Left events file: 287.2 MB
+  📄 Right events file: 263.0 MB
+  📊 Left camera: ~134,133,270 events (estimated from metadata)
+  📊 Right camera: ~126,977,921 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_09_d'...
+  📄 Left events file: 1756.5 MB
+  📄 Right events file: 1591.3 MB
+  📊 Left camera: ~858,124,703 events (estimated from metadata)
+  📊 Right camera: ~721,802,278 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_g'...
+  📄 Left events file: 1289.1 MB
+  📄 Right events file: 1214.4 MB
+  📊 Left camera: ~605,967,202 events (estimated from metadata)
+  📊 Right camera: ~567,374,098 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_d'...
+  📄 Left events file: 3218.8 MB
+  📄 Right events file: 3052.3 MB
+  📊 Left camera: ~1,838,216,077 events (estimated from metadata)
+  📊 Right camera: ~1,733,288,293 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_09_e'...
+  📄 Left events file: 849.0 MB
+  📄 Right events file: 754.8 MB
+  📊 Left camera: ~404,633,759 events (estimated from metadata)
+  📊 Right camera: ~339,594,486 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_f'...
+  📄 Left events file: 1225.2 MB
+  📄 Right events file: 1221.8 MB
+  📊 Left camera: ~559,759,766 events (estimated from metadata)
+  📊 Right camera: ~550,452,205 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'test'...
+❌ Left events file not found: /mnt/hdd/data/DSEC/test/events/left/events.h5
+❌ Right events file not found: /mnt/hdd/data/DSEC/test/events/right/events.h5
+
+⏱️ Analyzing events for sequence 'zurich_city_02_b'...
+  📄 Left events file: 1835.8 MB
+  📄 Right events file: 1552.7 MB
+  📊 Left camera: ~1,041,747,401 events (estimated from metadata)
+  📊 Right camera: ~799,317,843 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_02_c'...
+  📄 Left events file: 5013.4 MB
+  📄 Right events file: 4389.9 MB
+  📊 Left camera: ~3,311,435,635 events (estimated from metadata)
+  📊 Right camera: ~2,715,579,394 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_04_a'...
+  📄 Left events file: 730.1 MB
+  📄 Right events file: 595.5 MB
+  📊 Left camera: ~358,941,868 events (estimated from metadata)
+  📊 Right camera: ~275,743,726 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_11_a'...
+  📄 Left events file: 323.2 MB
+  📄 Right events file: 273.0 MB
+  📊 Left camera: ~129,128,809 events (estimated from metadata)
+  📊 Right camera: ~100,625,725 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_01_d'...
+  📄 Left events file: 959.7 MB
+  📄 Right events file: 833.8 MB
+  📊 Left camera: ~501,276,676 events (estimated from metadata)
+  📊 Right camera: ~369,643,311 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_11_b'...
+  📄 Left events file: 1769.3 MB
+  📄 Right events file: 1543.3 MB
+  📊 Left camera: ~839,634,511 events (estimated from metadata)
+  📊 Right camera: ~667,669,639 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_c'...
+  📄 Left events file: 822.5 MB
+  📄 Right events file: 773.9 MB
+  📊 Left camera: ~455,650,825 events (estimated from metadata)
+  📊 Right camera: ~428,602,029 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_05_b'...
+  📄 Left events file: 1865.6 MB
+  📄 Right events file: 1661.6 MB
+  📊 Left camera: ~974,125,637 events (estimated from metadata)
+  📊 Right camera: ~823,377,839 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_09_a'...
+  📄 Left events file: 2884.3 MB
+  📄 Right events file: 2583.8 MB
+  📊 Left camera: ~1,789,706,436 events (estimated from metadata)
+  📊 Right camera: ~1,572,203,219 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_04_d'...
+  📄 Left events file: 781.1 MB
+  📄 Right events file: 690.4 MB
+  📊 Left camera: ~324,912,840 events (estimated from metadata)
+  📊 Right camera: ~266,854,322 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_09_c'...
+  📄 Left events file: 1377.9 MB
+  📄 Right events file: 1162.0 MB
+  📊 Left camera: ~657,565,671 events (estimated from metadata)
+  📊 Right camera: ~541,841,396 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_01_e'...
+  📄 Left events file: 2065.0 MB
+  📄 Right events file: 1789.0 MB
+  📊 Left camera: ~1,032,189,688 events (estimated from metadata)
+  📊 Right camera: ~804,564,975 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_01_a'...
+  📄 Left events file: 683.3 MB
+  📄 Right events file: 550.8 MB
+  📊 Left camera: ~315,285,500 events (estimated from metadata)
+  📊 Right camera: ~227,216,374 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_11_c'...
+  📄 Left events file: 1891.2 MB
+  📄 Right events file: 1661.7 MB
+  📊 Left camera: ~890,779,936 events (estimated from metadata)
+  📊 Right camera: ~730,081,075 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_04_c'...
+  📄 Left events file: 927.6 MB
+  📄 Right events file: 772.2 MB
+  📊 Left camera: ~391,111,416 events (estimated from metadata)
+  📊 Right camera: ~300,630,309 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_04_e'...
+  📄 Left events file: 262.5 MB
+  📄 Right events file: 229.9 MB
+  📊 Left camera: ~119,172,751 events (estimated from metadata)
+  📊 Right camera: ~95,364,500 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_09_b'...
+  📄 Left events file: 371.4 MB
+  📄 Right events file: 302.4 MB
+  📊 Left camera: ~166,832,789 events (estimated from metadata)
+  📊 Right camera: ~131,710,884 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_03_a'...
+  📄 Left events file: 1667.3 MB
+  📄 Right events file: 1632.1 MB
+  📊 Left camera: ~1,143,396,879 events (estimated from metadata)
+  📊 Right camera: ~1,052,338,677 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_01_c'...
+  📄 Left events file: 1354.9 MB
+  📄 Right events file: 1133.6 MB
+  📊 Left camera: ~728,963,877 events (estimated from metadata)
+  📊 Right camera: ~565,414,978 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_01_f'...
+  📄 Left events file: 2080.3 MB
+  📄 Right events file: 1730.0 MB
+  📊 Left camera: ~1,111,402,781 events (estimated from metadata)
+  📊 Right camera: ~851,215,557 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_02_e'...
+  📄 Left events file: 3302.9 MB
+  📄 Right events file: 2988.0 MB
+  📊 Left camera: ~2,203,481,739 events (estimated from metadata)
+  📊 Right camera: ~1,842,519,244 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'interlaken_00_e'...
+  📄 Left events file: 2440.9 MB
+  📄 Right events file: 2418.1 MB
+  📊 Left camera: ~1,251,577,615 events (estimated from metadata)
+  📊 Right camera: ~1,229,101,374 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_06_a'...
+  📄 Left events file: 2541.6 MB
+  📄 Right events file: 2131.3 MB
+  📊 Left camera: ~1,510,549,938 events (estimated from metadata)
+  📊 Right camera: ~1,179,156,398 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_02_d'...
+  📄 Left events file: 1775.5 MB
+  📄 Right events file: 1498.3 MB
+  📊 Left camera: ~795,100,364 events (estimated from metadata)
+  📊 Right camera: ~623,017,068 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_00_a'...
+  📄 Left events file: 999.7 MB
+  📄 Right events file: 864.0 MB
+  📊 Left camera: ~482,077,151 events (estimated from metadata)
+  📊 Right camera: ~382,788,804 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_05_a'...
+  📄 Left events file: 1890.2 MB
+  📄 Right events file: 1625.0 MB
+  📊 Left camera: ~925,152,594 events (estimated from metadata)
+  📊 Right camera: ~769,124,257 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_04_b'...
+  📄 Left events file: 265.3 MB
+  📄 Right events file: 254.0 MB
+  📊 Left camera: ~129,563,187 events (estimated from metadata)
+  📊 Right camera: ~117,796,248 events (estimated from metadata)
+
+⏱️ Analyzing events for sequence 'zurich_city_04_f'...
+  📄 Left events file: 802.8 MB
+  📄 Right events file: 622.2 MB
+  📊 Left camera: ~361,541,918 events (estimated from metadata)
+  📊 Right camera: ~270,861,878 events (estimated from metadata)
+💾 Saved detailed metrics JSON to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/detailed_sequence_metrics.json
+
+📊 Creating metadata-based visualizations...
+📊 Saved Event Counts Comparison to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/figure_event_counts_comparison.png
+📊 Saved File Sizes Comparison to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/figure_file_sizes_comparison.png
+📊 Saved Size vs Count Correlation to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/figure_size_vs_count_correlation.png
+✅ Metadata visualizations completed!
+⚠️ No valid left camera duration data found for temporal visualizations.
+⚠️ No valid right camera duration data found for temporal visualizations.
+⚠️ No valid combined duration data found for temporal visualizations.
+📝 Saved summary to: /home/ps/Documents/code/EventGPT/feasible/egpt_dataset/results_dsce_test/dsce_summary.txt
+🎉 Analysis completed in 3.2 seconds!

@@ -1,0 +1,2969 @@
+[
+  {
+    "sequence_name": "zurich_city_10_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2368470889
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2368470889
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2368470889
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2368470889
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2368470889
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2054164996
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2054164996
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2054164996
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2054164996
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2054164996
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 4422635885,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 3758.291967391968,
+      "right_events_file_size_mb": 3462.708959579468
+    }
+  },
+  {
+    "sequence_name": "zurich_city_08_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        509828476
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        509828476
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        509828476
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        509828476
+      ],
+      "y_dtype": "uint16",
+      "event_count": 509828476
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        370162722
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        370162722
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        370162722
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        370162722
+      ],
+      "y_dtype": "uint16",
+      "event_count": 370162722
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 879991198,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 987.3232879638672,
+      "right_events_file_size_mb": 810.0861835479736
+    }
+  },
+  {
+    "sequence_name": "zurich_city_10_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        3043754731
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        3043754731
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        3043754731
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        3043754731
+      ],
+      "y_dtype": "uint16",
+      "event_count": 3043754731
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2636517904
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2636517904
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2636517904
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2636517904
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2636517904
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 5680272635,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 4590.452897071838,
+      "right_events_file_size_mb": 4227.512766838074
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        177115033
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        177115033
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        177115033
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        177115033
+      ],
+      "y_dtype": "uint16",
+      "event_count": 177115033
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        135241413
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        135241413
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        135241413
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        135241413
+      ],
+      "y_dtype": "uint16",
+      "event_count": 135241413
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 312356446,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 340.489520072937,
+      "right_events_file_size_mb": 269.5107002258301
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        742590821
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        742590821
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        742590821
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        742590821
+      ],
+      "y_dtype": "uint16",
+      "event_count": 742590821
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        599699433
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        599699433
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        599699433
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        599699433
+      ],
+      "y_dtype": "uint16",
+      "event_count": 599699433
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1342290254,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1525.5857219696045,
+      "right_events_file_size_mb": 1319.5524158477783
+    }
+  },
+  {
+    "sequence_name": "zurich_city_00_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        558906801
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        558906801
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        558906801
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        558906801
+      ],
+      "y_dtype": "uint16",
+      "event_count": 558906801
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        450634274
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        450634274
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        450634274
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        450634274
+      ],
+      "y_dtype": "uint16",
+      "event_count": 450634274
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1009541075,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1239.9318380355835,
+      "right_events_file_size_mb": 1066.741213798523
+    }
+  },
+  {
+    "sequence_name": "zurich_city_07_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        914497782
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        914497782
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        914497782
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        914497782
+      ],
+      "y_dtype": "uint16",
+      "event_count": 914497782
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        739034836
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        739034836
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        739034836
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        739034836
+      ],
+      "y_dtype": "uint16",
+      "event_count": 739034836
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1653532618,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1777.3643503189087,
+      "right_events_file_size_mb": 1543.0804433822632
+    }
+  },
+  {
+    "sequence_name": "thun_00_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        134133270
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        134133270
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        134133270
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        134133270
+      ],
+      "y_dtype": "uint16",
+      "event_count": 134133270
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        126977921
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        126977921
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        126977921
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        126977921
+      ],
+      "y_dtype": "uint16",
+      "event_count": 126977921
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 261111191,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 287.19646644592285,
+      "right_events_file_size_mb": 262.9678649902344
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        858124703
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        858124703
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        858124703
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        858124703
+      ],
+      "y_dtype": "uint16",
+      "event_count": 858124703
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        721802278
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        721802278
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        721802278
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        721802278
+      ],
+      "y_dtype": "uint16",
+      "event_count": 721802278
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1579926981,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1756.4953470230103,
+      "right_events_file_size_mb": 1591.2844247817993
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_g",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        605967202
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        605967202
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        605967202
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        605967202
+      ],
+      "y_dtype": "uint16",
+      "event_count": 605967202
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        567374098
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        567374098
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        567374098
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        567374098
+      ],
+      "y_dtype": "uint16",
+      "event_count": 567374098
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1173341300,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1289.142170906067,
+      "right_events_file_size_mb": 1214.4006128311157
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1838216077
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1838216077
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1838216077
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1838216077
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1838216077
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1733288293
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1733288293
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1733288293
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1733288293
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1733288293
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 3571504370,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 3218.8125352859497,
+      "right_events_file_size_mb": 3052.2676153182983
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        404633759
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        404633759
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        404633759
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        404633759
+      ],
+      "y_dtype": "uint16",
+      "event_count": 404633759
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        339594486
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        339594486
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        339594486
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        339594486
+      ],
+      "y_dtype": "uint16",
+      "event_count": 339594486
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 744228245,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 848.9914035797119,
+      "right_events_file_size_mb": 754.8434314727783
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_f",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        559759766
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        559759766
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        559759766
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        559759766
+      ],
+      "y_dtype": "uint16",
+      "event_count": 559759766
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        550452205
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        550452205
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        550452205
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        550452205
+      ],
+      "y_dtype": "uint16",
+      "event_count": 550452205
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1110211971,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1225.1664199829102,
+      "right_events_file_size_mb": 1221.815161705017
+    }
+  },
+  {
+    "sequence_name": "test",
+    "left_events": {
+      "error": "File not found"
+    },
+    "right_events": {
+      "error": "File not found"
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 0,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {}
+  },
+  {
+    "sequence_name": "zurich_city_02_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1041747401
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1041747401
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1041747401
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1041747401
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1041747401
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        799317843
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        799317843
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        799317843
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        799317843
+      ],
+      "y_dtype": "uint16",
+      "event_count": 799317843
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1841065244,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1835.7763919830322,
+      "right_events_file_size_mb": 1552.6786499023438
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        3311435635
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        3311435635
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        3311435635
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        3311435635
+      ],
+      "y_dtype": "uint16",
+      "event_count": 3311435635
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2715579394
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2715579394
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2715579394
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2715579394
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2715579394
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 6027015029,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 5013.370097160339,
+      "right_events_file_size_mb": 4389.919239997864
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        358941868
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        358941868
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        358941868
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        358941868
+      ],
+      "y_dtype": "uint16",
+      "event_count": 358941868
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        275743726
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        275743726
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        275743726
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        275743726
+      ],
+      "y_dtype": "uint16",
+      "event_count": 275743726
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 634685594,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 730.0713214874268,
+      "right_events_file_size_mb": 595.5217485427856
+    }
+  },
+  {
+    "sequence_name": "zurich_city_11_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        129128809
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        129128809
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        129128809
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        129128809
+      ],
+      "y_dtype": "uint16",
+      "event_count": 129128809
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        100625725
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        100625725
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        100625725
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        100625725
+      ],
+      "y_dtype": "uint16",
+      "event_count": 100625725
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 229754534,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 323.2339973449707,
+      "right_events_file_size_mb": 273.0093936920166
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        501276676
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        501276676
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        501276676
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        501276676
+      ],
+      "y_dtype": "uint16",
+      "event_count": 501276676
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        369643311
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        369643311
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        369643311
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        369643311
+      ],
+      "y_dtype": "uint16",
+      "event_count": 369643311
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 870919987,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 959.6584701538086,
+      "right_events_file_size_mb": 833.7850017547607
+    }
+  },
+  {
+    "sequence_name": "zurich_city_11_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        839634511
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        839634511
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        839634511
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        839634511
+      ],
+      "y_dtype": "uint16",
+      "event_count": 839634511
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        667669639
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        667669639
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        667669639
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        667669639
+      ],
+      "y_dtype": "uint16",
+      "event_count": 667669639
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1507304150,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1769.2840147018433,
+      "right_events_file_size_mb": 1543.2649688720703
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        455650825
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        455650825
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        455650825
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        455650825
+      ],
+      "y_dtype": "uint16",
+      "event_count": 455650825
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        428602029
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        428602029
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        428602029
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        428602029
+      ],
+      "y_dtype": "uint16",
+      "event_count": 428602029
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 884252854,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 822.4702081680298,
+      "right_events_file_size_mb": 773.937421798706
+    }
+  },
+  {
+    "sequence_name": "zurich_city_05_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        974125637
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        974125637
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        974125637
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        974125637
+      ],
+      "y_dtype": "uint16",
+      "event_count": 974125637
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        823377839
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        823377839
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        823377839
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        823377839
+      ],
+      "y_dtype": "uint16",
+      "event_count": 823377839
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1797503476,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1865.6005001068115,
+      "right_events_file_size_mb": 1661.6127424240112
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1789706436
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1789706436
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1789706436
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1789706436
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1789706436
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1572203219
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1572203219
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1572203219
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1572203219
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1572203219
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 3361909655,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2884.277823448181,
+      "right_events_file_size_mb": 2583.79971408844
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        324912840
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        324912840
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        324912840
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        324912840
+      ],
+      "y_dtype": "uint16",
+      "event_count": 324912840
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        266854322
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        266854322
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        266854322
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        266854322
+      ],
+      "y_dtype": "uint16",
+      "event_count": 266854322
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 591767162,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 781.0681381225586,
+      "right_events_file_size_mb": 690.4197492599487
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        657565671
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        657565671
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        657565671
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        657565671
+      ],
+      "y_dtype": "uint16",
+      "event_count": 657565671
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        541841396
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        541841396
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        541841396
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        541841396
+      ],
+      "y_dtype": "uint16",
+      "event_count": 541841396
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1199407067,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1377.9115324020386,
+      "right_events_file_size_mb": 1162.0041780471802
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1032189688
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1032189688
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1032189688
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1032189688
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1032189688
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        804564975
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        804564975
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        804564975
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        804564975
+      ],
+      "y_dtype": "uint16",
+      "event_count": 804564975
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1836754663,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2064.9771585464478,
+      "right_events_file_size_mb": 1789.0125217437744
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        315285500
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        315285500
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        315285500
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        315285500
+      ],
+      "y_dtype": "uint16",
+      "event_count": 315285500
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        227216374
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        227216374
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        227216374
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        227216374
+      ],
+      "y_dtype": "uint16",
+      "event_count": 227216374
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 542501874,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 683.3488779067993,
+      "right_events_file_size_mb": 550.8052978515625
+    }
+  },
+  {
+    "sequence_name": "zurich_city_11_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        890779936
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        890779936
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        890779936
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        890779936
+      ],
+      "y_dtype": "uint16",
+      "event_count": 890779936
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        730081075
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        730081075
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        730081075
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        730081075
+      ],
+      "y_dtype": "uint16",
+      "event_count": 730081075
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1620861011,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1891.2342615127563,
+      "right_events_file_size_mb": 1661.7452936172485
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        391111416
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        391111416
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        391111416
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        391111416
+      ],
+      "y_dtype": "uint16",
+      "event_count": 391111416
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        300630309
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        300630309
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        300630309
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        300630309
+      ],
+      "y_dtype": "uint16",
+      "event_count": 300630309
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 691741725,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 927.6261157989502,
+      "right_events_file_size_mb": 772.1732292175293
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        119172751
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        119172751
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        119172751
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        119172751
+      ],
+      "y_dtype": "uint16",
+      "event_count": 119172751
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        95364500
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        95364500
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        95364500
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        95364500
+      ],
+      "y_dtype": "uint16",
+      "event_count": 95364500
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 214537251,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 262.526629447937,
+      "right_events_file_size_mb": 229.8693790435791
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        166832789
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        166832789
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        166832789
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        166832789
+      ],
+      "y_dtype": "uint16",
+      "event_count": 166832789
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        131710884
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        131710884
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        131710884
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        131710884
+      ],
+      "y_dtype": "uint16",
+      "event_count": 131710884
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 298543673,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 371.40914726257324,
+      "right_events_file_size_mb": 302.4007329940796
+    }
+  },
+  {
+    "sequence_name": "zurich_city_03_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1143396879
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1143396879
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1143396879
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1143396879
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1143396879
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1052338677
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1052338677
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1052338677
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1052338677
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1052338677
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 2195735556,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1667.263840675354,
+      "right_events_file_size_mb": 1632.0688724517822
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        728963877
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        728963877
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        728963877
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        728963877
+      ],
+      "y_dtype": "uint16",
+      "event_count": 728963877
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        565414978
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        565414978
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        565414978
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        565414978
+      ],
+      "y_dtype": "uint16",
+      "event_count": 565414978
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1294378855,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1354.8566436767578,
+      "right_events_file_size_mb": 1133.5730571746826
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_f",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1111402781
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1111402781
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1111402781
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1111402781
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1111402781
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        851215557
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        851215557
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        851215557
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        851215557
+      ],
+      "y_dtype": "uint16",
+      "event_count": 851215557
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1962618338,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2080.272452354431,
+      "right_events_file_size_mb": 1729.9980792999268
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2203481739
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2203481739
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2203481739
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2203481739
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2203481739
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1842519244
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1842519244
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1842519244
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1842519244
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1842519244
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 4046000983,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 3302.9198837280273,
+      "right_events_file_size_mb": 2988.001127243042
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1251577615
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1251577615
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1251577615
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1251577615
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1251577615
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1229101374
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1229101374
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1229101374
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1229101374
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1229101374
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 2480678989,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2440.925518989563,
+      "right_events_file_size_mb": 2418.091724395752
+    }
+  },
+  {
+    "sequence_name": "zurich_city_06_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1510549938
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1510549938
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1510549938
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1510549938
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1510549938
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1179156398
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1179156398
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1179156398
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1179156398
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1179156398
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 2689706336,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2541.600170135498,
+      "right_events_file_size_mb": 2131.3179788589478
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        795100364
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        795100364
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        795100364
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        795100364
+      ],
+      "y_dtype": "uint16",
+      "event_count": 795100364
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        623017068
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        623017068
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        623017068
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        623017068
+      ],
+      "y_dtype": "uint16",
+      "event_count": 623017068
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1418117432,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1775.5433225631714,
+      "right_events_file_size_mb": 1498.2528800964355
+    }
+  },
+  {
+    "sequence_name": "zurich_city_00_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        482077151
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        482077151
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        482077151
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        482077151
+      ],
+      "y_dtype": "uint16",
+      "event_count": 482077151
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        382788804
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        382788804
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        382788804
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        382788804
+      ],
+      "y_dtype": "uint16",
+      "event_count": 382788804
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 864865955,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 999.7266798019409,
+      "right_events_file_size_mb": 863.996259689331
+    }
+  },
+  {
+    "sequence_name": "zurich_city_05_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        925152594
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        925152594
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        925152594
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        925152594
+      ],
+      "y_dtype": "uint16",
+      "event_count": 925152594
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        769124257
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        769124257
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        769124257
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        769124257
+      ],
+      "y_dtype": "uint16",
+      "event_count": 769124257
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 1694276851,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1890.178708076477,
+      "right_events_file_size_mb": 1625.0404806137085
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        129563187
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        129563187
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        129563187
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        129563187
+      ],
+      "y_dtype": "uint16",
+      "event_count": 129563187
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        117796248
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        117796248
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        117796248
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        117796248
+      ],
+      "y_dtype": "uint16",
+      "event_count": 117796248
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 247359435,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 265.3196487426758,
+      "right_events_file_size_mb": 253.97905349731445
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_f",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        361541918
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        361541918
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        361541918
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        361541918
+      ],
+      "y_dtype": "uint16",
+      "event_count": 361541918
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        270861878
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        270861878
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        270861878
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        270861878
+      ],
+      "y_dtype": "uint16",
+      "event_count": 270861878
+    },
+    "combined_events": {
+      "duration_ms": 0,
+      "event_count": 632403796,
+      "density_ev_per_ms": 0.0
+    },
+    "file_info": {
+      "left_events_file_size_mb": 802.7825584411621,
+      "right_events_file_size_mb": 622.176191329956
+    }
+  }
+]

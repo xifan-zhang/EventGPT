@@ -1,0 +1,3364 @@
+[
+  {
+    "sequence_name": "zurich_city_10_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2368470889
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2368470889
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2368470889
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2368470889
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2368470889,
+      "duration_ms": 115699.533,
+      "density_ev_per_ms": 20470.876827134645
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2054164996
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2054164996
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2054164996
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2054164996
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2054164996,
+      "duration_ms": 115699.533,
+      "density_ev_per_ms": 17754.306717901793
+    },
+    "combined_events": {
+      "duration_ms": 115699.533,
+      "event_count": 4422635885,
+      "density_ev_per_ms": 38225.18354503644
+    },
+    "file_info": {
+      "left_events_file_size_mb": 3758.291967391968,
+      "right_events_file_size_mb": 3462.708959579468
+    },
+    "image_info": {
+      "duration_ms": 115699.533,
+      "frame_count": 2315,
+      "first_timestamp_us": 57267307977,
+      "last_timestamp_us": 57383007510
+    }
+  },
+  {
+    "sequence_name": "zurich_city_08_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        509828476
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        509828476
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        509828476
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        509828476
+      ],
+      "y_dtype": "uint16",
+      "event_count": 509828476,
+      "duration_ms": 39300.106,
+      "density_ev_per_ms": 12972.699768290702
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        370162722
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        370162722
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        370162722
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        370162722
+      ],
+      "y_dtype": "uint16",
+      "event_count": 370162722,
+      "duration_ms": 39300.106,
+      "density_ev_per_ms": 9418.873374031104
+    },
+    "combined_events": {
+      "duration_ms": 39300.106,
+      "event_count": 879991198,
+      "density_ev_per_ms": 22391.573142321806
+    },
+    "file_info": {
+      "left_events_file_size_mb": 987.3232879638672,
+      "right_events_file_size_mb": 810.0861835479736
+    },
+    "image_info": {
+      "duration_ms": 39300.106,
+      "frame_count": 787,
+      "first_timestamp_us": 39415400386,
+      "last_timestamp_us": 39454700492
+    }
+  },
+  {
+    "sequence_name": "zurich_city_10_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        3043754731
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        3043754731
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        3043754731
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        3043754731
+      ],
+      "y_dtype": "uint16",
+      "event_count": 3043754731,
+      "duration_ms": 120199.558,
+      "density_ev_per_ms": 25322.51184317999
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2636517904
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2636517904
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2636517904
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2636517904
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2636517904,
+      "duration_ms": 120199.558,
+      "density_ev_per_ms": 21934.50581573686
+    },
+    "combined_events": {
+      "duration_ms": 120199.558,
+      "event_count": 5680272635,
+      "density_ev_per_ms": 47257.01765891685
+    },
+    "file_info": {
+      "left_events_file_size_mb": 4590.452897071838,
+      "right_events_file_size_mb": 4227.512766838074
+    },
+    "image_info": {
+      "duration_ms": 120199.558,
+      "frame_count": 2405,
+      "first_timestamp_us": 57383507565,
+      "last_timestamp_us": 57503707123
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        177115033
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        177115033
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        177115033
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        177115033
+      ],
+      "y_dtype": "uint16",
+      "event_count": 177115033,
+      "duration_ms": 11699.991,
+      "density_ev_per_ms": 15138.04865319982
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        135241413
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        135241413
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        135241413
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        135241413
+      ],
+      "y_dtype": "uint16",
+      "event_count": 135241413,
+      "duration_ms": 11699.991,
+      "density_ev_per_ms": 11559.104019823604
+    },
+    "combined_events": {
+      "duration_ms": 11699.991,
+      "event_count": 312356446,
+      "density_ev_per_ms": 26697.152673023425
+    },
+    "file_info": {
+      "left_events_file_size_mb": 340.489520072937,
+      "right_events_file_size_mb": 269.5107002258301
+    },
+    "image_info": {
+      "duration_ms": 11699.991,
+      "frame_count": 235,
+      "first_timestamp_us": 56174807540,
+      "last_timestamp_us": 56186507531
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        742590821
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        742590821
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        742590821
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        742590821
+      ],
+      "y_dtype": "uint16",
+      "event_count": 742590821,
+      "duration_ms": 66200.025,
+      "density_ev_per_ms": 11217.379766850543
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        599699433
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        599699433
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        599699433
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        599699433
+      ],
+      "y_dtype": "uint16",
+      "event_count": 599699433,
+      "duration_ms": 66200.025,
+      "density_ev_per_ms": 9058.900400717372
+    },
+    "combined_events": {
+      "duration_ms": 66200.025,
+      "event_count": 1342290254,
+      "density_ev_per_ms": 20276.280167567915
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1525.5857219696045,
+      "right_events_file_size_mb": 1319.5524158477783
+    },
+    "image_info": {
+      "duration_ms": 66200.025,
+      "frame_count": 1325,
+      "first_timestamp_us": 55650007582,
+      "last_timestamp_us": 55716207607
+    }
+  },
+  {
+    "sequence_name": "zurich_city_00_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        558906801
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        558906801
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        558906801
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        558906801
+      ],
+      "y_dtype": "uint16",
+      "event_count": 558906801,
+      "duration_ms": 73099.962,
+      "density_ev_per_ms": 7645.787845963586
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        450634274
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        450634274
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        450634274
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        450634274
+      ],
+      "y_dtype": "uint16",
+      "event_count": 450634274,
+      "duration_ms": 73099.962,
+      "density_ev_per_ms": 6164.630755895605
+    },
+    "combined_events": {
+      "duration_ms": 73099.962,
+      "event_count": 1009541075,
+      "density_ev_per_ms": 13810.418601859192
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1239.9318380355835,
+      "right_events_file_size_mb": 1066.741213798523
+    },
+    "image_info": {
+      "duration_ms": 73099.962,
+      "frame_count": 1463,
+      "first_timestamp_us": 54816707577,
+      "last_timestamp_us": 54889807539
+    }
+  },
+  {
+    "sequence_name": "zurich_city_07_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        914497782
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        914497782
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        914497782
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        914497782
+      ],
+      "y_dtype": "uint16",
+      "event_count": 914497782,
+      "duration_ms": 73100.084,
+      "density_ev_per_ms": 12510.215200299906
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        739034836
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        739034836
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        739034836
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        739034836
+      ],
+      "y_dtype": "uint16",
+      "event_count": 739034836,
+      "duration_ms": 73100.084,
+      "density_ev_per_ms": 10109.904059754568
+    },
+    "combined_events": {
+      "duration_ms": 73100.084,
+      "event_count": 1653532618,
+      "density_ev_per_ms": 22620.119260054475
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1777.3643503189087,
+      "right_events_file_size_mb": 1543.0804433822632
+    },
+    "image_info": {
+      "duration_ms": 73100.084,
+      "frame_count": 1463,
+      "first_timestamp_us": 41776100175,
+      "last_timestamp_us": 41849200259
+    }
+  },
+  {
+    "sequence_name": "thun_00_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        134133270
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        134133270
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        134133270
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        134133270
+      ],
+      "y_dtype": "uint16",
+      "event_count": 134133270,
+      "duration_ms": 11899.936,
+      "density_ev_per_ms": 11271.763982596209
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        126977921
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        126977921
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        126977921
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        126977921
+      ],
+      "y_dtype": "uint16",
+      "event_count": 126977921,
+      "duration_ms": 11899.936,
+      "density_ev_per_ms": 10670.470916818376
+    },
+    "combined_events": {
+      "duration_ms": 11899.936,
+      "event_count": 261111191,
+      "density_ev_per_ms": 21942.234899414587
+    },
+    "file_info": {
+      "left_events_file_size_mb": 287.19646644592285,
+      "right_events_file_size_mb": 262.9678649902344
+    },
+    "image_info": {
+      "duration_ms": 11899.936,
+      "frame_count": 239,
+      "first_timestamp_us": 49599200500,
+      "last_timestamp_us": 49611100436
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        858124703
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        858124703
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        858124703
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        858124703
+      ],
+      "y_dtype": "uint16",
+      "event_count": 858124703,
+      "duration_ms": 84899.944,
+      "density_ev_per_ms": 10107.48255617224
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        721802278
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        721802278
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        721802278
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        721802278
+      ],
+      "y_dtype": "uint16",
+      "event_count": 721802278,
+      "duration_ms": 84899.944,
+      "density_ev_per_ms": 8501.799223801609
+    },
+    "combined_events": {
+      "duration_ms": 84899.944,
+      "event_count": 1579926981,
+      "density_ev_per_ms": 18609.281779973848
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1756.4953470230103,
+      "right_events_file_size_mb": 1591.2844247817993
+    },
+    "image_info": {
+      "duration_ms": 84899.944,
+      "frame_count": 1699,
+      "first_timestamp_us": 58391107532,
+      "last_timestamp_us": 58476007476
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_g",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        605967202
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        605967202
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        605967202
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        605967202
+      ],
+      "y_dtype": "uint16",
+      "event_count": 605967202,
+      "duration_ms": 66699.841,
+      "density_ev_per_ms": 9084.987204092435
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        567374098
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        567374098
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        567374098
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        567374098
+      ],
+      "y_dtype": "uint16",
+      "event_count": 567374098,
+      "duration_ms": 66699.841,
+      "density_ev_per_ms": 8506.378568428672
+    },
+    "combined_events": {
+      "duration_ms": 66699.841,
+      "event_count": 1173341300,
+      "density_ev_per_ms": 17591.365772521105
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1289.142170906067,
+      "right_events_file_size_mb": 1214.4006128311157
+    },
+    "image_info": {
+      "duration_ms": 66699.841,
+      "frame_count": 1335,
+      "first_timestamp_us": 52107500491,
+      "last_timestamp_us": 52174200332
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1838216077
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1838216077
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1838216077
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1838216077
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1838216077,
+      "duration_ms": 99500.131,
+      "density_ev_per_ms": 18474.509113962875
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1733288293
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1733288293
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1733288293
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1733288293
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1733288293,
+      "duration_ms": 99500.131,
+      "density_ev_per_ms": 17419.959909399517
+    },
+    "combined_events": {
+      "duration_ms": 99500.131,
+      "event_count": 3571504370,
+      "density_ev_per_ms": 35894.46902336239
+    },
+    "file_info": {
+      "left_events_file_size_mb": 3218.8125352859497,
+      "right_events_file_size_mb": 3052.2676153182983
+    },
+    "image_info": {
+      "duration_ms": 99500.131,
+      "frame_count": 1991,
+      "first_timestamp_us": 51832500407,
+      "last_timestamp_us": 51932000538
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        404633759
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        404633759
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        404633759
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        404633759
+      ],
+      "y_dtype": "uint16",
+      "event_count": 404633759,
+      "duration_ms": 40799.991,
+      "density_ev_per_ms": 9917.496280820258
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        339594486
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        339594486
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        339594486
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        339594486
+      ],
+      "y_dtype": "uint16",
+      "event_count": 339594486,
+      "duration_ms": 40799.991,
+      "density_ev_per_ms": 8323.39610074914
+    },
+    "combined_events": {
+      "duration_ms": 40799.991,
+      "event_count": 744228245,
+      "density_ev_per_ms": 18240.892381569396
+    },
+    "file_info": {
+      "left_events_file_size_mb": 848.9914035797119,
+      "right_events_file_size_mb": 754.8434314727783
+    },
+    "image_info": {
+      "duration_ms": 40799.991,
+      "frame_count": 817,
+      "first_timestamp_us": 58502707519,
+      "last_timestamp_us": 58543507510
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_f",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        559759766
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        559759766
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        559759766
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        559759766
+      ],
+      "y_dtype": "uint16",
+      "event_count": 559759766,
+      "duration_ms": 74499.943,
+      "density_ev_per_ms": 7513.559654669803
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        550452205
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        550452205
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        550452205
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        550452205
+      ],
+      "y_dtype": "uint16",
+      "event_count": 550452205,
+      "duration_ms": 74499.943,
+      "density_ev_per_ms": 7388.625854384882
+    },
+    "combined_events": {
+      "duration_ms": 74499.943,
+      "event_count": 1110211971,
+      "density_ev_per_ms": 14902.185509054685
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1225.1664199829102,
+      "right_events_file_size_mb": 1221.815161705017
+    },
+    "image_info": {
+      "duration_ms": 74499.943,
+      "frame_count": 1491,
+      "first_timestamp_us": 52032500508,
+      "last_timestamp_us": 52107000451
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1041747401
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1041747401
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1041747401
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1041747401
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1041747401,
+      "duration_ms": 61200.024,
+      "density_ev_per_ms": 17022.009680911237
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        799317843
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        799317843
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        799317843
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        799317843
+      ],
+      "y_dtype": "uint16",
+      "event_count": 799317843,
+      "duration_ms": 61200.024,
+      "density_ev_per_ms": 13060.743946767081
+    },
+    "combined_events": {
+      "duration_ms": 61200.024,
+      "event_count": 1841065244,
+      "density_ev_per_ms": 30082.753627678318
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1835.7763919830322,
+      "right_events_file_size_mb": 1552.6786499023438
+    },
+    "image_info": {
+      "duration_ms": 61200.024,
+      "frame_count": 1225,
+      "first_timestamp_us": 56246407530,
+      "last_timestamp_us": 56307607554
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        3311435635
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        3311435635
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        3311435635
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        3311435635
+      ],
+      "y_dtype": "uint16",
+      "event_count": 3311435635,
+      "duration_ms": 144100.015,
+      "density_ev_per_ms": 22980.119988190145
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2715579394
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2715579394
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2715579394
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2715579394
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2715579394,
+      "duration_ms": 144100.015,
+      "density_ev_per_ms": 18845.101397109498
+    },
+    "combined_events": {
+      "duration_ms": 144100.015,
+      "event_count": 6027015029,
+      "density_ev_per_ms": 41825.22138529964
+    },
+    "file_info": {
+      "left_events_file_size_mb": 5013.370097160339,
+      "right_events_file_size_mb": 4389.919239997864
+    },
+    "image_info": {
+      "duration_ms": 144100.015,
+      "frame_count": 2883,
+      "first_timestamp_us": 56332607548,
+      "last_timestamp_us": 56476707563
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        358941868
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        358941868
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        358941868
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        358941868
+      ],
+      "y_dtype": "uint16",
+      "event_count": 358941868,
+      "duration_ms": 35000.229,
+      "density_ev_per_ms": 10255.414843142884
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        275743726
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        275743726
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        275743726
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        275743726
+      ],
+      "y_dtype": "uint16",
+      "event_count": 275743726,
+      "duration_ms": 35000.229,
+      "density_ev_per_ms": 7878.340624571342
+    },
+    "combined_events": {
+      "duration_ms": 35000.229,
+      "event_count": 634685594,
+      "density_ev_per_ms": 18133.755467714225
+    },
+    "file_info": {
+      "left_events_file_size_mb": 730.0713214874268,
+      "right_events_file_size_mb": 595.5217485427856
+    },
+    "image_info": {
+      "duration_ms": 35000.229,
+      "frame_count": 701,
+      "first_timestamp_us": 36470600624,
+      "last_timestamp_us": 36505600853
+    }
+  },
+  {
+    "sequence_name": "zurich_city_11_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        129128809
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        129128809
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        129128809
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        129128809
+      ],
+      "y_dtype": "uint16",
+      "event_count": 129128809,
+      "duration_ms": 23200.271,
+      "density_ev_per_ms": 5565.831924980532
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        100625725
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        100625725
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        100625725
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        100625725
+      ],
+      "y_dtype": "uint16",
+      "event_count": 100625725,
+      "duration_ms": 23200.271,
+      "density_ev_per_ms": 4337.265069015789
+    },
+    "combined_events": {
+      "duration_ms": 23200.271,
+      "event_count": 229754534,
+      "density_ev_per_ms": 9903.09699399632
+    },
+    "file_info": {
+      "left_events_file_size_mb": 323.2339973449707,
+      "right_events_file_size_mb": 273.0093936920166
+    },
+    "image_info": {
+      "duration_ms": 23200.271,
+      "frame_count": 465,
+      "first_timestamp_us": 37060100430,
+      "last_timestamp_us": 37083300701
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        501276676
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        501276676
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        501276676
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        501276676
+      ],
+      "y_dtype": "uint16",
+      "event_count": 501276676,
+      "duration_ms": 39699.991,
+      "density_ev_per_ms": 12626.619386387265
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        369643311
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        369643311
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        369643311
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        369643311
+      ],
+      "y_dtype": "uint16",
+      "event_count": 369643311,
+      "duration_ms": 39699.991,
+      "density_ev_per_ms": 9310.916745547876
+    },
+    "combined_events": {
+      "duration_ms": 39699.991,
+      "event_count": 870919987,
+      "density_ev_per_ms": 21937.536131935143
+    },
+    "file_info": {
+      "left_events_file_size_mb": 959.6584701538086,
+      "right_events_file_size_mb": 833.7850017547607
+    },
+    "image_info": {
+      "duration_ms": 39699.991,
+      "frame_count": 795,
+      "first_timestamp_us": 55830707573,
+      "last_timestamp_us": 55870407564
+    }
+  },
+  {
+    "sequence_name": "zurich_city_11_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        839634511
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        839634511
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        839634511
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        839634511
+      ],
+      "y_dtype": "uint16",
+      "event_count": 839634511,
+      "duration_ms": 96600.284,
+      "density_ev_per_ms": 8691.843090233566
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        667669639
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        667669639
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        667669639
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        667669639
+      ],
+      "y_dtype": "uint16",
+      "event_count": 667669639,
+      "duration_ms": 96600.284,
+      "density_ev_per_ms": 6911.6736654728675
+    },
+    "combined_events": {
+      "duration_ms": 96600.284,
+      "event_count": 1507304150,
+      "density_ev_per_ms": 15603.516755706432
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1769.2840147018433,
+      "right_events_file_size_mb": 1543.2649688720703
+    },
+    "image_info": {
+      "duration_ms": 96600.284,
+      "frame_count": 1933,
+      "first_timestamp_us": 37089400462,
+      "last_timestamp_us": 37186000746
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        455650825
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        455650825
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        455650825
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        455650825
+      ],
+      "y_dtype": "uint16",
+      "event_count": 455650825,
+      "duration_ms": 26799.636,
+      "density_ev_per_ms": 17002.12737964053
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        428602029
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        428602029
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        428602029
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        428602029
+      ],
+      "y_dtype": "uint16",
+      "event_count": 428602029,
+      "duration_ms": 26799.636,
+      "density_ev_per_ms": 15992.830238440552
+    },
+    "combined_events": {
+      "duration_ms": 26799.636,
+      "event_count": 884252854,
+      "density_ev_per_ms": 32994.95761808108
+    },
+    "file_info": {
+      "left_events_file_size_mb": 822.4702081680298,
+      "right_events_file_size_mb": 773.937421798706
+    },
+    "image_info": {
+      "duration_ms": 26799.636,
+      "frame_count": 537,
+      "first_timestamp_us": 51805200790,
+      "last_timestamp_us": 51832000426
+    }
+  },
+  {
+    "sequence_name": "zurich_city_05_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        974125637
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        974125637
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        974125637
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        974125637
+      ],
+      "y_dtype": "uint16",
+      "event_count": 974125637,
+      "duration_ms": 81398.832,
+      "density_ev_per_ms": 11967.317135459634
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        823377839
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        823377839
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        823377839
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        823377839
+      ],
+      "y_dtype": "uint16",
+      "event_count": 823377839,
+      "duration_ms": 81398.832,
+      "density_ev_per_ms": 10115.352011439181
+    },
+    "combined_events": {
+      "duration_ms": 81398.832,
+      "event_count": 1797503476,
+      "density_ev_per_ms": 22082.669146898817
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1865.6005001068115,
+      "right_events_file_size_mb": 1661.6127424240112
+    },
+    "image_info": {
+      "duration_ms": 81398.832,
+      "frame_count": 1629,
+      "first_timestamp_us": 37467501614,
+      "last_timestamp_us": 37548900446
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1789706436
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1789706436
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1789706436
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1789706436
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1789706436,
+      "duration_ms": 90599.994,
+      "density_ev_per_ms": 19753.935480393076
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1572203219
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1572203219
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1572203219
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1572203219
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1572203219,
+      "duration_ms": 90599.994,
+      "density_ev_per_ms": 17353.237562024562
+    },
+    "combined_events": {
+      "duration_ms": 90599.994,
+      "event_count": 3361909655,
+      "density_ev_per_ms": 37107.173042417635
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2884.277823448181,
+      "right_events_file_size_mb": 2583.79971408844
+    },
+    "image_info": {
+      "duration_ms": 90599.994,
+      "frame_count": 1813,
+      "first_timestamp_us": 58051107631,
+      "last_timestamp_us": 58141707625
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        324912840
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        324912840
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        324912840
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        324912840
+      ],
+      "y_dtype": "uint16",
+      "event_count": 324912840,
+      "duration_ms": 47799.989,
+      "density_ev_per_ms": 6797.3413131956995
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        266854322
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        266854322
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        266854322
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        266854322
+      ],
+      "y_dtype": "uint16",
+      "event_count": 266854322,
+      "duration_ms": 47799.989,
+      "density_ev_per_ms": 5582.727686401769
+    },
+    "combined_events": {
+      "duration_ms": 47799.989,
+      "event_count": 591767162,
+      "density_ev_per_ms": 12380.068999597468
+    },
+    "file_info": {
+      "left_events_file_size_mb": 781.0681381225586,
+      "right_events_file_size_mb": 690.4197492599487
+    },
+    "image_info": {
+      "duration_ms": 47799.989,
+      "frame_count": 957,
+      "first_timestamp_us": 36739600411,
+      "last_timestamp_us": 36787400400
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        657565671
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        657565671
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        657565671
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        657565671
+      ],
+      "y_dtype": "uint16",
+      "event_count": 657565671,
+      "duration_ms": 66100.011,
+      "density_ev_per_ms": 9948.041778691988
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        541841396
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        541841396
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        541841396
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        541841396
+      ],
+      "y_dtype": "uint16",
+      "event_count": 541841396,
+      "duration_ms": 66100.011,
+      "density_ev_per_ms": 8197.296608619325
+    },
+    "combined_events": {
+      "duration_ms": 66100.011,
+      "event_count": 1199407067,
+      "density_ev_per_ms": 18145.338387311313
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1377.9115324020386,
+      "right_events_file_size_mb": 1162.0041780471802
+    },
+    "image_info": {
+      "duration_ms": 66100.011,
+      "frame_count": 1323,
+      "first_timestamp_us": 58288007532,
+      "last_timestamp_us": 58354107543
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1032189688
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1032189688
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1032189688
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1032189688
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1032189688,
+      "duration_ms": 99500.012,
+      "density_ev_per_ms": 10373.764457435442
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        804564975
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        804564975
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        804564975
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        804564975
+      ],
+      "y_dtype": "uint16",
+      "event_count": 804564975,
+      "duration_ms": 99500.012,
+      "density_ev_per_ms": 8086.07917554824
+    },
+    "combined_events": {
+      "duration_ms": 99500.012,
+      "event_count": 1836754663,
+      "density_ev_per_ms": 18459.84363298368
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2064.9771585464478,
+      "right_events_file_size_mb": 1789.0125217437744
+    },
+    "image_info": {
+      "duration_ms": 99500.012,
+      "frame_count": 1991,
+      "first_timestamp_us": 55910007505,
+      "last_timestamp_us": 56009507517
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        315285500
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        315285500
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        315285500
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        315285500
+      ],
+      "y_dtype": "uint16",
+      "event_count": 315285500,
+      "duration_ms": 33999.981,
+      "density_ev_per_ms": 9273.108123207481
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        227216374
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        227216374
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        227216374
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        227216374
+      ],
+      "y_dtype": "uint16",
+      "event_count": 227216374,
+      "duration_ms": 33999.981,
+      "density_ev_per_ms": 6682.83826393903
+    },
+    "combined_events": {
+      "duration_ms": 33999.981,
+      "event_count": 542501874,
+      "density_ev_per_ms": 15955.94638714651
+    },
+    "file_info": {
+      "left_events_file_size_mb": 683.3488779067993,
+      "right_events_file_size_mb": 550.8052978515625
+    },
+    "image_info": {
+      "duration_ms": 33999.981,
+      "frame_count": 681,
+      "first_timestamp_us": 55602907651,
+      "last_timestamp_us": 55636907632
+    }
+  },
+  {
+    "sequence_name": "zurich_city_11_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        890779936
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        890779936
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        890779936
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        890779936
+      ],
+      "y_dtype": "uint16",
+      "event_count": 890779936,
+      "duration_ms": 97799.533,
+      "density_ev_per_ms": 9108.222796932987
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        730081075
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        730081075
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        730081075
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        730081075
+      ],
+      "y_dtype": "uint16",
+      "event_count": 730081075,
+      "duration_ms": 97799.533,
+      "density_ev_per_ms": 7465.077312792486
+    },
+    "combined_events": {
+      "duration_ms": 97799.533,
+      "event_count": 1620861011,
+      "density_ev_per_ms": 16573.300109725475
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1891.2342615127563,
+      "right_events_file_size_mb": 1661.7452936172485
+    },
+    "image_info": {
+      "duration_ms": 97799.533,
+      "frame_count": 1957,
+      "first_timestamp_us": 37186500817,
+      "last_timestamp_us": 37284300350
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        391111416
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        391111416
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        391111416
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        391111416
+      ],
+      "y_dtype": "uint16",
+      "event_count": 391111416,
+      "duration_ms": 58999.583,
+      "density_ev_per_ms": 6629.053903652167
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        300630309
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        300630309
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        300630309
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        300630309
+      ],
+      "y_dtype": "uint16",
+      "event_count": 300630309,
+      "duration_ms": 58999.583,
+      "density_ev_per_ms": 5095.464979811806
+    },
+    "combined_events": {
+      "duration_ms": 58999.583,
+      "event_count": 691741725,
+      "density_ev_per_ms": 11724.518883463974
+    },
+    "file_info": {
+      "left_events_file_size_mb": 927.6261157989502,
+      "right_events_file_size_mb": 772.1732292175293
+    },
+    "image_info": {
+      "duration_ms": 58999.583,
+      "frame_count": 1181,
+      "first_timestamp_us": 36653100850,
+      "last_timestamp_us": 36712100433
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        119172751
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        119172751
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        119172751
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        119172751
+      ],
+      "y_dtype": "uint16",
+      "event_count": 119172751,
+      "duration_ms": 13399.965,
+      "density_ev_per_ms": 8893.51210991969
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        95364500
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        95364500
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        95364500
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        95364500
+      ],
+      "y_dtype": "uint16",
+      "event_count": 95364500,
+      "duration_ms": 13399.965,
+      "density_ev_per_ms": 7116.772319927702
+    },
+    "combined_events": {
+      "duration_ms": 13399.965,
+      "event_count": 214537251,
+      "density_ev_per_ms": 16010.284429847392
+    },
+    "file_info": {
+      "left_events_file_size_mb": 262.526629447937,
+      "right_events_file_size_mb": 229.8693790435791
+    },
+    "image_info": {
+      "duration_ms": 13399.965,
+      "frame_count": 269,
+      "first_timestamp_us": 36880800398,
+      "last_timestamp_us": 36894200363
+    }
+  },
+  {
+    "sequence_name": "zurich_city_09_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        166832789
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        166832789
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        166832789
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        166832789
+      ],
+      "y_dtype": "uint16",
+      "event_count": 166832789,
+      "duration_ms": 18300.0,
+      "density_ev_per_ms": 9116.545846994535
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        131710884
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        131710884
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        131710884
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        131710884
+      ],
+      "y_dtype": "uint16",
+      "event_count": 131710884,
+      "duration_ms": 18300.0,
+      "density_ev_per_ms": 7197.31606557377
+    },
+    "combined_events": {
+      "duration_ms": 18300.0,
+      "event_count": 298543673,
+      "density_ev_per_ms": 16313.861912568305
+    },
+    "file_info": {
+      "left_events_file_size_mb": 371.40914726257324,
+      "right_events_file_size_mb": 302.4007329940796
+    },
+    "image_info": {
+      "duration_ms": 18300.0,
+      "frame_count": 367,
+      "first_timestamp_us": 58177507611,
+      "last_timestamp_us": 58195807611
+    }
+  },
+  {
+    "sequence_name": "zurich_city_03_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1143396879
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1143396879
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1143396879
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1143396879
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1143396879,
+      "duration_ms": 44099.879,
+      "density_ev_per_ms": 25927.43800952379
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1052338677
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1052338677
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1052338677
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1052338677
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1052338677,
+      "duration_ms": 44099.879,
+      "density_ev_per_ms": 23862.62050741681
+    },
+    "combined_events": {
+      "duration_ms": 44099.879,
+      "event_count": 2195735556,
+      "density_ev_per_ms": 49790.058516940604
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1667.263840675354,
+      "right_events_file_size_mb": 1632.0688724517822
+    },
+    "image_info": {
+      "duration_ms": 44099.879,
+      "frame_count": 883,
+      "first_timestamp_us": 57172707635,
+      "last_timestamp_us": 57216807514
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_c",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        728963877
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        728963877
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        728963877
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        728963877
+      ],
+      "y_dtype": "uint16",
+      "event_count": 728963877,
+      "duration_ms": 48799.989,
+      "density_ev_per_ms": 14937.787731878381
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        565414978
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        565414978
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        565414978
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        565414978
+      ],
+      "y_dtype": "uint16",
+      "event_count": 565414978,
+      "duration_ms": 48799.989,
+      "density_ev_per_ms": 11586.375111682913
+    },
+    "combined_events": {
+      "duration_ms": 48799.989,
+      "event_count": 1294378855,
+      "density_ev_per_ms": 26524.162843561295
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1354.8566436767578,
+      "right_events_file_size_mb": 1133.5730571746826
+    },
+    "image_info": {
+      "duration_ms": 48799.989,
+      "frame_count": 977,
+      "first_timestamp_us": 55764607594,
+      "last_timestamp_us": 55813407583
+    }
+  },
+  {
+    "sequence_name": "zurich_city_01_f",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1111402781
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1111402781
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1111402781
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1111402781
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1111402781,
+      "duration_ms": 78600.003,
+      "density_ev_per_ms": 14139.983951400105
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        851215557
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        851215557
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        851215557
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        851215557
+      ],
+      "y_dtype": "uint16",
+      "event_count": 851215557,
+      "duration_ms": 78600.003,
+      "density_ev_per_ms": 10829.714052300991
+    },
+    "combined_events": {
+      "duration_ms": 78600.003,
+      "event_count": 1962618338,
+      "density_ev_per_ms": 24969.698003701094
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2080.272452354431,
+      "right_events_file_size_mb": 1729.9980792999268
+    },
+    "image_info": {
+      "duration_ms": 78600.003,
+      "frame_count": 1573,
+      "first_timestamp_us": 56010007474,
+      "last_timestamp_us": 56088607477
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        2203481739
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        2203481739
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        2203481739
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        2203481739
+      ],
+      "y_dtype": "uint16",
+      "event_count": 2203481739,
+      "duration_ms": 92200.03,
+      "density_ev_per_ms": 23898.92648624952
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1842519244
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1842519244
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1842519244
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1842519244
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1842519244,
+      "duration_ms": 92200.03,
+      "density_ev_per_ms": 19983.93323733192
+    },
+    "combined_events": {
+      "duration_ms": 92200.03,
+      "event_count": 4046000983,
+      "density_ev_per_ms": 43882.85972358144
+    },
+    "file_info": {
+      "left_events_file_size_mb": 3302.9198837280273,
+      "right_events_file_size_mb": 2988.001127243042
+    },
+    "image_info": {
+      "duration_ms": 92200.03,
+      "frame_count": 1845,
+      "first_timestamp_us": 56631007499,
+      "last_timestamp_us": 56723207529
+    }
+  },
+  {
+    "sequence_name": "interlaken_00_e",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1251577615
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1251577615
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1251577615
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1251577615
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1251577615,
+      "duration_ms": 99499.778,
+      "density_ev_per_ms": 12578.697562521194
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1229101374
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1229101374
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1229101374
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1229101374
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1229101374,
+      "duration_ms": 99499.778,
+      "density_ev_per_ms": 12352.805189173387
+    },
+    "combined_events": {
+      "duration_ms": 99499.778,
+      "event_count": 2480678989,
+      "density_ev_per_ms": 24931.50275169458
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2440.925518989563,
+      "right_events_file_size_mb": 2418.091724395752
+    },
+    "image_info": {
+      "duration_ms": 99499.778,
+      "frame_count": 1991,
+      "first_timestamp_us": 51932500686,
+      "last_timestamp_us": 52032000464
+    }
+  },
+  {
+    "sequence_name": "zurich_city_06_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1510549938
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1510549938
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1510549938
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1510549938
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1510549938,
+      "duration_ms": 76099.798,
+      "density_ev_per_ms": 19849.591952924766
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        1179156398
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        1179156398
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        1179156398
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        1179156398
+      ],
+      "y_dtype": "uint16",
+      "event_count": 1179156398,
+      "duration_ms": 76099.798,
+      "density_ev_per_ms": 15494.868961413013
+    },
+    "combined_events": {
+      "duration_ms": 76099.798,
+      "event_count": 2689706336,
+      "density_ev_per_ms": 35344.460914337775
+    },
+    "file_info": {
+      "left_events_file_size_mb": 2541.600170135498,
+      "right_events_file_size_mb": 2131.3179788589478
+    },
+    "image_info": {
+      "duration_ms": 76099.798,
+      "frame_count": 1523,
+      "first_timestamp_us": 41424200353,
+      "last_timestamp_us": 41500300151
+    }
+  },
+  {
+    "sequence_name": "zurich_city_02_d",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        795100364
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        795100364
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        795100364
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        795100364
+      ],
+      "y_dtype": "uint16",
+      "event_count": 795100364,
+      "duration_ms": 92099.978,
+      "density_ev_per_ms": 8633.013614834957
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        623017068
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        623017068
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        623017068
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        623017068
+      ],
+      "y_dtype": "uint16",
+      "event_count": 623017068,
+      "duration_ms": 92099.978,
+      "density_ev_per_ms": 6764.573472536551
+    },
+    "combined_events": {
+      "duration_ms": 92099.978,
+      "event_count": 1418117432,
+      "density_ev_per_ms": 15397.587087371508
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1775.5433225631714,
+      "right_events_file_size_mb": 1498.2528800964355
+    },
+    "image_info": {
+      "duration_ms": 92099.978,
+      "frame_count": 1843,
+      "first_timestamp_us": 56538407560,
+      "last_timestamp_us": 56630507538
+    }
+  },
+  {
+    "sequence_name": "zurich_city_00_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        482077151
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        482077151
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        482077151
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        482077151
+      ],
+      "y_dtype": "uint16",
+      "event_count": 482077151,
+      "duration_ms": 46900.032,
+      "density_ev_per_ms": 10278.823498457316
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        382788804
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        382788804
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        382788804
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        382788804
+      ],
+      "y_dtype": "uint16",
+      "event_count": 382788804,
+      "duration_ms": 46900.032,
+      "density_ev_per_ms": 8161.802618812712
+    },
+    "combined_events": {
+      "duration_ms": 46900.032,
+      "event_count": 864865955,
+      "density_ev_per_ms": 18440.626117270025
+    },
+    "file_info": {
+      "left_events_file_size_mb": 999.7266798019409,
+      "right_events_file_size_mb": 863.996259689331
+    },
+    "image_info": {
+      "duration_ms": 46900.032,
+      "frame_count": 939,
+      "first_timestamp_us": 54718007586,
+      "last_timestamp_us": 54764907618
+    }
+  },
+  {
+    "sequence_name": "zurich_city_05_a",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        925152594
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        925152594
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        925152594
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        925152594
+      ],
+      "y_dtype": "uint16",
+      "event_count": 925152594,
+      "duration_ms": 87600.843,
+      "density_ev_per_ms": 10561.001039681776
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        769124257
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        769124257
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        769124257
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        769124257
+      ],
+      "y_dtype": "uint16",
+      "event_count": 769124257,
+      "duration_ms": 87600.843,
+      "density_ev_per_ms": 8779.872780448015
+    },
+    "combined_events": {
+      "duration_ms": 87600.843,
+      "event_count": 1694276851,
+      "density_ev_per_ms": 19340.873820129793
+    },
+    "file_info": {
+      "left_events_file_size_mb": 1890.178708076477,
+      "right_events_file_size_mb": 1625.0404806137085
+    },
+    "image_info": {
+      "duration_ms": 87600.843,
+      "frame_count": 1753,
+      "first_timestamp_us": 37379400825,
+      "last_timestamp_us": 37467001668
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_b",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        129563187
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        129563187
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        129563187
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        129563187
+      ],
+      "y_dtype": "uint16",
+      "event_count": 129563187,
+      "duration_ms": 13400.599,
+      "density_ev_per_ms": 9668.462357540882
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        117796248
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        117796248
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        117796248
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        117796248
+      ],
+      "y_dtype": "uint16",
+      "event_count": 117796248,
+      "duration_ms": 13400.599,
+      "density_ev_per_ms": 8790.371833378493
+    },
+    "combined_events": {
+      "duration_ms": 13400.599,
+      "event_count": 247359435,
+      "density_ev_per_ms": 18458.834190919377
+    },
+    "file_info": {
+      "left_events_file_size_mb": 265.3196487426758,
+      "right_events_file_size_mb": 253.97905349731445
+    },
+    "image_info": {
+      "duration_ms": 13400.599,
+      "frame_count": 269,
+      "first_timestamp_us": 36607300956,
+      "last_timestamp_us": 36620701555
+    }
+  },
+  {
+    "sequence_name": "zurich_city_04_f",
+    "left_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        361541918
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        361541918
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        361541918
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        361541918
+      ],
+      "y_dtype": "uint16",
+      "event_count": 361541918,
+      "duration_ms": 42907.204,
+      "density_ev_per_ms": 8426.135573877058
+    },
+    "right_events": {
+      "hdf5_keys": [
+        "events",
+        "ms_to_idx",
+        "t_offset"
+      ],
+      "events_keys": [
+        "p",
+        "t",
+        "x",
+        "y"
+      ],
+      "p_shape": [
+        270861878
+      ],
+      "p_dtype": "uint8",
+      "t_shape": [
+        270861878
+      ],
+      "t_dtype": "uint32",
+      "x_shape": [
+        270861878
+      ],
+      "x_dtype": "uint16",
+      "y_shape": [
+        270861878
+      ],
+      "y_dtype": "uint16",
+      "event_count": 270861878,
+      "duration_ms": 42907.204,
+      "density_ev_per_ms": 6312.7366211044655
+    },
+    "combined_events": {
+      "duration_ms": 42907.204,
+      "event_count": 632403796,
+      "density_ev_per_ms": 14738.872194981524
+    },
+    "file_info": {
+      "left_events_file_size_mb": 802.7825584411621,
+      "right_events_file_size_mb": 622.176191329956
+    },
+    "image_info": {
+      "duration_ms": 42907.204,
+      "frame_count": 859,
+      "first_timestamp_us": 36915000323,
+      "last_timestamp_us": 36957907527
+    }
+  }
+]
