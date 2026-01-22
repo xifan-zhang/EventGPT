@@ -111,13 +111,15 @@ def process_event_data(event_frame_path, event_processor, device):
     event_npy = np.load(event_frame_path, allow_pickle=True)
     event_npy = np.array(event_npy).item()
 
-    if event_npy['t'].max() - event_npy['t'].min() >= 100000:
-        raise Exception("Apologies, EventGPT currently does not support Event Streams exceeding 100ms. "
-                        "Please stay tuned for updates in our future versions.")
+    # if event_npy['t'].max() - event_npy['t'].min() >= 100000:
+    #     raise Exception("Apologies, EventGPT currently does not support Event Streams exceeding 100ms. "
+    #                     "Please stay tuned for updates in our future versions.")
 
+    # stage1: process event npy
     event_img_list = get_event_images_list(event_npy, 5)
     event_image_size = list(event_img_list[0].shape[:2])
 
+    # stage2: process event images with CLIP ViT 
     event_list = []
     for event in event_img_list:
         event = event_processor(event, return_tensors='pt')['pixel_values'][0]

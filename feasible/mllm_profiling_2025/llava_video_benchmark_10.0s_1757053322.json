@@ -1,0 +1,42 @@
+{
+  "video_config": {
+    "duration_seconds": 10.0,
+    "fps": 15,
+    "total_frames": 150
+  },
+  "benchmark_info": {
+    "num_runs": 1,
+    "successful_runs": 1,
+    "failed_runs": 0
+  },
+  "step_statistics": {
+    "step1: convert video frames to images": {
+      "average": 0.0078,
+      "minimum": 0.0078,
+      "maximum": 0.0078,
+      "std_dev": 0.0,
+      "count": 1
+    },
+    "step2: encode image tensors into features": {
+      "average": 2.3421,
+      "minimum": 2.3421,
+      "maximum": 2.3421,
+      "std_dev": 0.0,
+      "count": 1
+    },
+    "step3: generate the output": {
+      "average": 1.5381,
+      "minimum": 1.5381,
+      "maximum": 1.5381,
+      "std_dev": 0.0,
+      "count": 1
+    }
+  },
+  "total_execution_stats": {
+    "average": 13.372090816497803,
+    "minimum": 13.372090816497803,
+    "maximum": 13.372090816497803,
+    "std_dev": 0.0,
+    "count": 1
+  }
+}

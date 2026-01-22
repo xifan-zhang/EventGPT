@@ -1226,6 +1226,12 @@ def main():
         action="store_true",
         help="Enable debug logging for troubleshooting"
     )
+    parser.add_argument(
+        "--max_frames",
+        type=int,
+        default=8,
+        help="Maximum number of video frames for Video-LLaVA (default: 8)"
+    )
 
     args = parser.parse_args()
 

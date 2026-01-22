@@ -1,0 +1,87 @@
+{
+  "benchmark_info": {
+    "model": "LLaVA-7B",
+    "num_runs": 3,
+    "successful_runs": 3,
+    "timestamp": "2025-09-05 13:45:52"
+  },
+  "total_times": [
+    15.282598733901978,
+    15.30645227432251,
+    15.486202001571655
+  ],
+  "step_statistics": {
+    "step1: convert video frames to images": {
+      "durations": [
+        0.0002,
+        0.0002,
+        0.0002
+      ],
+      "average": 0.0002,
+      "minimum": 0.0002,
+      "maximum": 0.0002,
+      "std_dev": 0.0,
+      "num_runs": 3
+    },
+    "step2: encode image tensors into features": {
+      "durations": [
+        0.1238,
+        0.1251,
+        0.1304
+      ],
+      "average": 0.12643333333333331,
+      "minimum": 0.1238,
+      "maximum": 0.1304,
+      "std_dev": 0.003496188400720607,
+      "num_runs": 3
+    },
+    "step3: generate the output": {
+      "durations": [
+        1.0313,
+        1.0508,
+        1.0413
+      ],
+      "average": 1.0411333333333332,
+      "minimum": 1.0313,
+      "maximum": 1.0508,
+      "std_dev": 0.009751068317539973,
+      "num_runs": 3
+    },
+    "step2: encode 1 frame(s)": {
+      "durations": [
+        0.1244,
+        0.1325,
+        0.1288
+      ],
+      "average": 0.12856666666666666,
+      "minimum": 0.1244,
+      "maximum": 0.1325,
+      "std_dev": 0.0040550380187284775,
+      "num_runs": 3
+    },
+    "step2: encode 2 frame(s)": {
+      "durations": [
+        0.1344,
+        0.1078,
+        0.1154
+      ],
+      "average": 0.1192,
+      "minimum": 0.1078,
+      "maximum": 0.1344,
+      "std_dev": 0.013701094846763151,
+      "num_runs": 3
+    },
+    "step2: encode 3 frame(s)": {
+      "durations": [
+        0.1101,
+        0.1167,
+        0.141
+      ],
+      "average": 0.1226,
+      "minimum": 0.1101,
+      "maximum": 0.141,
+      "std_dev": 0.016272983746074342,
+      "num_runs": 3
+    }
+  }
+}

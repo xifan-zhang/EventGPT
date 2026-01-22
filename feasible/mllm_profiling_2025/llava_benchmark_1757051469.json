@@ -1,0 +1,111 @@
+{
+  "benchmark_info": {
+    "model": "LLaVA-7B",
+    "num_runs": 3,
+    "successful_runs": 3,
+    "timestamp": "2025-09-05 13:51:09"
+  },
+  "total_times": [
+    16.9310359954834,
+    17.24696946144104,
+    16.95235514640808
+  ],
+  "step_statistics": {
+    "step1: convert video frames to images": {
+      "durations": [
+        0.0003,
+        0.0003,
+        0.0003
+      ],
+      "average": 0.0003,
+      "minimum": 0.0003,
+      "maximum": 0.0003,
+      "std_dev": 0.0,
+      "num_runs": 3
+    },
+    "step2: encode image tensors into features": {
+      "durations": [
+        0.1641,
+        0.1635,
+        0.168
+      ],
+      "average": 0.1652,
+      "minimum": 0.1635,
+      "maximum": 0.168,
+      "std_dev": 0.002443358344574128,
+      "num_runs": 3
+    },
+    "step3: generate the output": {
+      "durations": [
+        1.044,
+        1.0648,
+        1.061
+      ],
+      "average": 1.0566,
+      "minimum": 1.044,
+      "maximum": 1.0648,
+      "std_dev": 0.011076100396800266,
+      "num_runs": 3
+    },
+    "step2: encode 1 frame(s)": {
+      "durations": [
+        0.1169,
+        0.1147,
+        0.1218
+      ],
+      "average": 0.1178,
+      "minimum": 0.1147,
+      "maximum": 0.1218,
+      "std_dev": 0.0036345563690772537,
+      "num_runs": 3
+    },
+    "step2: encode 2 frame(s)": {
+      "durations": [
+        0.1298,
+        0.121,
+        0.1209
+      ],
+      "average": 0.1239,
+      "minimum": 0.1209,
+      "maximum": 0.1298,
+      "std_dev": 0.005109794516416489,
+      "num_runs": 3
+    },
+    "step2: encode 3 frame(s)": {
+      "durations": [
+        0.1422,
+        0.1357,
+        0.139
+      ],
+      "average": 0.13896666666666666,
+      "minimum": 0.1357,
+      "maximum": 0.1422,
+      "std_dev": 0.0032501282025996074,
+      "num_runs": 3
+    },
+    "step2: encode 5 frame(s)": {
+      "durations": [
+        0.1742,
+        0.1783,
+        0.1711
+      ],
+      "average": 0.17453333333333332,
+      "minimum": 0.1711,
+      "maximum": 0.1783,
+      "std_dev": 0.003611555528208486,
+      "num_runs": 3
+    },
+    "step2: encode 8 frame(s)": {
+      "durations": [
+        0.2167,
+        0.2194,
+        0.2097
+      ],
+      "average": 0.21526666666666666,
+      "minimum": 0.2097,
+      "maximum": 0.2194,
+      "std_dev": 0.00500632932729494,
+      "num_runs": 3
+    }
+  }
+}

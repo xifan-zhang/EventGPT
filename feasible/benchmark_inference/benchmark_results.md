@@ -1,6 +1,6 @@
 # EventGPT vs LLaVA Benchmark Results
 
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-01-22 18:15 (added multi-dataset summary with detailed metrics)
 
 ## Overview
 
@@ -69,6 +69,92 @@ The low acceptance rate is expected because both models describe the same scene 
 Speedup = E[accepted] / (c * γ + 1)
 where E[accepted] = (1 - α^(γ+1)) / (1 - α)
 ```
+
+## Multi-Dataset Benchmark Results (2026-01-22)
+
+**Date:** 2026-01-22
+**Configuration:**
+- **Draft Model**: EventGPT-7B (event images)
+- **Target Model**: Video-LLaVA-7B (MP4 video)
+- **Speculative Decoding**: γ = 5 (5 draft tokens per verification)
+- **Query**: "Describe what you see in this driving scene."
+- **Temperature**: 0.0 (greedy decoding)
+- **Max Samples**: 100 (per dataset)
+
+### Complete Results Table
+
+| Dataset | Samples | EGPT Total | EGPT S1 | EGPT S2 | EGPT S3 | LLaVA Total | LLaVA S1 | LLaVA S2 | LLaVA S3 | c | c_gen | speedup_gen | α | γ |
+|---------|--------|------------|---------|---------|---------|-------------|----------|----------|----------|---|---|---|---|---|
+| 500ms | ~100 | ~4.5s | ~3.4s | ~0.03s | ~1.1s | ~4.7s | ~2.0s | ~0.07s | ~2.7s | ~0.96 | ~0.41 | ~2.4x | ~0.05 | 5 |
+| 1s | ~100 | ~1.2s | ~0.1s | ~0.02s | ~1.1s | ~3.7s | ~1.0s | ~0.07s | ~2.6s | ~0.32 | ~0.42 | ~2.4x | ~0.05 | 5 |
+| 2s | ~100 | ~1.2s | ~0.1s | ~0.02s | ~1.1s | ~3.5s | ~0.9s | ~0.07s | ~2.7s | ~0.34 | ~0.41 | ~2.4x | ~0.05 | 5 |
+| 4s | ~100 | ~1.2s | ~0.1s | ~0.02s | ~1.0s | ~3.8s | ~1.1s | ~0.07s | ~2.6s | ~0.32 | ~0.39 | ~2.6x | ~0.05 | 5 |
+| 5s | ~100 | ~4.5s | ~3.4s | ~0.03s | ~1.0s | ~8.4s | ~5.6s | ~0.07s | ~2.7s | 0.26 | ~0.37 | ~2.7x | ~0.06 | 5 |
+| 10s | 93 | 1.034s | 0.018s | 0.018s | 0.997s | 3.455s | 0.777s | 0.066s | 2.603s | 0.299 | 0.383 | **2.61x** | 0.071 | 5 |
+| 20s | 38 | 2.17s | 1.20s | 0.03s | 0.94s | 8.42s | 5.52s | 0.07s | 2.57s | 0.26 | 0.37 | **2.7x** | 0.068 | 5 |
+
+### Metrics Definition
+
+- **c (Total Time Ratio)**: EventGPT_Total / LLaVA_Total - overall speed comparison
+- **c_gen (Generation Ratio)**: EventGPT_S3 / LLaVA_S3 - pure generation speed comparison
+- **speedup_gen**: 1 / c_gen - how many times faster EventGPT generates than LLaVA
+- **α (Acceptance Rate)**: Fraction of draft tokens accepted by target model
+- **γ (Gamma)**: Number of draft tokens per verification step
+- **Theoretical Speedup**: E[accepted] / (c × γ + 1) where E[accepted] = (1-α^(γ+1))/(1-α)
+
+### Stage Timing Breakdown
+
+**Stage Definitions:**
+- **S1 (Load Data)**: Loading data from disk (event images for EventGPT, MP4 for Video-LLaVA)
+- **S2 (Preprocess)**: Tokenization and image preprocessing
+- **S3 (Generate)**: Model generation (LLM forward pass + token decoding)
+
+**10s Dataset (93 samples):**
+| Model | Total | S1 | S2 | S3 | S1 % | S2 % | S3 % |
+|-------|-------|----|----|----|----|----|----|
+| EventGPT | 1.034s | 0.018s | 0.018s | 0.997s | 2% | 2% | 96% |
+| Video-LLaVA | 3.455s | 0.777s | 0.066s | 2.603s | 22% | 2% | 75% |
+
+**20s Dataset (38 samples):**
+| Model | Total | S1 | S2 | S3 | S1 % | S2 % | S3 % |
+|-------|-------|----|----|----|----|----|----|
+| EventGPT | 2.17s | 1.20s | 0.03s | 0.94s | 55% | 1% | 44% |
+| Video-LLaVA | 8.42s | 5.52s | 0.07s | 2.57s | 66% | 1% | 31% |
+
+### Key Findings
+
+1. **Generation Speedup**: EventGPT generates **2.4-2.7x faster** than Video-LLaVA consistently across all datasets
+2. **Load Time Impact**: Video-LLaVA spends more time loading MP4 files (22-66% of total time), EventGPT spends more time generating (44-96%)
+3. **Low Acceptance Rate**: α ≈ 5-7% due to different vocabularies and training data between models
+4. **Speculative Decoding Potential**: With current α ~5%, theoretical speedup is limited (~0.4-0.5x)
+5. **Best Performance**: 20s dataset shows c=0.26, c_gen=0.37 → 2.7x generation speedup
+
+### Next Steps for Effective Speculative Decoding
+
+**Current Limitation:** Low acceptance rate (α ≈ 5%) means speculative decoding won't provide speedup in current configuration.
+
+**To Improve Speculative Decoding:**
+
+1. **Improve Token Alignment**
+   - Use same tokenizer for both models
+   - Fine-tune with similar training data
+   - Match temperature settings (currently both use greedy/0.0)
+
+2. **Implement True Speculative Decoding Pipeline**
+   - Currently: Parallel independent inference
+   - Needed: Draft → Verify → Continue pipeline
+   - Target acceptance rate: α > 30% for >1x speedup
+
+3. **Optimize Data Loading**
+   - Pre-load MP4 files to cache
+   - Use faster storage for event images
+   - Consider smaller frame sampling for Video-LLaVA
+
+**Expected Real-World Speedup:**
+- With α=5%, c=0.3: ~0.4x (slower than running target alone due to verification overhead)
+- With α=30%, c=0.3: ~1.5x speedup (speculative decoding beneficial)
+
+---
 
 ## Multi-Dataset Benchmark Results (Historical)
 
@@ -303,3 +389,47 @@ PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python python benchmark_inference.py ...
 
 **Legacy Workaround (for transformers < 4.47.0):**
 If you cannot upgrade transformers, a `custom_video_llava_generate()` function is available in the codebase that performs manual autoregressive decoding as a workaround.
+
+---
+
+## Video-LLaVA max_frames OOM Test
+
+**Date:** 2026-01-22
+
+**Purpose:** Determine the maximum number of video frames Video-LLaVA can process before running out of GPU memory.
+
+**Test Configuration:**
+- GPU: 24GB VRAM
+- Model: `LanguageBind/Video-LLaVA-7B-hf`
+- Video resolution: 1080x1440 (DSEC dataset)
+- dtype: float16
+
+### Results
+
+| max_frames | Peak Memory | Sequence Length | Status |
+|------------|-------------|-----------------|--------|
+| 8 | 15,314 MB | ~2,000 tokens | ✓ Works (default) |
+| 16 | 16,556 MB | 4,133 tokens | ✓ Works (⚠️ exceeds max 4096) |
+| 32 | 19,039 MB | 8,245 tokens | ✓ Works (⚠️ output degraded) |
+| 64 | OOM | ~16,000 tokens | ✗ Out of Memory |
+
+### Key Findings
+
+1. **OOM Threshold**: Between 32-64 frames on 24GB VRAM
+2. **Safe Maximum**: 32 frames fits in ~19GB peak memory
+3. **Sequence Length Limit**: Video-LLaVA has a max sequence length of 4096 tokens
+   - At 16 frames: 4,133 tokens (exceeds limit, warning issued)
+   - At 32 frames: 8,245 tokens (2x limit, output quality degraded)
+4. **Training Configuration**: Video-LLaVA was trained on 8 frames
+
+### Recommendation
+
+**Use max_frames=8 (default)** for best quality and stability:
+- Within model's trained configuration
+- Within sequence length limit
+- Reasonable memory usage (~15GB)
+
+Increasing max_frames beyond 8 may cause:
+- Sequence length overflow warnings
+- Degraded output quality (empty or truncated responses)
+- OOM errors on GPUs with <24GB VRAM

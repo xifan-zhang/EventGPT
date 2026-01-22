@@ -7,7 +7,9 @@ import os
 import sys
 
 # 将项目根目录加入 sys.path，确保可以导入 model、dataset 等包
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 当前文件路径: <PROJECT_ROOT>/feasible/tokenizer_check/tokenizer_check.py
+# 因此需要向上三级目录，才能到达项目根目录
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
@@ -143,7 +145,6 @@ def diagnose_tokenizer_difference(eventgpt_tokenizer, vlm_tokenizer):
         "num_extra": len(vlm_only_tokens)
     }
 
-
 if __name__ == "__main__":
     # 1. 按照 inference.py 的行为加载 EventGPT 的 tokenizer
     eventgpt_tokenizer = load_eventgpt_tokenizer(EVENTGPT_MODEL_PATH)
@@ -151,7 +152,6 @@ if __name__ == "__main__":
     # 2. 加载 VLM tokenizer（保持你原来的设定）
     vlm_tokenizer = AutoTokenizer.from_pretrained("llava-hf/llava-1.5-13b-hf")
     # vlm_tokenizer = AutoTokenizer.from_pretrained("llava-hf/llava-1.5-7b-hf")
-    
 
     # 3. 打印词表大小，做基本 sanity check
     print(f"EventGPT vocab size: {len(eventgpt_tokenizer)}") # EventGPT vocab size: 32000
