@@ -240,15 +240,22 @@ class EventChatModel(LlamaForCausalLM):
         inputs: Optional[torch.Tensor] = None,
         event_tensors: Optional[torch.Tensor] = None,
         event_image_sizes: Optional[torch.Tensor] = None,
+        event_features: Optional[torch.Tensor] = None,  # NEW: cached features for Stage 4
         event_feature = None,
         **kwargs,
     ) -> Union[GenerateOutput, torch.LongTensor]:
+        """Generate text tokens.
+
+        Args:
+            event_tensors: Raw event tensors (Stage 3+4: vision encoding + decoding)
+            event_features: Pre-computed vision features (Stage 4 only: decoding with cached features)
+        """
         position_ids = kwargs.pop("position_ids", None)
         attention_mask = kwargs.pop("attention_mask", None)
         if "inputs_embeds" in kwargs:
             raise NotImplementedError("`inputs_embeds` is not supported")
-        
-        if event_tensors is not None:
+
+        if event_tensors is not None or event_features is not None:
             (
                 inputs,
                 position_ids,
@@ -262,12 +269,13 @@ class EventChatModel(LlamaForCausalLM):
                 attention_mask,
                 None,
                 None,
-                event_tensors,
-                event_image_sizes=event_image_sizes
+                event_tensors=event_tensors,
+                event_image_sizes=event_image_sizes,
+                event_features=event_features  # Pass cached features if provided
             )
         else:
             raise NotImplementedError("please input Event")
-        
+
         return super().generate(
             position_ids=position_ids,
             attention_mask=attention_mask,
@@ -291,29 +299,49 @@ class EventChatModel(LlamaForCausalLM):
     
     def prepare_inputs_labels_for_multimodal(
         self, input_ids, position_ids, attention_mask, past_key_values, labels,
-        event_tensors, event_image_sizes=None
-    ):  
-        if event_tensors is None or input_ids.shape[1] == 1:
+        event_tensors=None, event_image_sizes=None, event_features=None
+    ):
+        """Prepare inputs for multimodal generation.
+
+        Args:
+            event_tensors: Raw event image tensors (will be encoded in Stage 3)
+            event_features: Pre-computed event features (Stage 4 only, skip Stage 3)
+        """
+        if event_tensors is None and event_features is None:
             return input_ids, position_ids, attention_mask, past_key_values, None, labels
 
-        if isinstance(event_tensors, list):            
-            if not all(isinstance(item, list) for item in event_tensors):
-                event_tensors = [event_tensors]
+        if input_ids.shape[1] == 1:
+            return input_ids, position_ids, attention_mask, past_key_values, None, labels
 
-            ev_features_list = []
-            for item in event_tensors:
-                ev_feature = []
-                for ev in item:
-                    ev = ev.unsqueeze(0)
-                    feature = self.visval_encode(ev)
-                    feature = self.get_model().feature_adaptor(feature)
-                    feature = feature.squeeze(0)
-                    ev_feature.append(feature)
-                event_feature = get_spatio_temporal_features(ev_feature)
-                ev_features_list.append(event_feature)          
-            event_features = torch.stack(ev_features_list)
+        # Stage 3: Vision encoding (skip if event_features provided)
+        if event_features is None:
+            # Full path: encode event tensors
+            if isinstance(event_tensors, list):
+                if not all(isinstance(item, list) for item in event_tensors):
+                    event_tensors = [event_tensors]
+
+                ev_features_list = []
+                for item in event_tensors:
+                    ev_feature = []
+                    for ev in item:
+                        ev = ev.unsqueeze(0)
+                        feature = self.visval_encode(ev)
+                        feature = self.get_model().feature_adaptor(feature)
+                        feature = feature.squeeze(0)
+                        ev_feature.append(feature)
+                    event_feature = get_spatio_temporal_features(ev_feature)
+                    ev_features_list.append(event_feature)
+                event_features = torch.stack(ev_features_list)
+            else:
+                event_features = self.visval_encode(event_tensors)
         else:
-            event_features = self.visval_encode(event_tensors)
+            # Cached path: event_features already computed (Stage 4 only)
+            # Apply feature adaptor if needed
+            if hasattr(self.get_model(), 'feature_adaptor'):
+                if isinstance(event_features, list):
+                    event_features = [self.get_model().feature_adaptor(f) for f in event_features]
+                else:
+                    event_features = self.get_model().feature_adaptor(event_features)
 
         _labels = labels
         _position_ids = position_ids
