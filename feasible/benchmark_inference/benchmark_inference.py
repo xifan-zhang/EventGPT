@@ -43,6 +43,7 @@ import logging
 from pathlib import Path
 from tqdm import tqdm
 from PIL import Image
+from datetime import datetime
 from transformers import (
     AutoConfig,
     AutoTokenizer,
@@ -983,9 +984,12 @@ def run_llava_phase(dataset, args):
 
     Supports both Video-LLaVA (default) and LLaVA 1.5 (backup) via --use_llava15 flag.
     """
-    # Use Video-LLaVA only if explicitly requested, otherwise default to LLaVA 1.5
-    use_video_llava = getattr(args, 'use_video_llava', False)
+    # Use Video-LLaVA by default, or LLaVA 1.5 if explicitly requested
+    use_video_llava = getattr(args, 'use_video_llava', True)
+    if args.use_llava15:
+        use_video_llava = False
     model_name = "Video-LLaVA" if use_video_llava else "LLaVA 1.5"
+    model_key = "videollava" if use_video_llava else "llava"
     print(f"\n=== Phase 2: {model_name} Inference ===")
     model = None
     processor = None
@@ -1072,15 +1076,15 @@ def run_llava_phase(dataset, args):
                 if error:
                     raise RuntimeError(f"{model_name} inference error for sample {sample.get('id')}: {error}")
 
-                sample['llava-1.5-7b-hf'] = output
-                sample['llava_time'] = elapsed
-                sample['llava_token_ids'] = generated_ids
+                sample[model_key] = output
+                sample[f'{model_key}_time'] = elapsed
+                sample[f'{model_key}_token_ids'] = generated_ids
                 if stage1_time is not None:
-                    sample['llava_stage1_time'] = stage1_time
+                    sample[f'{model_key}_stage1_time'] = stage1_time
                 if stage2_time is not None:
-                    sample['llava_stage2_time'] = stage2_time
+                    sample[f'{model_key}_stage2_time'] = stage2_time
                 if stage3_time is not None:
-                    sample['llava_stage3_time'] = stage3_time
+                    sample[f'{model_key}_stage3_time'] = stage3_time
 
                 # Update progress bar with stage timing
                 postfix_info = {'total': f'{elapsed:.3f}s'}
@@ -1098,8 +1102,8 @@ def run_llava_phase(dataset, args):
 
         # Store memory stats in first sample for retrieval
         if video_samples:
-            video_samples[0]['llava_memory_model_mb'] = memory_stats['model_load_mb']
-            video_samples[0]['llava_memory_inference_mb'] = memory_stats['inference_peak_mb']
+            video_samples[0][f'{model_key}_memory_model_mb'] = memory_stats['model_load_mb']
+            video_samples[0][f'{model_key}_memory_inference_mb'] = memory_stats['inference_peak_mb']
 
     except Exception as e:
         import traceback
@@ -1189,10 +1193,10 @@ def main():
                         help="LLaVA 1.5 model path (used with --use_llava15)")
     parser.add_argument("--video_llava_model_path", type=str, default="LanguageBind/Video-LLaVA-7B-hf",
                         help="Video-LLaVA model path (default target model)")
-    parser.add_argument("--use_llava15", action="store_true", default=True,
-                        help="Use LLaVA 1.5 with grid images (default, recommended)")
-    parser.add_argument("--use_video_llava", action="store_true",
-                        help="Use Video-LLaVA instead of LLaVA 1.5 (requires transformers>=4.40, experimental)")
+    parser.add_argument("--use_llava15", action="store_true", default=False,
+                        help="Use LLaVA 1.5 with grid images (backup option)")
+    parser.add_argument("--use_video_llava", action="store_true", default=True,
+                        help="Use Video-LLaVA instead of LLaVA 1.5 (default, requires transformers>=4.40)")
     parser.add_argument("--output_json", type=str, default=None)
     parser.add_argument("--max_samples", type=int, default=None)
     parser.add_argument("--warmup_steps", type=int, default=0, help="Number of warmup samples (not included in timing), 0 no warmup")
@@ -1289,13 +1293,22 @@ def main():
         if needs_llava:
             run_llava_phase(dataset, args)
 
+    # Determine which model was used for video
+    use_video_llava = getattr(args, 'use_video_llava', True)
+    if args.use_llava15:
+        use_video_llava = False
+    video_model_key = "videollava" if use_video_llava else "llava"
+
     # Prepare final results
     results = []
+    benchmark_datetime = datetime.now().isoformat()
+
     for sample in dataset:
         res = {
             "id": sample.get("id", "unknown"),
             "split": sample.get("split", "unknown"),
             "query": args.query,
+            "benchmark_datetime": benchmark_datetime,
         }
         if 'event_data' in sample:
             res['event_data'] = sample.get('event_data')
@@ -1309,51 +1322,60 @@ def main():
 
         if 'video_data' in sample:
             res['video_data'] = sample.get('video_data')
-            res['llava-1.5-7b-hf'] = sample.get('llava-1.5-7b-hf')
-            if 'llava-1.5-7b-hf_error' in sample: res['llava-1.5-7b-hf_error'] = sample['llava-1.5-7b-hf_error']
-            if 'llava_time' in sample: res['llava_time'] = sample['llava_time']
-            if 'llava_stage1_time' in sample: res['llava_stage1_time'] = sample['llava_stage1_time']
-            if 'llava_stage2_time' in sample: res['llava_stage2_time'] = sample['llava_stage2_time']
-            if 'llava_stage3_time' in sample: res['llava_stage3_time'] = sample['llava_stage3_time']
-            if 'llava_token_ids' in sample: res['llava_token_ids'] = sample['llava_token_ids']
+            # Use model-specific key (videollava or llava)
+            res[video_model_key] = sample.get(video_model_key)
+            if f'{video_model_key}_error' in sample: res[f'{video_model_key}_error'] = sample[f'{video_model_key}_error']
+            if f'{video_model_key}_time' in sample: res[f'{video_model_key}_time'] = sample[f'{video_model_key}_time']
+            if f'{video_model_key}_stage1_time' in sample: res[f'{video_model_key}_stage1_time'] = sample[f'{video_model_key}_stage1_time']
+            if f'{video_model_key}_stage2_time' in sample: res[f'{video_model_key}_stage2_time'] = sample[f'{video_model_key}_stage2_time']
+            if f'{video_model_key}_stage3_time' in sample: res[f'{video_model_key}_stage3_time'] = sample[f'{video_model_key}_stage3_time']
+            if f'{video_model_key}_token_ids' in sample: res[f'{video_model_key}_token_ids'] = sample[f'{video_model_key}_token_ids']
 
         # Memory stats (only stored in first sample)
         if 'egpt_memory_model_mb' in sample:
             res['egpt_memory_model_mb'] = sample['egpt_memory_model_mb']
             res['egpt_memory_inference_mb'] = sample['egpt_memory_inference_mb']
-        if 'llava_memory_model_mb' in sample:
-            res['llava_memory_model_mb'] = sample['llava_memory_model_mb']
-            res['llava_memory_inference_mb'] = sample['llava_memory_inference_mb']
+        if f'{video_model_key}_memory_model_mb' in sample:
+            res[f'{video_model_key}_memory_model_mb'] = sample[f'{video_model_key}_memory_model_mb']
+            res[f'{video_model_key}_memory_inference_mb'] = sample[f'{video_model_key}_memory_inference_mb']
 
         results.append(res)
     
-    # Save
+    # Save with datetime and sample count in filename
     if args.output_json is None:
-        args.output_json = os.path.splitext(args.dataset_json)[0] + "_results.json"
-        
+        base_path = os.path.splitext(args.dataset_json)[0]
+        datetime_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        num_samples = len(results)
+        args.output_json = f"{base_path}_results_n{num_samples}_{datetime_str}.json"
+
     with open(args.output_json, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
-        
+
     print(f"Done. Saved to {args.output_json}")
 
     # Print summary statistics
+    use_video_llava = getattr(args, 'use_video_llava', True)
+    if args.use_llava15:
+        use_video_llava = False
+    video_model_key = "videollava" if use_video_llava else "llava"
+
     egpt_times = [s['egpt_time'] for s in dataset if 'egpt_time' in s]
     egpt_stage1_times = [s['egpt_stage1_time'] for s in dataset if 'egpt_stage1_time' in s]
     egpt_stage2_times = [s['egpt_stage2_time'] for s in dataset if 'egpt_stage2_time' in s]
     egpt_stage3_times = [s['egpt_stage3_time'] for s in dataset if 'egpt_stage3_time' in s]
-    llava_times = [s['llava_time'] for s in dataset if 'llava_time' in s]
-    llava_stage1_times = [s['llava_stage1_time'] for s in dataset if 'llava_stage1_time' in s]
-    llava_stage2_times = [s['llava_stage2_time'] for s in dataset if 'llava_stage2_time' in s]
-    llava_stage3_times = [s['llava_stage3_time'] for s in dataset if 'llava_stage3_time' in s]
+    video_times = [s[f'{video_model_key}_time'] for s in dataset if f'{video_model_key}_time' in s]
+    video_stage1_times = [s[f'{video_model_key}_stage1_time'] for s in dataset if f'{video_model_key}_stage1_time' in s]
+    video_stage2_times = [s[f'{video_model_key}_stage2_time'] for s in dataset if f'{video_model_key}_stage2_time' in s]
+    video_stage3_times = [s[f'{video_model_key}_stage3_time'] for s in dataset if f'{video_model_key}_stage3_time' in s]
 
     avg_egpt = None
     avg_egpt_stage1 = None
     avg_egpt_stage2 = None
     avg_egpt_stage3 = None
-    avg_llava = None
-    avg_llava_stage1 = None
-    avg_llava_stage2 = None
-    avg_llava_stage3 = None
+    avg_video = None
+    avg_video_stage1 = None
+    avg_video_stage2 = None
+    avg_video_stage3 = None
 
     print("\n" + "="*60)
     print("BENCHMARK SUMMARY (3-Stage Timing)")
@@ -1374,20 +1396,21 @@ def main():
     else:
         print("\nEventGPT (Draft Model): No samples processed.")
 
-    if llava_times:
-        avg_llava = sum(llava_times) / len(llava_times)
-        print(f"\nLlava (Target Model) Average Time:   {avg_llava:.3f}s ({len(llava_times)} samples)")
-        if llava_stage1_times:
-            avg_llava_stage1 = sum(llava_stage1_times) / len(llava_stage1_times)
-            print(f"  - Stage 1 (Load Data):       {avg_llava_stage1:.3f}s")
-        if llava_stage2_times:
-            avg_llava_stage2 = sum(llava_stage2_times) / len(llava_stage2_times)
-            print(f"  - Stage 2 (Preprocess):      {avg_llava_stage2:.3f}s")
-        if llava_stage3_times:
-            avg_llava_stage3 = sum(llava_stage3_times) / len(llava_stage3_times)
-            print(f"  - Stage 3 (Generate):        {avg_llava_stage3:.3f}s")
+    video_model_display = "Video-LLaVA" if use_video_llava else "LLaVA 1.5"
+    if video_times:
+        avg_video = sum(video_times) / len(video_times)
+        print(f"\n{video_model_display} (Target Model) Average Time:   {avg_video:.3f}s ({len(video_times)} samples)")
+        if video_stage1_times:
+            avg_video_stage1 = sum(video_stage1_times) / len(video_stage1_times)
+            print(f"  - Stage 1 (Load Data):       {avg_video_stage1:.3f}s")
+        if video_stage2_times:
+            avg_video_stage2 = sum(video_stage2_times) / len(video_stage2_times)
+            print(f"  - Stage 2 (Preprocess):      {avg_video_stage2:.3f}s")
+        if video_stage3_times:
+            avg_video_stage3 = sum(video_stage3_times) / len(video_stage3_times)
+            print(f"  - Stage 3 (Generate):        {avg_video_stage3:.3f}s")
     else:
-        print("\nLlava (Target Model): No samples processed.")
+        print(f"\n{video_model_display} (Target Model): No samples processed.")
 
     print("\n" + "-"*60)
     print("PERFORMANCE METRICS")
@@ -1399,9 +1422,9 @@ def main():
     total_compared = 0
     for sample in dataset:
         egpt_tokens = sample.get('egpt_token_ids')
-        llava_tokens = sample.get('llava_token_ids')
-        if egpt_tokens and llava_tokens:
-            alpha, matched, compared = calculate_acceptance_rate(egpt_tokens, llava_tokens)
+        video_tokens = sample.get(f'{video_model_key}_token_ids')
+        if egpt_tokens and video_tokens:
+            alpha, matched, compared = calculate_acceptance_rate(egpt_tokens, video_tokens)
             if compared > 0:
                 acceptance_rates.append(alpha)
                 total_matched += matched
@@ -1415,8 +1438,8 @@ def main():
         print(f"  - Per-sample average: {avg_alpha:.3f} ({len(acceptance_rates)} samples)")
         print(f"  - Overall (weighted): {overall_alpha:.3f} ({total_matched}/{total_compared} tokens)")
 
-    if avg_egpt is not None and avg_llava is not None and avg_llava > 0:
-        c_value = avg_egpt / avg_llava
+    if avg_egpt is not None and avg_video is not None and avg_video > 0:
+        c_value = avg_egpt / avg_video
         print(f"\nc (Draft / Target Ratio) = {c_value:.3f}")
 
         # Speculative decoding speedup calculation
@@ -1439,18 +1462,18 @@ def main():
     # Get memory stats from first sample of each type
     egpt_mem_model = next((s.get('egpt_memory_model_mb') for s in dataset if 'egpt_memory_model_mb' in s), None)
     egpt_mem_infer = next((s.get('egpt_memory_inference_mb') for s in dataset if 'egpt_memory_inference_mb' in s), None)
-    llava_mem_model = next((s.get('llava_memory_model_mb') for s in dataset if 'llava_memory_model_mb' in s), None)
-    llava_mem_infer = next((s.get('llava_memory_inference_mb') for s in dataset if 'llava_memory_inference_mb' in s), None)
+    video_mem_model = next((s.get(f'{video_model_key}_memory_model_mb') for s in dataset if f'{video_model_key}_memory_model_mb' in s), None)
+    video_mem_infer = next((s.get(f'{video_model_key}_memory_inference_mb') for s in dataset if f'{video_model_key}_memory_inference_mb' in s), None)
 
     if egpt_mem_model is not None:
         print(f"\nEventGPT GPU Memory:")
         print(f"  - Model Load:      {egpt_mem_model:.1f} MB")
         print(f"  - Inference Peak:  {egpt_mem_infer:.1f} MB")
 
-    if llava_mem_model is not None:
-        print(f"\nLlava GPU Memory:")
-        print(f"  - Model Load:      {llava_mem_model:.1f} MB")
-        print(f"  - Inference Peak:  {llava_mem_infer:.1f} MB")
+    if video_mem_model is not None:
+        print(f"\n{video_model_display} GPU Memory:")
+        print(f"  - Model Load:      {video_mem_model:.1f} MB")
+        print(f"  - Inference Peak:  {video_mem_infer:.1f} MB")
 
 if __name__ == "__main__":
     main()
