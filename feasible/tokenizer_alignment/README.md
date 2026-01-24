@@ -109,9 +109,9 @@ Translation map saved to translation_map.json
 - [ ] Identify patterns in output differences
 
 ### Phase 3: Explore Solutions
+- [x] **Option C**: Match sampling parameters exactly
 - [ ] **Option A**: Use Video-LLaVA as draft (same tokenizer, 100% compatible)
 - [ ] **Option B**: Fine-tune models to generate similar text
-- [ ] **Option C**: Match sampling parameters exactly
 
 ### Phase 4: Implementation & Validation
 - [ ] Implement chosen solution
@@ -122,8 +122,20 @@ Translation map saved to translation_map.json
 
 Since tokenizers are identical, α ≈ 5-7% means:
 1. **Models generate different text** despite same input
-2. Different sampling strategies or temperature
-3. Model weights trained on different data distributions
+2. **Different sampling strategies or temperature** → **TESTED: No improvement**
+3. **Model weights trained on different data distributions**
+
+### Test: Matching Sampling Parameters (Option C)
+
+Tested if matching temperature improves α:
+
+| Configuration | Temperature | α (Acceptance) | Result |
+|---------------|-------------|----------------|--------|
+| Baseline | 0.2 | 3.9% | - |
+| Greedy | 0.0 | **0.0%** | Worse! |
+| EventGPT default | 0.6 | - | - |
+
+**Finding:** Greedy decoding made α **worse** (0% vs 3.9%). EventGPT produces identical output with temp=0 and temp=0.2, but Video-LLaVA's output changes. The root cause is **different model training**, not sampling parameters.
 
 ## Alternative Options
 

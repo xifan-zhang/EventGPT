@@ -1,8 +1,9 @@
 """
-Run Feature Alignment on EGPT DSEC Train Dataset
-在 EGPT DSEC 训练数据集上运行特征对齐
+Run Feature Alignment: EventGPT → Video-LLaVA
+将 EventGPT 事件特征对齐到 Video-LLaVA 视觉特征空间
 
-支持所有 duration: 200ms, 500ms, 1s, 2s, 4s, 5s, 10s, 20s
+Primary training set: 1s duration (5,208 samples)
+Data location: my_egpt_dsec_train/my_egpt_dsec_train_1s
 """
 
 import torch
@@ -296,7 +297,7 @@ def run_alignment_on_duration(
     print(f"Running Feature Alignment for Duration: {duration}")
     print("="*70)
 
-    data_dir = Path(data_root) / f"my_egpt_dsec_seq_{duration}"
+    data_dir = Path(data_root) / "my_egpt_dsec_train" / f"my_egpt_dsec_train_{duration}"
     output_path = Path(output_dir) / f"alignment_{duration}"
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -451,7 +452,7 @@ def run_all_durations(
     Run alignment on all durations
     """
     if durations is None:
-        durations = ['200ms', '500ms', '1s', '2s', '4s', '5s', '10s', '20s']
+        durations = ['1s']  # Primary: 1s (5,208 samples, best for Video-LLaVA alignment)
 
     results = {}
 
@@ -489,14 +490,14 @@ def run_all_durations(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run Feature Alignment on EGPT DSEC Dataset')
+    parser = argparse.ArgumentParser(description='EventGPT → Video-LLaVA Feature Alignment')
     parser.add_argument('--data_root', type=str, default='/home/ps/Documents/code/EventGPT/data',
                         help='Root directory containing the datasets')
     parser.add_argument('--output_dir', type=str, default='/home/ps/Documents/code/EventGPT/feasible/feature_alignment/checkpoints',
                         help='Output directory for checkpoints')
     parser.add_argument('--durations', type=str, nargs='+',
-                        default=['200ms', '500ms', '1s', '2s', '4s', '5s', '10s', '20s'],
-                        help='Durations to process')
+                        default=['1s'],
+                        help='Durations to process (default: 1s for Video-LLaVA alignment)')
     parser.add_argument('--strategy', type=str, default='contrastive',
                         choices=['contrastive', 'lightweight'],
                         help='Alignment strategy')
@@ -512,7 +513,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("="*70)
-    print("EGPT DSEC Feature Alignment")
+    print("EventGPT → Video-LLaVA Feature Alignment")
     print("="*70)
     print(f"Data root: {args.data_root}")
     print(f"Output dir: {args.output_dir}")

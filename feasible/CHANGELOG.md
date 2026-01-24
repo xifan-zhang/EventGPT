@@ -1,5 +1,75 @@
 # EventGPT Feasible Folder - Changelog
 
+---
+
+## [2026-01-25] Parallel Prefill & Speculative Decoding Research
+
+### Added
+
+**New Scripts:**
+- `benchmark_inference_5stages.py` - Extended 5-stage benchmark (adds Stage 5: speculative verification)
+- `parallel_prefill_speculative.py` - Parallel prefill implementation for EventGPT + Video-LLaVA
+- `benchmark_parallel_prefill.py` - Benchmark for parallel prefilling approach
+
+**New Documentation:**
+- `PARALLEL_PREFILL_RESEARCH.md` - Survey of parallel prefilling techniques
+- `EXPLOITING_FAST_PREFILL.md` - Strategy for leveraging EventGPT's fast vision encoding
+- `SPECULATIVE_DECODING_RESEARCH.md` - Cross-modal speculative decoding opportunities
+
+**Research Findings:**
+- Token-level acceptance rate ~2-5% (too low due to tokenizer mismatch)
+- Feature-level speculation recommended to bypass tokenizer issues
+- Cross-modal speculative prefill is unexplored research opportunity
+- Expected 2-3x end-to-end speedup with feature-level approach
+
+### Changed
+- Updated `benchmark_inference_properly_decoupled.py` with improved timing
+
+---
+
+## [2026-01-24] 4-Stage Benchmark & Decoupling Analysis
+
+### Added
+
+**New Scripts:**
+- `benchmark_inference_4stages.py` - Proper Stage 3+4 decoupling (vision vs LLM)
+- `analyze_stage4.py` - Stage 4 bottleneck analysis
+- `analyze_stage4_5_shapes.py` - Shape analysis for cached features
+- `analyze_1frame_vs_8frames.py` - EventGPT (1 frame) vs Video-LLaVA (8 frames) comparison
+- `benchmark_alpha.py` - Acceptance rate (alpha) calculation
+
+**New Documentation:**
+- `FINAL_BENCHMARK_REPORT.md` - Comprehensive 200-sample benchmark results
+- `STAGE4_ANALYSIS.md` - LLM decoding bottleneck analysis
+- `STAGE4_5_SHAPE_ANALYSIS.md` - Feature tensor shape documentation
+- `COMPLETE_DECOUPLING_STRATEGY.md` - Full decoupling implementation guide
+- `DECOUPLING_SOLUTION_SUMMARY.md` - Summary of decoupling approach
+- `VIDEOLLAVA_DECOUPLING_VERIFICATION.md` - Video-LLaVA specific analysis
+- `4STAGE_DATA_FLOW_ANALYSIS.md` - Data flow through 4 stages
+- `EVENTGPT_1FRAME_VS_VIDEOLLAVA_8FRAMES.md` - Frame count comparison
+- `BENCHMARK_1FRAME_VS_8FRAMES_20260124_*.md` - Timestamped benchmark reports
+- `benchmark_inference_1s_dataset_20260124.md` - Dataset-specific benchmarks
+
+### Key Results
+
+**Stage Breakdown (200-sample average):**
+```
+Stage 1 (Load):        0.0079s  (0.8%)   ✅ Fast
+Stage 2 (Preprocess):  0.0167s  (1.6%)   ✅ Fast
+Stage 3 (Vision):      0.0066s  (0.6%)   ✅ Optimized
+Stage 4 (LLM):         1.0007s  (97.0%)  🔴 BOTTLENECK
+─────────────────────────────────────────────────────
+TOTAL PER SAMPLE:      1.0318s  (100%)
+```
+
+**Primary Finding:** LLM decoding dominates at **97.0%** of inference time
+
+### Changed
+- Modified `EventChatModel.py` to support cached event features in `generate()`
+- Updated `benchmark_inference_4stages.py` with Video-LLaVA as default
+
+---
+
 ## [2026-01-23] Benchmark Infrastructure Updates
 
 ### Changes Made
@@ -104,9 +174,26 @@
 feasible/
 ├── benchmark_inference/
 │   ├── benchmark_inference.py (modified)
-│   └── egpt_faster_analysis.md (new)
-└── CHANGELOG.md (this file, new)
-```
+│   ├── benchmark_inference_3stages.py (new)
+│   ├── benchmark_inference_4stages.py (new)
+│   ├── benchmark_inference_5stages.py (new)
+│   ├── benchmark_inference_properly_decoupled.py (new)
+│   ├── parallel_prefill_speculative.py (new)
+│   ├── benchmark_parallel_prefill.py (new)
+│   ├── analyze_stage4.py (new)
+│   ├── analyze_stage4_5_shapes.py (new)
+│   ├── analyze_1frame_vs_8frames.py (new)
+│   ├── benchmark_alpha.py (new)
+│   ├── speculative_decoding_S1.py (new)
+│   ├── shared_decoder_speculative_S1.py (new)
+│   ├── verify_videollava_decoupling.py (new)
+│   ├── egpt_faster_analysis.md (new)
+│   ├── FINAL_BENCHMARK_REPORT.md (new)
+│   ├── COMPLETE_DECOUPLING_STRATEGY.md (new)
+│   ├── PARALLEL_PREFILL_RESEARCH.md (new)
+│   ├── SPECULATIVE_DECODING_RESEARCH.md (new)
+│   └── ... (20+ additional .md files)
+└── CHANGELOG.md (this file)
 
 ---
 
@@ -190,4 +277,4 @@ python benchmark_inference.py \
 
 ---
 
-**Last Updated:** 2026-01-23 22:30 UTC
+**Last Updated:** 2026-01-25 00:55 UTC

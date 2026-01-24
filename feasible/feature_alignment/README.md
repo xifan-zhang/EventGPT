@@ -18,6 +18,47 @@ This module provides multiple alignment strategies to bridge the gap between eve
 | **Reconstruction** | Pre-trained E2VID | Medium | No paired data available |
 | **Lightweight** | <5K paired samples | Medium | Quick validation, limited resources |
 
+## Data Requirements
+
+### Detailed Requirements by Strategy
+
+| Strategy | Minimum Data | Recommended | Training Time | Inference Latency |
+|----------|-------------|-------------|---------------|-------------------|
+| **Reconstruction (E2VID)** | **0 pairs** | Optional | None (pre-trained) | ~15ms |
+| **Lightweight Adapter** | 1K pairs | 5K+ | 2-4 hours | ~1ms |
+| **Contrastive (CEIA)** | 5K pairs | 10K+ | 1-2 days | ~1ms |
+| **Triple-Modal (E-CLIP)** | 10K+ | 50K+ | 2-3 days | ~2ms |
+
+### Inference-Only Options (No Training Required)
+
+For scenarios where only EventGPT inference model is available (no training capability):
+
+1. **Reconstruction Bridging** - Requires **zero paired data**
+   - Uses pre-trained E2VID to convert events → RGB frames
+   - Then applies frozen CLIP encoder
+   - Best when no paired Event-RGB data is available
+
+2. **Lightweight Adapter** - With **pre-trained checkpoint**
+   - Load existing `.pt` checkpoint and run inference directly
+   - Minimal latency overhead
+
+### Current DSEC Dataset Availability
+
+The `run_egpt_dsec_alignment.py` script works with:
+- **1s duration**: 5,208 paired samples (primary target for Video-LLaVA alignment)
+- **200ms duration**: 5,575 samples (fine-grained)
+- Other durations available with varying sample counts
+
+This dataset size is sufficient for **Lightweight** or **Contrastive** alignment, but not optimal for Triple-Modal.
+
+### Recommendation for Inference-Only EventGPT
+
+| Scenario | Recommended Strategy | Notes |
+|----------|---------------------|-------|
+| No paired data, no training | Reconstruction (E2VID) | Use pre-trained E2VID + CLIP |
+| Have ~5K pairs, can train briefly | Lightweight Adapter | Few hours training, then inference-only |
+| Have 5K+ pairs, need best quality | Contrastive | 1-2 days training |
+
 ## Quick Start
 
 ### 1. Strategy Selection
@@ -92,6 +133,12 @@ feature_alignment/
 └── checkpoints/             # Saved models
     ├── alignment_200ms/
     ├── alignment_500ms/
+    ├── alignment_1s/        # Primary checkpoint for Video-LLaVA alignment
+    │   ├── lightweight_alignment.pt  # Trained adapter (1.8GB)
+    │   ├── training_info.json
+    │   └── features/
+    │       ├── event_features.pt
+    │       └── target_features.pt
     └── ...
 ```
 
@@ -153,17 +200,50 @@ Training Progress:
 - [ ] Benchmark inference speed improvements
 - [ ] Document optimal configurations per use case
 
+## Checkpoint & Results Paths
+
+### Primary Checkpoint (1s Duration - Lightweight)
+```
+feasible/feature_alignment/checkpoints/alignment_1s/
+├── lightweight_alignment.pt    # 1.8 GB trained adapter
+├── training_info.json          # Training metadata
+└── features/
+    ├── event_features.pt       # Pre-extracted event features (5,208 samples)
+    └── target_features.pt      # Pre-extracted target features
+```
+
+**Full checkpoint path:**
+```
+/home/ps/Documents/code/EventGPT/feasible/feature_alignment/checkpoints/alignment_1s/lightweight_alignment.pt
+```
+
+### Benchmark Results
+```
+feasible/benchmark_inference/benchmark_results_S1.json   # Test set metrics
+feasible/benchmark_inference/benchmark_alignment_S1.py   # Benchmark script
+```
+
+**Full results path:**
+```
+/home/ps/Documents/code/EventGPT/feasible/benchmark_inference/benchmark_results_S1.json
+```
+
 ## Usage with EventGPT
 
 ```python
-# Load trained alignment
-from feature_alignment import ContrastiveAlignmentModule
+import torch
+from feature_alignment import LightweightAlignmentModule
 
-alignment = ContrastiveAlignmentModule.load('checkpoints/alignment_200ms/contrastive_alignment.pt')
+# Load trained lightweight adapter
+checkpoint_path = 'checkpoints/alignment_1s/lightweight_alignment.pt'
+checkpoint = torch.load(checkpoint_path)
+alignment = LightweightAlignmentModule(checkpoint['config'])
+alignment.load_state_dict(checkpoint['model_state_dict'])
+alignment.eval()
 
 # Use in inference
-event_features = event_encoder(event_data)
-aligned_features = alignment(event_features)
+with torch.no_grad():
+    aligned_features = alignment(event_features)
 
 # Now aligned_features can be used with RGB-trained decoders
 ```

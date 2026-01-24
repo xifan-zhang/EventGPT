@@ -47,8 +47,17 @@ class VisualTower(nn.Module):
         super().__init__()
 
         self.visual_tower_name = visual_tower
-        self.event_processor = CLIPImageProcessor.from_pretrained(self.visual_tower_name)
-        self.visual_tower = CLIPVisionModel.from_pretrained(self.visual_tower_name, torch_dtype=torch.bfloat16)
+        # Try loading from local checkpoint path first
+        import os
+        local_path = os.path.join("./checkpoints", visual_tower)
+        if os.path.exists(local_path):
+            # Load from local checkpoint
+            self.event_processor = CLIPImageProcessor.from_pretrained(local_path, local_files_only=True)
+            self.visual_tower = CLIPVisionModel.from_pretrained(local_path, torch_dtype=torch.bfloat16, local_files_only=True)
+        else:
+            # Fall back to model name (HuggingFace)
+            self.event_processor = CLIPImageProcessor.from_pretrained(visual_tower)
+            self.visual_tower = CLIPVisionModel.from_pretrained(visual_tower, torch_dtype=torch.bfloat16)
         self.visual_tower.requires_grad_(False)
     
     def forward(self, event_tensor):

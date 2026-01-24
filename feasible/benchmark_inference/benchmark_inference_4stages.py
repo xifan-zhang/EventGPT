@@ -1,29 +1,33 @@
 #!/usr/bin/env python3
 """
-Unified Benchmark: EventGPT vs Video-LLaVA with Proper Stage 3+4 Decoupling
-===========================================================================
+Unified Benchmark: EventGPT vs Video-LLaVA with 4-Stage Analysis & Speculative Decoding
+========================================================================================
 
-Benchmarks both models with accurate stage separation:
+Benchmarks both models with accurate stage separation and speculative decoding analysis:
 
-EventGPT:
-  - Stage 3: Direct call to model.visval_encode()
-  - Stage 4: model.generate() with cached features
-  - No re-encoding, true decoupling
+4-Stage Pipeline:
+  - Stage 1: Load images from disk
+  - Stage 2: Preprocess images (CLIP)
+  - Stage 3: Vision encoding
+  - Stage 4: LLM decoding
 
-Video-LLaVA:
-  - Stage 3: Measured via forward hooks (non-invasive)
-  - Stage 4: model.generate() timing calculated
-  - Monolithic model but measurable via hooks
+Speculative Decoding Mode:
+  - EventGPT as draft model (fast)
+  - Video-LLaVA as target model (accurate)
+  - Measures token acceptance rate and speedup
 
 Usage:
-  # Both models (default)
-  python benchmark_inference_4stages.py
-
-  # EventGPT only (skip Video-LLaVA)
+  # EventGPT only (default, fast)
   python benchmark_inference_4stages.py --eventgpt_only
 
-  # 200 samples with both models
-  python benchmark_inference_4stages.py --max_samples 200
+  # Both models comparison
+  python benchmark_inference_4stages.py
+
+  # Speculative decoding benchmark
+  python benchmark_inference_4stages.py --speculative --gamma 4
+
+  # Full benchmark with 200 samples
+  python benchmark_inference_4stages.py --speculative --max_samples 200 --gamma 4
 """
 
 import os
@@ -33,6 +37,7 @@ import argparse
 import torch
 import time
 import gc
+import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
@@ -137,7 +142,8 @@ def run_eventgpt_decoupled_benchmark(model, tokenizer, processor, dataset_dir, d
                 "stage4_time": stage4_time,  # LLM decoding (with cached features)
                 "total_time": stage1_time + stage2_time + stage3_time + stage4_time,
                 "output": output,
-                "tokens": len(generated_ids)
+                "tokens": len(generated_ids),
+                "token_ids": generated_ids,  # For speculative decoding comparison
             })
 
             print(f"\nSample {sample_idx}: S1={stage1_time:.4f}s | S2={stage2_time:.4f}s | "
@@ -208,23 +214,38 @@ class VisionTimingHooks:
         self.hooks = []
 
     def _vision_forward_pre_hook(self, module, input):
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         self.vision_encode_start = time.time()
 
     def _vision_forward_hook(self, module, input, output):
         if self.vision_encode_start is not None:
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             self.vision_encoding_time = time.time() - self.vision_encode_start
 
     def register_hooks(self):
         """Register hooks on vision tower"""
+        vision_tower = None
         try:
-            vision_tower = self.model.get_vision_tower()
+            # Try different ways to access vision tower
+            if hasattr(self.model, 'get_vision_tower'):
+                vision_tower = self.model.get_vision_tower()
+            elif hasattr(self.model, 'vision_tower'):
+                vision_tower = self.model.vision_tower
+            elif hasattr(self.model, 'model') and hasattr(self.model.model, 'vision_tower'):
+                vision_tower = self.model.model.vision_tower
+
             if vision_tower is not None:
                 h1 = vision_tower.register_forward_pre_hook(self._vision_forward_pre_hook)
                 h2 = vision_tower.register_forward_hook(self._vision_forward_hook)
                 self.hooks = [h1, h2]
+                print(f"  ✓ Vision hooks registered on {type(vision_tower).__name__}")
                 return True
-        except:
-            pass
+            else:
+                print("  ⚠ Vision tower not found, timing will be estimated")
+        except Exception as e:
+            print(f"  ⚠ Could not register vision hooks: {e}")
         return False
 
     def unregister_hooks(self):
@@ -250,33 +271,34 @@ def run_videollava_benchmark_with_hooks(dataset_dir, dataset, device="cuda", max
     print("="*80)
 
     try:
-        from transformers import AutoProcessor, AutoModelForCausalLM
+        from transformers import AutoProcessor, LlavaForConditionalGeneration
 
         print("Loading Video-LLaVA model...")
+        model_id = "llava-hf/llava-1.5-7b-hf"
         try:
             # Try loading from local cache first
-            model = AutoModelForCausalLM.from_pretrained(
-                "llava-hf/llava-1.5-7b-hf",
+            model = LlavaForConditionalGeneration.from_pretrained(
+                model_id,
                 torch_dtype=torch.float16,
                 device_map=device,
                 local_files_only=True
             )
-            processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf", local_files_only=True)
+            processor = AutoProcessor.from_pretrained(model_id, local_files_only=True)
         except:
             # Fall back to downloading from HuggingFace
             print("  Downloading from HuggingFace...")
-            model = AutoModelForCausalLM.from_pretrained(
-                "llava-hf/llava-1.5-7b-hf",
+            model = LlavaForConditionalGeneration.from_pretrained(
+                model_id,
                 torch_dtype=torch.float16,
                 device_map=device,
             )
-            processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf")
+            processor = AutoProcessor.from_pretrained(model_id)
 
         model.eval()
         print("✓ Video-LLaVA loaded")
 
         results = []
-        query = "What are the key elements in this scene?"
+        base_query = "What are the key elements in this scene?"
         samples_to_process = dataset[:max_samples] if max_samples else dataset
 
         hooks = VisionTimingHooks(model)
@@ -301,14 +323,20 @@ def run_videollava_benchmark_with_hooks(dataset_dir, dataset, device="cuda", max
                         img = load_image(full_path)
                         images.append(img)
 
+                    # Use only first image for LLaVA (single image model)
+                    if len(images) > 1:
+                        images = [images[0]]
+
                     if device.startswith("cuda"): torch.cuda.synchronize()
                     stage1_time = time.time() - stage1_start
 
-                    # Prepare inputs
+                    # Prepare inputs with proper LLaVA format
                     if device.startswith("cuda"): torch.cuda.synchronize()
                     stage2_start = time.time()
 
-                    inputs = processor(text=query, images=images, return_tensors="pt").to(device)
+                    # LLaVA requires image tokens in the prompt
+                    prompt = f"USER: <image>\n{base_query}\nASSISTANT:"
+                    inputs = processor(text=prompt, images=images, return_tensors="pt").to(device)
 
                     if device.startswith("cuda"): torch.cuda.synchronize()
                     stage2_time = time.time() - stage2_start
@@ -335,7 +363,14 @@ def run_videollava_benchmark_with_hooks(dataset_dir, dataset, device="cuda", max
                     stage3_time = hooks.get_vision_time()
                     stage4_time = total_time - stage3_time
 
-                    generated_ids = output_ids[0].tolist()
+                    # Extract only generated tokens (exclude input)
+                    input_len = inputs['input_ids'].shape[1]
+                    generated_ids = output_ids[0, input_len:].tolist()
+
+                    # Decode the generated text
+                    output_text = processor.batch_decode(
+                        output_ids[:, input_len:], skip_special_tokens=True
+                    )[0].strip()
 
                     results.append({
                         "model": "videollava",
@@ -346,41 +381,207 @@ def run_videollava_benchmark_with_hooks(dataset_dir, dataset, device="cuda", max
                         "stage4_time": stage4_time,
                         "total_time": stage1_time + stage2_time + stage3_time + stage4_time,
                         "tokens": len(generated_ids),
+                        "token_ids": generated_ids,  # For speculative decoding comparison
+                        "output": output_text,
                     })
                 else:
                     continue
 
             except Exception as e:
+                print(f"\n  Error on sample {sample_idx}: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
 
         hooks.unregister_hooks()
+        print(f"\n  Video-LLaVA processed {len(results)} samples successfully")
         return results
 
     except Exception as e:
         print(f"⚠️  Video-LLaVA not available: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
+def cleanup_gpu():
+    """Free GPU memory."""
+    gc.collect()
+    torch.cuda.empty_cache()
+    torch.cuda.synchronize()
+
+
+def compute_speculative_decoding_metrics(eventgpt_results, videollava_results, gamma=4):
+    """
+    Compute speculative decoding metrics.
+
+    EventGPT is the draft model, Video-LLaVA is the target model.
+    Measures token acceptance rate and theoretical speedup.
+    """
+    print("\n" + "="*80)
+    print("SPECULATIVE DECODING ANALYSIS")
+    print(f"Draft Model: EventGPT | Target Model: Video-LLaVA | Gamma: {gamma}")
+    print("="*80)
+
+    # Match samples by index
+    egpt_by_sample = {r['sample']: r for r in eventgpt_results}
+    vllava_by_sample = {r['sample']: r for r in videollava_results}
+
+    matched_samples = []
+    total_matched_tokens = 0
+    total_compared_tokens = 0
+
+    for sample_idx in egpt_by_sample:
+        if sample_idx not in vllava_by_sample:
+            continue
+
+        egpt = egpt_by_sample[sample_idx]
+        vllava = vllava_by_sample[sample_idx]
+
+        egpt_tokens = egpt.get('token_ids', [])
+        vllava_tokens = vllava.get('token_ids', [])
+
+        min_len = min(len(egpt_tokens), len(vllava_tokens))
+        if min_len == 0:
+            continue
+
+        # Count matching tokens
+        matches = sum(1 for i in range(min_len) if egpt_tokens[i] == vllava_tokens[i])
+
+        acceptance_rate = matches / min_len if min_len > 0 else 0.0
+
+        matched_samples.append({
+            'sample': sample_idx,
+            'egpt_tokens': len(egpt_tokens),
+            'vllava_tokens': len(vllava_tokens),
+            'matched_tokens': matches,
+            'compared_tokens': min_len,
+            'acceptance_rate': acceptance_rate,
+            'egpt_time': egpt['total_time'],
+            'vllava_time': vllava['total_time'],
+        })
+
+        total_matched_tokens += matches
+        total_compared_tokens += min_len
+
+    if not matched_samples:
+        print("No matched samples for speculative decoding analysis")
+        return {}
+
+    # Overall metrics
+    overall_acceptance = total_matched_tokens / total_compared_tokens if total_compared_tokens > 0 else 0.0
+
+    # Timing metrics
+    avg_egpt_time = np.mean([s['egpt_time'] for s in matched_samples])
+    avg_vllava_time = np.mean([s['vllava_time'] for s in matched_samples])
+    c_ratio = avg_egpt_time / avg_vllava_time if avg_vllava_time > 0 else 0
+
+    # Theoretical speedup calculation
+    alpha = overall_acceptance
+    if 0 < alpha < 1:
+        expected_accepted = (1 - alpha**(gamma + 1)) / (1 - alpha)
+    else:
+        expected_accepted = 1 if alpha == 0 else gamma + 1
+
+    cost = c_ratio * gamma + 1
+    theoretical_speedup = expected_accepted / cost if cost > 0 else 0
+
+    # Print results
+    print(f"\n{'─'*80}")
+    print("TOKEN ACCEPTANCE RATE")
+    print(f"{'─'*80}")
+    print(f"  Matched samples:               {len(matched_samples)}")
+    print(f"  Total tokens compared:         {total_compared_tokens}")
+    print(f"  Tokens accepted by target:     {total_matched_tokens}")
+    print(f"  Overall acceptance rate:       {overall_acceptance:.2%}")
+
+    print(f"\n{'─'*80}")
+    print("TIMING ANALYSIS")
+    print(f"{'─'*80}")
+    print(f"  Avg EventGPT (draft) time:     {avg_egpt_time:.4f}s")
+    print(f"  Avg Video-LLaVA (target) time: {avg_vllava_time:.4f}s")
+    print(f"  Cost ratio (c = draft/target): {c_ratio:.4f}")
+
+    print(f"\n{'─'*80}")
+    print("THEORETICAL SPEEDUP")
+    print(f"{'─'*80}")
+    print(f"  Gamma (draft tokens/step):     {gamma}")
+    print(f"  Acceptance rate (alpha):       {alpha:.4f}")
+    print(f"  Expected tokens per step:      {expected_accepted:.2f}")
+    print(f"  Cost per step:                 {cost:.4f}")
+    print(f"  Theoretical speedup:           {theoretical_speedup:.2f}x")
+
+    # Interpretation
+    print(f"\n{'─'*80}")
+    print("INTERPRETATION")
+    print(f"{'─'*80}")
+
+    if overall_acceptance < 0.05:
+        print(f"  ⚠ Very low acceptance rate ({overall_acceptance:.1%})")
+        print(f"    → EventGPT and Video-LLaVA have different tokenizers/outputs")
+        print(f"    → Speculative decoding may not be beneficial")
+        print(f"    → Consider: Feature alignment, shared decoder, or distillation")
+    elif overall_acceptance < 0.20:
+        print(f"  ⚠ Low acceptance rate ({overall_acceptance:.1%})")
+        print(f"    → Marginal benefit from speculative decoding")
+        print(f"    → Consider: Reducing gamma or implementing alignment")
+    elif overall_acceptance < 0.50:
+        print(f"  ✓ Moderate acceptance rate ({overall_acceptance:.1%})")
+        print(f"    → Speculative decoding is viable")
+        print(f"    → Expected speedup: {theoretical_speedup:.1f}x")
+    else:
+        print(f"  ✓ High acceptance rate ({overall_acceptance:.1%})")
+        print(f"    → Excellent candidate for speculative decoding")
+        print(f"    → Expected speedup: {theoretical_speedup:.1f}x")
+
+    print(f"{'='*80}")
+
+    return {
+        'matched_samples': len(matched_samples),
+        'total_compared_tokens': total_compared_tokens,
+        'total_matched_tokens': total_matched_tokens,
+        'overall_acceptance_rate': overall_acceptance,
+        'avg_egpt_time': avg_egpt_time,
+        'avg_vllava_time': avg_vllava_time,
+        'c_ratio': c_ratio,
+        'gamma': gamma,
+        'theoretical_speedup': theoretical_speedup,
+        'per_sample': matched_samples,
+    }
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Properly Decoupled Benchmark - EventGPT vs Video-LLaVA")
+    parser = argparse.ArgumentParser(description="4-Stage Benchmark with Speculative Decoding - EventGPT vs Video-LLaVA")
     parser.add_argument("--dataset_dir", type=str, default="./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s")
     parser.add_argument("--eventgpt_model_path", type=str, default="./checkpoints/EventGPT-7b")
+    parser.add_argument("--videollava_model", type=str, default="llava-hf/llava-1.5-7b-hf")
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--max_samples", type=int, default=None, help="Max samples to benchmark (None = all)")
+    parser.add_argument("--max_new_tokens", type=int, default=100, help="Max tokens to generate")
     parser.add_argument("--show_samples", action="store_true", help="Show individual sample results")
     parser.add_argument("--eventgpt_only", action="store_true", help="Only benchmark EventGPT (skip Video-LLaVA)")
+    parser.add_argument("--speculative", action="store_true", help="Run speculative decoding analysis")
+    parser.add_argument("--gamma", type=int, default=4, help="Draft tokens per step for speculative decoding")
+    parser.add_argument("--output_json", type=str, default=None, help="Save results to JSON file (default: dataset_dir/benchmark_DATETIME.json)")
 
     args = parser.parse_args()
 
-    # Load dataset
-    dataset_json = os.path.join(args.dataset_dir, "EventGPT_Instruction_Subset.json")
-    with open(dataset_json, 'r', encoding='utf-8') as f:
+    # Load dataset first to get sample count for filename
+    dataset_json_path = os.path.join(args.dataset_dir, "EventGPT_Instruction_Subset.json")
+    with open(dataset_json_path, 'r', encoding='utf-8') as f:
         dataset = json.load(f)
 
     if args.max_samples:
         dataset = dataset[:args.max_samples]
 
-    print(f"Loading dataset with {len(dataset)} samples...")
+    num_samples = len(dataset)
+
+    # Generate default output path with datetime and sample count if not specified
+    if args.output_json is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        args.output_json = os.path.join(args.dataset_dir, f"benchmark_4stages_{num_samples}samples_{timestamp}.json")
+
+    print(f"Loading dataset with {num_samples} samples...")
 
     # Load EventGPT model
     print(f"Loading EventGPT from {args.eventgpt_model_path}...")
@@ -398,12 +599,25 @@ def main():
         model, tokenizer, processor, args.dataset_dir, dataset, args.device
     )
 
-    # Run Video-LLaVA benchmark (default)
+    # Run Video-LLaVA benchmark if needed
     videollava_results = []
-    if not args.eventgpt_only:
+    speculative_metrics = {}
+
+    if args.speculative or not args.eventgpt_only:
+        # Unload EventGPT to free memory for Video-LLaVA
+        del model
+        cleanup_gpu()
+        print("\nUnloaded EventGPT to free memory for Video-LLaVA...")
+
         videollava_results = run_videollava_benchmark_with_hooks(
             args.dataset_dir, dataset, args.device, args.max_samples
         )
+
+        # Speculative decoding analysis
+        if args.speculative and results and videollava_results:
+            speculative_metrics = compute_speculative_decoding_metrics(
+                results, videollava_results, gamma=args.gamma
+            )
 
     # Print summary
     if results:
@@ -503,17 +717,87 @@ def main():
             print(f"   Video-LLaVA: {vllava_total:.4f}s/sample")
             print(f"{'='*80}")
 
+        # Save results to JSON
+        if args.output_json:
+            # Build per-sample combined results
+            egpt_by_sample = {r['sample']: r for r in results}
+            vllava_by_sample = {r['sample']: r for r in videollava_results} if videollava_results else {}
+
+            combined_samples = []
+            for sample_idx in sorted(egpt_by_sample.keys()):
+                sample_data = {
+                    'sample': sample_idx,
+                    'eventgpt': egpt_by_sample[sample_idx],
+                }
+                if sample_idx in vllava_by_sample:
+                    sample_data['videollava'] = vllava_by_sample[sample_idx]
+                    # Add acceptance info if available
+                    egpt_tokens = egpt_by_sample[sample_idx].get('token_ids', [])
+                    vllava_tokens = vllava_by_sample[sample_idx].get('token_ids', [])
+                    min_len = min(len(egpt_tokens), len(vllava_tokens))
+                    if min_len > 0:
+                        matches = sum(1 for i in range(min_len) if egpt_tokens[i] == vllava_tokens[i])
+                        sample_data['acceptance'] = {
+                            'matched_tokens': matches,
+                            'compared_tokens': min_len,
+                            'acceptance_rate': matches / min_len,
+                        }
+                combined_samples.append(sample_data)
+
+            output_data = {
+                'config': {
+                    'dataset_dir': args.dataset_dir,
+                    'eventgpt_model_path': args.eventgpt_model_path,
+                    'videollava_model': args.videollava_model,
+                    'max_samples': args.max_samples,
+                    'max_new_tokens': args.max_new_tokens,
+                    'gamma': args.gamma,
+                    'speculative': args.speculative,
+                    'timestamp': datetime.now().isoformat(),
+                },
+                'summary': {
+                    'eventgpt': {
+                        'samples': len(results),
+                        'stage1_avg': avg_s1,
+                        'stage2_avg': avg_s2,
+                        'stage3_avg': avg_s3,
+                        'stage4_avg': avg_s4,
+                        'total_avg': avg_total,
+                        'tokens_avg': avg_tokens,
+                    },
+                },
+                'samples': combined_samples,
+            }
+
+            if videollava_results:
+                vllava_avg_s1 = sum(r['stage1_time'] for r in videollava_results) / len(videollava_results)
+                vllava_avg_s2 = sum(r['stage2_time'] for r in videollava_results) / len(videollava_results)
+                vllava_avg_s3 = sum(r['stage3_time'] for r in videollava_results) / len(videollava_results)
+                vllava_avg_s4 = sum(r['stage4_time'] for r in videollava_results) / len(videollava_results)
+                vllava_total = vllava_avg_s1 + vllava_avg_s2 + vllava_avg_s3 + vllava_avg_s4
+                vllava_tokens = sum(r['tokens'] for r in videollava_results) / len(videollava_results)
+
+                output_data['summary']['videollava'] = {
+                    'samples': len(videollava_results),
+                    'stage1_avg': vllava_avg_s1,
+                    'stage2_avg': vllava_avg_s2,
+                    'stage3_avg': vllava_avg_s3,
+                    'stage4_avg': vllava_avg_s4,
+                    'total_avg': vllava_total,
+                    'tokens_avg': vllava_tokens,
+                }
+                output_data['summary']['speedup'] = vllava_total / avg_total
+
+            if speculative_metrics:
+                output_data['speculative_decoding'] = speculative_metrics
+
+            os.makedirs(os.path.dirname(args.output_json) if os.path.dirname(args.output_json) else '.', exist_ok=True)
+            with open(args.output_json, 'w') as f:
+                json.dump(output_data, f, indent=2, default=str)
+            print(f"\n✓ Results saved to: {args.output_json}")
+
         print(f"\n{'='*80}")
-        print("Video-LLaVA Comparison Strategy")
-        print(f"{'='*80}")
-        print(f"\nTo measure Video-LLaVA Stage 3+4 separately:")
-        print(f"  1. Use VisionTimingHooks class (available in this script)")
-        print(f"  2. Register hooks on vision tower before generate()")
-        print(f"  3. Stage 3 time = measured via hooks")
-        print(f"  4. Stage 4 time = total_time - stage3_time")
-        print(f"\nExpected result: Similar bottleneck pattern to EventGPT")
-        print(f"  • Vision encoding: ~2-3% of time (not bottleneck)")
-        print(f"  • LLM decoding: ~95-98% of time (BOTTLENECK)")
+        print("BENCHMARK COMPLETE")
         print(f"{'='*80}")
 
 

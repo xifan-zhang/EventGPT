@@ -342,12 +342,13 @@ def run_eventgpt_inference(
     temperature=0.6, top_p=1.0, max_new_tokens=512,
     event_image_paths=None
 ):
-    """Run EventGPT inference on event data with 3-stage timing.
+    """Run EventGPT inference on event data with 4-stage timing.
 
     Stages:
         Stage 1 (Load): Load event data from disk (NPY or preprocessed images)
         Stage 2 (Preprocess): CLIP preprocessing + tokenization
-        Stage 3 (Generate): model.generate() (vision encoding + LLM generation)
+        Stage 3 (Vision Encoding): CLIP feature extraction from event images
+        Stage 4 (LLM Decoding): LLM token generation with cached visual features
 
     Args:
         event_image_paths: Optional list of preprocessed event image paths.
@@ -358,7 +359,8 @@ def run_eventgpt_inference(
         error: Error message if any
         stage1_time: Time for loading data from disk
         stage2_time: Time for CLIP preprocessing + tokenization
-        stage3_time: Time for model generation
+        stage3_time: Time for vision encoding
+        stage4_time: Time for LLM decoding
     """
     import numpy as np
 
@@ -417,9 +419,32 @@ def run_eventgpt_inference(
             if device.startswith("cuda"): torch.cuda.synchronize()
             stage2_time = time.time() - stage2_start
 
-        # Stage 3: Generate output (vision encoding + LLM generation)
+        # Stage 3: Vision encoding (CLIP feature extraction from event tensors)
         if device.startswith("cuda"): torch.cuda.synchronize()
         stage3_start = time.time()
+        with torch.inference_mode():
+            # Extract CLIP features from event tensors and apply projector
+            vision_tower = model.get_visual_tower()
+            vision_projector = model.model.visual_projector if hasattr(model.model, 'visual_projector') else None
+
+            image_features_list = []
+            for event in event_tensor:
+                # event shape: [3, H, W] - already processed by event_processor
+                event_unsqueezed = event.unsqueeze(0)  # [1, 3, H, W]
+                # Extract CLIP vision features (last_hidden_state from CLIPVisionModel)
+                vision_outputs = vision_tower.visual_tower.vision_model(event_unsqueezed)
+                event_features = vision_outputs.last_hidden_state  # [1, num_patches, hidden_dim]
+
+                # Apply visual projector if available
+                if vision_projector is not None:
+                    event_features = vision_projector(event_features)
+                image_features_list.append(event_features)
+        if device.startswith("cuda"): torch.cuda.synchronize()
+        stage3_time = time.time() - stage3_start
+
+        # Stage 4: LLM decoding (token generation with cached visual features)
+        if device.startswith("cuda"): torch.cuda.synchronize()
+        stage4_start = time.time()
         with torch.inference_mode():
             output_ids = model.generate(
                 input_ids,
@@ -433,7 +458,7 @@ def run_eventgpt_inference(
                 use_cache=True
             )
         if device.startswith("cuda"): torch.cuda.synchronize()
-        stage3_time = time.time() - stage3_start
+        stage4_time = time.time() - stage4_start
 
         output = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
         # Return output_ids for acceptance rate calculation
@@ -445,10 +470,10 @@ def run_eventgpt_inference(
         else:
             # EventGPT returns only generated tokens
             generated_ids = output_ids[0].tolist()
-        return output, None, stage1_time, stage2_time, stage3_time, generated_ids
+        return output, None, stage1_time, stage2_time, stage3_time, stage4_time, generated_ids
 
     except Exception as e:
-        return None, str(e), None, None, None, None
+        return None, str(e), None, None, None, None, None
 
 
 def run_llava15_inference(
@@ -457,14 +482,15 @@ def run_llava15_inference(
     dataset_dir, device="cuda",
     temperature=0.2, top_p=1.0, max_new_tokens=512
 ):
-    """Run Llava 1.5 inference on video data with 3-stage timing.
+    """Run Llava 1.5 inference on video data with 4-stage timing.
 
     BACKUP: This is the original LLaVA 1.5 implementation using grid images.
 
     Stages:
         Stage 1 (Load): Load video frames from disk
         Stage 2 (Preprocess): Processor to create input tensors (includes image preprocessing)
-        Stage 3 (Generate): model.generate() (vision encoding + LLM generation)
+        Stage 3 (Vision Encoding): CLIP image encoder feature extraction
+        Stage 4 (LLM Decoding): LLM token generation with cached visual features
 
     Returns:
         output: Generated text
@@ -504,9 +530,23 @@ def run_llava15_inference(
     if device.startswith("cuda"): torch.cuda.synchronize()
     stage2_time = time.time() - stage2_start
 
-    # Stage 3: Generate (vision encoding + LLM generation)
+    # Stage 3: Vision encoding (CLIP image encoder)
     if device.startswith("cuda"): torch.cuda.synchronize()
     stage3_start = time.time()
+    try:
+        vision_tower = model.vision_tower
+        with torch.inference_mode():
+            # Extract CLIP features from grid image
+            image_features = vision_tower(inputs['pixel_values'])
+    except (AttributeError, KeyError):
+        # Vision tower not directly accessible
+        image_features = None
+    if device.startswith("cuda"): torch.cuda.synchronize()
+    stage3_time = time.time() - stage3_start
+
+    # Stage 4: LLM decoding (token generation with cached visual features)
+    if device.startswith("cuda"): torch.cuda.synchronize()
+    stage4_start = time.time()
     with torch.inference_mode():
         generate_ids = model.generate(
             **inputs,
@@ -516,7 +556,7 @@ def run_llava15_inference(
             num_beams=1
         )
     if device.startswith("cuda"): torch.cuda.synchronize()
-    stage3_time = time.time() - stage3_start
+    stage4_time = time.time() - stage4_start
 
     # Decode output using batch_decode (preferred method)
     decoded_outputs = processor.batch_decode(
@@ -536,7 +576,7 @@ def run_llava15_inference(
 
     logger.debug(f"LLaVA 1.5 output: {output}")
     logger.debug(f"LLaVA 1.5 output length: {len(output)}")
-    return output, None, stage1_time, stage2_time, stage3_time, generated_ids
+    return output, None, stage1_time, stage2_time, stage3_time, stage4_time, generated_ids
 
 
 def custom_video_llava_generate(model, processor, inputs, max_new_tokens=512, temperature=0.0):
@@ -742,7 +782,7 @@ def run_video_llava_inference(
     temperature=0.2, top_p=1.0, max_new_tokens=512,
     mp4_data_path=None
 ):
-    """Run Video-LLaVA inference on video data with 3-stage timing.
+    """Run Video-LLaVA inference on video data with 4-stage timing.
 
     Video-LLaVA is trained on video data and handles 8 frames natively via <video> token.
     This function follows the official HuggingFace Video-LLaVA example format.
@@ -752,7 +792,8 @@ def run_video_llava_inference(
     Stages:
         Stage 1 (Load): Load video frames from disk as numpy array
         Stage 2 (Preprocess): Processor to create input tensors
-        Stage 3 (Generate): model.generate() (vision encoding + LLM generation)
+        Stage 3 (Vision Encoding): Video encoder feature extraction (8 frames)
+        Stage 4 (LLM Decoding): LLM token generation with cached visual features
 
     Args:
         mp4_data_path: Optional path to pre-generated MP4 file (relative to dataset_dir/mp4/)
@@ -763,7 +804,8 @@ def run_video_llava_inference(
         error: Error message if any
         stage1_time: Time for loading frames from disk
         stage2_time: Time for processor preprocessing
-        stage3_time: Time for model generation
+        stage3_time: Time for vision encoding
+        stage4_time: Time for LLM decoding
     """
     import numpy as np
 
@@ -818,11 +860,30 @@ def run_video_llava_inference(
     if device.startswith("cuda"): torch.cuda.synchronize()
     stage2_time = time.time() - stage2_start
 
-    # Stage 3: Generate (vision encoding + LLM generation)
+    # Stage 3: Vision encoding (video encoder feature extraction)
+    # Try to extract vision features directly, fallback to combining with Stage 4
+    if device.startswith("cuda"): torch.cuda.synchronize()
+    stage3_start = time.time()
+    try:
+        vision_tower = model.vision_tower
+        with torch.inference_mode():
+            if 'pixel_values_videos' in inputs:
+                # Video-LLaVA: Extract features from 8 frames
+                video_features = vision_tower(inputs['pixel_values_videos'])
+            elif 'pixel_values_images' in inputs:
+                # Fallback for image inputs
+                video_features = vision_tower(inputs['pixel_values_images'])
+    except (AttributeError, KeyError):
+        # Vision tower not directly accessible, skip separate measurement
+        video_features = None
+    if device.startswith("cuda"): torch.cuda.synchronize()
+    stage3_time = time.time() - stage3_start
+
+    # Stage 4: LLM decoding (token generation with cached visual features)
     # NOTE: Requires transformers >= 4.47.0 for model.generate() to work correctly
     # Earlier versions (e.g., 4.44.0) have a bug that produces garbage output
     if device.startswith("cuda"): torch.cuda.synchronize()
-    stage3_start = time.time()
+    stage4_start = time.time()
     with torch.inference_mode():
         generate_ids = model.generate(
             **inputs,
@@ -832,7 +893,7 @@ def run_video_llava_inference(
             top_p=top_p if temperature > 0 else None,
         )
     if device.startswith("cuda"): torch.cuda.synchronize()
-    stage3_time = time.time() - stage3_start
+    stage4_time = time.time() - stage4_start
 
     # Decode output using batch_decode (matching official HuggingFace example)
     # batch_decode is preferred over decode for Video-LLaVA
@@ -854,7 +915,7 @@ def run_video_llava_inference(
     logger.debug(f"Output: {output}")
     logger.debug(f"Output length: {len(output)}")
     logger.debug(f"Generated tokens count: {len(generated_ids)}")
-    return output, None, stage1_time, stage2_time, stage3_time, generated_ids
+    return output, None, stage1_time, stage2_time, stage3_time, stage4_time, generated_ids
 
 
 def run_eventgpt_phase(dataset, args):
@@ -894,7 +955,7 @@ def run_eventgpt_phase(dataset, args):
                 # Get event_image paths if using preprocessed images
                 event_image_paths = sample.get('event_image') if args.use_event_image else None
                 # Run warmup inference (results not saved)
-                output, error, _, _, _, _ = run_eventgpt_inference(
+                output, error, _, _, _, _, _ = run_eventgpt_inference(
                     model, tokenizer, processor,
                     sample['event_data'], args.query,
                     args.dataset_dir, args.device,
@@ -916,7 +977,7 @@ def run_eventgpt_phase(dataset, args):
                     event_image_paths = sample.get('event_image') if args.use_event_image else None
                     if args.device.startswith("cuda"): torch.cuda.synchronize()
                     start_time = time.time()
-                    output, error, stage1_time, stage2_time, stage3_time, generated_ids = run_eventgpt_inference(
+                    output, error, stage1_time, stage2_time, stage3_time, stage4_time, generated_ids = run_eventgpt_inference(
                         model, tokenizer, processor,
                         sample['event_data'], args.query,
                         args.dataset_dir, args.device,
@@ -935,17 +996,20 @@ def run_eventgpt_phase(dataset, args):
                         sample['egpt_stage2_time'] = stage2_time
                     if stage3_time is not None:
                         sample['egpt_stage3_time'] = stage3_time
+                    if stage4_time is not None:
+                        sample['egpt_stage4_time'] = stage4_time
                     if error:
                         raise RuntimeError(f"EventGPT inference error for sample {sample.get('id')}: {error}")
 
                     # Update progress bar with stage timing
                     postfix_info = {'total': f'{elapsed:.3f}s'}
 
-                    if stage1_time is not None and stage2_time is not None and stage3_time is not None:
+                    if stage1_time is not None and stage2_time is not None and stage3_time is not None and stage4_time is not None:
                         postfix_info.update({
                             'S1': f'{stage1_time:.3f}s',
                             'S2': f'{stage2_time:.3f}s',
-                            'S3': f'{stage3_time:.3f}s'
+                            'S3': f'{stage3_time:.3f}s',
+                            'S4': f'{stage4_time:.3f}s'
                         })
 
                     pbar.set_postfix(postfix_info)
@@ -1041,7 +1105,7 @@ def run_llava_phase(dataset, args):
                 extra_kwargs = {}
                 if use_video_llava and 'mp4_data' in sample:
                     extra_kwargs['mp4_data_path'] = sample['mp4_data']
-                output, error, _, _, _, _ = run_inference_fn(
+                output, error, _, _, _, _, _ = run_inference_fn(
                     model, processor,
                     sample['video_data'], args.query,
                     args.dataset_dir, args.device,
@@ -1063,7 +1127,7 @@ def run_llava_phase(dataset, args):
                 extra_kwargs = {}
                 if use_video_llava and 'mp4_data' in sample:
                     extra_kwargs['mp4_data_path'] = sample['mp4_data']
-                output, error, stage1_time, stage2_time, stage3_time, generated_ids = run_inference_fn(
+                output, error, stage1_time, stage2_time, stage3_time, stage4_time, generated_ids = run_inference_fn(
                     model, processor,
                     sample['video_data'], args.query,
                     args.dataset_dir, args.device,
@@ -1085,14 +1149,17 @@ def run_llava_phase(dataset, args):
                     sample[f'{model_key}_stage2_time'] = stage2_time
                 if stage3_time is not None:
                     sample[f'{model_key}_stage3_time'] = stage3_time
+                if stage4_time is not None:
+                    sample[f'{model_key}_stage4_time'] = stage4_time
 
                 # Update progress bar with stage timing
                 postfix_info = {'total': f'{elapsed:.3f}s'}
-                if stage1_time is not None and stage2_time is not None and stage3_time is not None:
+                if stage1_time is not None and stage2_time is not None and stage3_time is not None and stage4_time is not None:
                     postfix_info.update({
                         'S1': f'{stage1_time:.3f}s',
                         'S2': f'{stage2_time:.3f}s',
-                        'S3': f'{stage3_time:.3f}s'
+                        'S3': f'{stage3_time:.3f}s',
+                        'S4': f'{stage4_time:.3f}s'
                     })
                 pbar.set_postfix(postfix_info)
 
@@ -1318,6 +1385,7 @@ def main():
             if 'egpt_stage1_time' in sample: res['egpt_stage1_time'] = sample['egpt_stage1_time']
             if 'egpt_stage2_time' in sample: res['egpt_stage2_time'] = sample['egpt_stage2_time']
             if 'egpt_stage3_time' in sample: res['egpt_stage3_time'] = sample['egpt_stage3_time']
+            if 'egpt_stage4_time' in sample: res['egpt_stage4_time'] = sample['egpt_stage4_time']
             if 'egpt_token_ids' in sample: res['egpt_token_ids'] = sample['egpt_token_ids']
 
         if 'video_data' in sample:
@@ -1329,6 +1397,7 @@ def main():
             if f'{video_model_key}_stage1_time' in sample: res[f'{video_model_key}_stage1_time'] = sample[f'{video_model_key}_stage1_time']
             if f'{video_model_key}_stage2_time' in sample: res[f'{video_model_key}_stage2_time'] = sample[f'{video_model_key}_stage2_time']
             if f'{video_model_key}_stage3_time' in sample: res[f'{video_model_key}_stage3_time'] = sample[f'{video_model_key}_stage3_time']
+            if f'{video_model_key}_stage4_time' in sample: res[f'{video_model_key}_stage4_time'] = sample[f'{video_model_key}_stage4_time']
             if f'{video_model_key}_token_ids' in sample: res[f'{video_model_key}_token_ids'] = sample[f'{video_model_key}_token_ids']
 
         # Memory stats (only stored in first sample)
@@ -1363,19 +1432,23 @@ def main():
     egpt_stage1_times = [s['egpt_stage1_time'] for s in dataset if 'egpt_stage1_time' in s]
     egpt_stage2_times = [s['egpt_stage2_time'] for s in dataset if 'egpt_stage2_time' in s]
     egpt_stage3_times = [s['egpt_stage3_time'] for s in dataset if 'egpt_stage3_time' in s]
+    egpt_stage4_times = [s['egpt_stage4_time'] for s in dataset if 'egpt_stage4_time' in s]
     video_times = [s[f'{video_model_key}_time'] for s in dataset if f'{video_model_key}_time' in s]
     video_stage1_times = [s[f'{video_model_key}_stage1_time'] for s in dataset if f'{video_model_key}_stage1_time' in s]
     video_stage2_times = [s[f'{video_model_key}_stage2_time'] for s in dataset if f'{video_model_key}_stage2_time' in s]
     video_stage3_times = [s[f'{video_model_key}_stage3_time'] for s in dataset if f'{video_model_key}_stage3_time' in s]
+    video_stage4_times = [s[f'{video_model_key}_stage4_time'] for s in dataset if f'{video_model_key}_stage4_time' in s]
 
     avg_egpt = None
     avg_egpt_stage1 = None
     avg_egpt_stage2 = None
     avg_egpt_stage3 = None
+    avg_egpt_stage4 = None
     avg_video = None
     avg_video_stage1 = None
     avg_video_stage2 = None
     avg_video_stage3 = None
+    avg_video_stage4 = None
 
     print("\n" + "="*60)
     print("BENCHMARK SUMMARY (3-Stage Timing)")
@@ -1392,7 +1465,10 @@ def main():
             print(f"  - Stage 2 (Preprocess):      {avg_egpt_stage2:.3f}s")
         if egpt_stage3_times:
             avg_egpt_stage3 = sum(egpt_stage3_times) / len(egpt_stage3_times)
-            print(f"  - Stage 3 (Generate):        {avg_egpt_stage3:.3f}s")
+            print(f"  - Stage 3 (Vision Encoding): {avg_egpt_stage3:.3f}s")
+        if egpt_stage4_times:
+            avg_egpt_stage4 = sum(egpt_stage4_times) / len(egpt_stage4_times)
+            print(f"  - Stage 4 (LLM Decoding):    {avg_egpt_stage4:.3f}s")
     else:
         print("\nEventGPT (Draft Model): No samples processed.")
 
@@ -1408,7 +1484,10 @@ def main():
             print(f"  - Stage 2 (Preprocess):      {avg_video_stage2:.3f}s")
         if video_stage3_times:
             avg_video_stage3 = sum(video_stage3_times) / len(video_stage3_times)
-            print(f"  - Stage 3 (Generate):        {avg_video_stage3:.3f}s")
+            print(f"  - Stage 3 (Vision Encoding): {avg_video_stage3:.3f}s")
+        if video_stage4_times:
+            avg_video_stage4 = sum(video_stage4_times) / len(video_stage4_times)
+            print(f"  - Stage 4 (LLM Decoding):    {avg_video_stage4:.3f}s")
     else:
         print(f"\n{video_model_display} (Target Model): No samples processed.")
 
