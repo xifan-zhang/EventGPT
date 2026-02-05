@@ -9,10 +9,225 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Planned
-- Feature-level speculative decoding implementation for EventGPT + Video-LLaVA
+- Feature-level speculative decoding integration into benchmark
 - Cross-vocabulary mapping experiments
 - EAGLE-3 style multi-layer feature fusion training
 - Prefill hiding proof-of-concept implementation
+
+---
+
+## [2026-02-06] - Comprehensive Metrics & Cross-Modal Analysis
+
+### Added
+
+**Feature Alignment: All SD Metrics Implemented**
+
+Parallel computation of all speculative decoding metrics in `measure_feature_acceptance.py`:
+
+| Metric | Function | Lines |
+|--------|----------|-------|
+| Cosine similarity | `compute_all_metrics_parallel()` | 85-112 |
+| Accept rates @τ | `compute_all_metrics_parallel()` | 114-120 |
+| **Consecutive accepts** | `compute_all_metrics_parallel()` | 122-158 |
+| Num hidden tokens | `compute_all_metrics_parallel()` | 160-170 |
+| SD accept rates | `compute_all_metrics_parallel()` | 172-198 |
+| Speedup estimations | `compute_all_metrics_parallel()` | 200-270 |
+| Per-position stats | `compute_per_position_stats()` | 294-321 |
+| **Stage timeline viz** | `plot_stage_timeline()` | 397-550 |
+
+**Key Implementation: Parallel Consecutive Accepts**
+```python
+# No loops - O(batch × seq) parallel
+cumprod = (cos_sim > thresh).int().cumprod(dim=1)
+consecutive = cumprod.sum(dim=1)  # count before first rejection
+```
+
+**New Visualization: `stage_timeline.png`**
+- Baseline vs SD horizontal timeline
+- Parallel prefill visualization
+- Time ratio pie charts
+
+---
+
+**New Document: `CROSSMODAL_VS_SPECVLM.md`**
+- Comprehensive analysis of why cross-modal speculative decoding outperforms SpecVLM
+- EAGLE-2 draft model architecture documentation
+- SpecVLM (EagleVLM + Elastic Visual Compressor) overview
+- Why SpecVLM cannot parallelize prefill (parasitic dependency on target features)
+- Cross-modal parallel prefill advantage analysis
+- T_prefill / T_total benchmark analysis from actual results
+- Experimental design (7 experiments)
+- Implementation TODO checklist
+
+**README.md Major Updates:**
+- Added EAGLE-2 Draft Model Architecture section with detailed diagrams
+- Added SpecVLM section (EagleVLM + Elastic Visual Compressor)
+- Added Cross-Modal Speculative Decoding: Beyond SpecVLM section
+- Added "Why SpecVLM Cannot Parallelize Prefill" explanation
+- Added "Why Cross-Modal Can Outperform Same-Modality Baselines" analysis
+- Added "Current Benchmark: T_prefill / T_total Analysis" with actual data
+- Added Experimental Design section (7 experiments with code)
+- Added Implementation Checklist with Phase 1-5 TODO items
+
+### Key Research Findings
+
+**T_prefill / T_total Ratios (from benchmarks):**
+| Scenario | Ratio | Cross-Modal Wins? |
+|----------|-------|-------------------|
+| Video-LLaVA (8f, 5 tok) | **80.6%** | ✅ YES (strong) |
+| EventGPT (1f, 5 tok) | 43.7% | ✅ YES |
+| EventGPT (1f, 45 tok) | 3.0% | ❌ NO |
+
+**Decision Framework:**
+- If T_prefill / T_total > 40% → Cross-Modal wins
+- Video-LLaVA ratio: 80.6% >> 40% → IDEAL for cross-modal
+
+**Why Cross-Modal Outperforms:**
+1. Parallel prefill hides 500ms+ encoding latency
+2. No compression artifacts (lossless)
+3. Scalability grows with video length
+4. Can afford 20% lower acceptance rate due to parallelism benefit
+
+**SpecVLM Limitation:**
+- Draft model is "parasitic" - needs target's penultimate features
+- Creates sequential dependency → cannot parallelize
+- Speedup ceiling: ~3x
+
+**Cross-Modal Advantage:**
+- Draft model is "independent" - has own encoder
+- Enables parallel prefill → breaks 3x ceiling
+- Theoretical speedup: ~4-5x
+
+### Files Added
+- `CROSSMODAL_VS_SPECVLM.md` - Dedicated cross-modal vs SpecVLM analysis
+
+### Files Modified
+- `README.md` - Major additions (~500 lines)
+
+---
+
+## [2026-01-31] - Feature Alignment: Chunked Hidden State Extraction
+
+### Added
+
+**Chunked Incremental Saving:**
+- `ChunkedHiddenStateWriter` class for memory-efficient extraction
+- Saves every 1000 samples to separate .pt chunks (~1.6GB each)
+- Auto-resume via `index.json` tracking
+- `load_chunked_hidden_states()` to concatenate all chunks
+
+**New Arguments:**
+- `--chunked` - Enable incremental saving mode
+- `--chunk_size N` - Samples per chunk (default: 1000)
+- `--quant TAG` - Quantization tag for filename
+
+### Current Status
+
+| Task | Status | Progress |
+|------|--------|----------|
+| Train hidden state extraction | 🔄 Running | ~20,000/52,080 (38%) |
+| Test hidden state extraction | ⏳ Pending | 0/11,000 |
+| Hidden adapter training | ⏳ Blocked | - |
+| Feature-level SD evaluation | ⏳ Blocked | - |
+
+**ETA:** ~14 hours for train extraction completion
+
+---
+
+## [2026-01-30] - Feature Alignment: L1-L4 Adapter Architectures
+
+### Added
+
+**Multi-Level Adapter Implementations:**
+| Level | Architecture | Params | Description |
+|-------|--------------|--------|-------------|
+| L1 | HiddenStateAdapter | 2.1M | Simple bottleneck (4096→256→4096) |
+| L2 | MultiLayerBottleneckAdapter | 6.3M | 3× stacked bottlenecks |
+| L3 | WideBottleneckAdapter | 16.8M | Wide bottleneck (4096→1024→4096) |
+| L4 | AttentionAdapter | 100M | Self-attention + FFN (EAGLE-style) |
+
+**Factory Functions:**
+- `create_adapter(level=1-4)` - Unified creation
+- `load_any_adapter(path)` - Auto-detect checkpoint type
+
+**Pilot Results (L1, 100 samples × 10 questions):**
+- Cosine similarity: 0.764
+- Consecutive accepts @0.90: **6.35 tokens avg**
+- Estimated speedup: **5.77x** (vs 1.0x token-level)
+
+### Files Added
+- `feasible/feature_alignment/hidden_adapter.py`
+- `feasible/feature_alignment/train_hidden_adapter.py`
+- `feasible/feature_alignment/extract_hidden_states.py`
+- `feasible/feature_alignment/README.md`
+
+---
+
+## [2026-01-29] - Token Alignment: Benchmark Integration + Hidden State Plan
+
+### Added
+
+**Benchmark Integration:**
+- TokenAdapter integrated into `benchmark_parallel_prefill_5stages.py`
+- TokenAdapter integrated into `benchmark_inference_5stages.py`
+- New flags: `--use_token_adapter`, `--token_adapter_path`
+- Reports both baseline and aligned acceptance rates
+- Auto-detects latest trained checkpoint
+
+**10-Question Workflow:**
+- `run_10q_workflow.sh` - Balanced training workflow (50 epochs, no early stopping)
+- Currently running: 10q extraction complete (52,000 pairs), test extraction in progress
+
+### Planned
+
+**Hidden State Extraction for Feature Alignment:**
+- Modify `extract_tokens_parallel.py` to optionally extract hidden states
+- Save last-layer hidden states for both EventGPT and Video-LLaVA
+- Enable feature-level alignment training (EAGLE-style) alongside token-level
+- Expected improvement: 40-60% acceptance rate (vs 27% token-level)
+
+### Current Status
+
+| Task | Status |
+|------|--------|
+| 10q train extraction | ✅ Complete (52,000 pairs) |
+| 10q test extraction | 🔄 Running |
+| 10q training (50 epochs) | ⏳ Pending |
+| Benchmark integration | ✅ Complete |
+
+---
+
+## [2026-01-28] - Stream-to-Cloud Speculative Decoding
+
+### Added
+
+**New Directory: `edge_cloud_SD/`**
+Consolidated edge-cloud speculative decoding research with new paradigm proposal.
+
+**Documents:**
+1. **`VIDEO_STREAMING_COMPUTE_OFFLOAD.md`** - NEW paradigm proposal
+   - Core idea: Stream video to cloud, draft tokens on edge
+   - Insight: Video streaming is cheap (5G, $0.01/GB); vision encoding is expensive
+   - EventGPT advantage: Event streams are 50-500x smaller than video
+   - Research support from: SLED, DistServe, NVIDIA Dynamo, 5G streaming
+
+2. **`edge_cloud_speculative_decoding.md`** - Moved from research/ root
+   - Original comprehensive survey of edge-cloud SD architectures
+   - Challenges: network latency, draft quality, privacy, sync
+   - Solutions: adaptive strategy, pipeline parallelism, hierarchical drafts
+
+### Key Research Findings
+
+| Factor | Video Streaming | Vision Encoding |
+|--------|----------------|-----------------|
+| Cost | $0.01-0.05/GB | GPU compute ($0.50+/hr) |
+| Latency (5G) | <1ms network | 50-500ms compute |
+| Infrastructure | Mature CDNs | Limited GPUs |
+
+**Stream-to-Cloud Benefits:**
+- 3-5x edge power savings
+- Same inference quality
+- Works best with 5G (<10ms RTT)
 
 ---
 
@@ -92,43 +307,55 @@ Consolidated research on cascaded/hierarchical speculative decoding for EventGPT
 
 ---
 
-## [2026-01-28] - Token Alignment Training on Full Dataset
+## [2026-01-28] - Token Alignment: First Success + Multi-Question Scaling
+
+### Results - Single Question Training
+
+**First successful end-to-end token alignment training:**
+
+| Dataset | Samples | Baseline | TokenAdapter | Top-5 | Improvement |
+|---------|---------|----------|--------------|-------|-------------|
+| Train | 5,200 | 1.77% | 27.21% | 51.40% | +25.45% |
+| Test | 1,100 | 1.58% | **27.90%** | 51.64% | +26.32% |
+
+- **17.6x improvement** over baseline (1.58% → 27.90%)
+- **Theoretical speedup:** 1.39x with α=27.9%, γ=5 draft tokens
+- **Model:** 4-layer transformer, ~45M parameters
 
 ### Added
 
-**Token Alignment Pipeline:**
-- Full-scale token extraction from EventGPT and Video-LLaVA
-- Uses event_image (PNG) for EventGPT, mp4 (8 frames) for Video-LLaVA
-- Task folder system with timestamped outputs
-- Training curves visualization (loss, accuracy, top-5)
+**Parallel Extraction Script:**
+- `feasible/token_alignment/extract_tokens_parallel.py` - Both models loaded simultaneously
+- ~8GB VRAM (both models 4-bit), ~1.5s/pair
+- Currently extracting 10-question dataset (52,080 pairs, ~24hr ETA)
 
-**Datasets Processed:**
-| Dataset | Train Samples | Test Samples |
-|---------|---------------|--------------|
-| 1s | 5,208 | 1,100 |
-| 500ms | 10,475 | 2,220 |
+**Multi-Question Training:**
+- `top50_questions.json` - Top 50 DSEC questions for diverse training
+- Scaling from 1 question (5,200 pairs) → 10 questions (52,080 pairs)
+- Expected improvement: 30-40% acceptance with question diversity
 
 ### Analysis
 
-**TokenAdapter Approach:**
-- 4-layer transformer (~50M params)
-- Learns EventGPT → Video-LLaVA token mapping
-- Previous result (200 samples): 26.66% acceptance
-- Expected with full dataset: 30-40% acceptance
+**Token-Level Alignment Validation:**
+The 27.9% acceptance rate validates that token-level alignment is feasible:
+- Far exceeds the 2-5% baseline (direct token comparison)
+- Approaches theoretical ceiling for token-level mapping (~50%)
+- Enables practical speculative decoding speedup (1.3-1.5x)
 
-**Key Insight:**
-Token-level alignment has inherent limitations due to semantic gap between models. Even with perfect training, acceptance rate unlikely to exceed ~50% because:
-1. Models describe scenes with different vocabulary
-2. Sentence structure differs fundamentally
-3. Some concepts have no direct mapping
+**Why Token Ceiling ~50%:**
+1. Models use different vocabulary for same concepts
+2. Sentence structure fundamentally differs
+3. EventGPT (1 frame) vs Video-LLaVA (8 frames) see different information
 
-**Next Steps:**
-- Analyze training results for both 1s and 500ms datasets
-- Compare performance across different event durations
-- Consider feature-level fusion for higher acceptance rates
+**Path to Higher Acceptance:**
+- Feature-level alignment (bypass tokenizer mismatch)
+- Fine-tune EventGPT LM head on Video-LLaVA outputs
+- Medusa-style multi-head speculation
 
 ### Documentation
-- Updated `feasible/token_alignment/WORKFLOW.md` with complete pipeline documentation
+- Updated `feasible/token_alignment/README.md` with comprehensive usage guide
+- Added sequential vs parallel extraction options
+- Added troubleshooting and further directions
 
 ---
 
@@ -335,7 +562,8 @@ This validates that:
 
 | Document | Added | Description |
 |----------|-------|-------------|
-| `egpt_vllava_roadmap/CASCADED_SD_RESEARCH.md` | 2026-01-28 | **NEW** Top 5 cascaded SD papers |
+| `CROSSMODAL_VS_SPECVLM.md` | 2026-02-06 | **NEW** Cross-modal vs SpecVLM analysis |
+| `egpt_vllava_roadmap/CASCADED_SD_RESEARCH.md` | 2026-01-28 | Top 5 cascaded SD papers |
 | `egpt_vllava_roadmap/SpecVLM_READING_NOTES.md` | 2026-01-28 | **NEW** SpecVLM paper analysis |
 | `egpt_vllava_roadmap/PyramidSD_READING_NOTES.md` | 2026-01-28 | **NEW** PyramidSD 3-model cascade |
 | `egpt_vllava_roadmap/HiSpec_READING_NOTES.md` | 2026-01-28 | **NEW** HiSpec verification acceleration |
@@ -361,12 +589,13 @@ This validates that:
 
 | Metric | Count |
 |--------|-------|
-| Total Documents | 19 |
-| Papers Surveyed | 65+ |
-| Code Examples | 25+ |
-| Research Opportunities Identified | 8 |
+| Total Documents | 20 |
+| Papers Surveyed | 68+ |
+| Code Examples | 30+ |
+| Research Opportunities Identified | 9 |
 | Abstract Drafts | 4 |
-| Paper Reading Notes | 5 |
+| Paper Reading Notes | 6 |
+| Experiments Designed | 7 |
 
 ---
 
@@ -382,5 +611,5 @@ When making changes to the research collection:
 
 ---
 
-**Maintainer:** Research Team
-**Last Updated:** 2026-01-28
+**Maintainer:** Alice Zhang
+**Last Updated:** 2026-02-06
