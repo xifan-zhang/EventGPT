@@ -41,7 +41,7 @@ from feasible.feature_alignment.hidden_adapter import (
 
 
 class HiddenStateDataset(Dataset):
-    """Dataset for hidden state pairs."""
+    """Dataset for hidden state pairs (in-memory)."""
 
     def __init__(
         self,
@@ -69,6 +69,142 @@ class HiddenStateDataset(Dataset):
             'vl_hidden': self.vl_hidden[idx, :seq_len],
             'seq_len': seq_len,
         }
+
+
+class ChunkedTrainLoader:
+    """
+    Memory-efficient training data loader for chunked hidden states.
+
+    Loads ONE chunk at a time (~1.6GB), shuffles within it, yields batches,
+    then moves to next chunk. Chunk order is also shuffled each epoch.
+
+    Memory: ~3.2GB (1 chunk loaded + 1 batch on GPU) instead of 80GB.
+    """
+
+    def __init__(self, data_dir: str, batch_size: int = 64, collate_fn=None):
+        self.data_dir = Path(data_dir)
+        self.batch_size = batch_size
+        self.collate_fn = collate_fn
+
+        with open(self.data_dir / 'index.json') as f:
+            self.index = json.load(f)
+
+        self.chunks_dir = self.data_dir / 'chunks'
+        self.chunk_infos = self.index['chunks']
+        self.total_samples = self.index['total_samples']
+
+        # Compute total batches for progress bar
+        self.num_batches = 0
+        for ci in self.chunk_infos:
+            self.num_batches += (ci['n_samples'] + batch_size - 1) // batch_size
+
+        print(f"  ChunkedTrainLoader: {self.total_samples} samples in {len(self.chunk_infos)} chunks")
+        print(f"  Batch size: {batch_size}, ~{self.num_batches} batches/epoch")
+        print(f"  Memory: ~1.6GB per chunk (not {self.total_samples * 4096 * 4 * 2 / 1e9:.0f}GB all at once)")
+
+    def __len__(self):
+        return self.num_batches
+
+    def __iter__(self):
+        """Iterate: shuffle chunk order, within each chunk shuffle samples."""
+        import random
+        chunk_order = list(range(len(self.chunk_infos)))
+        random.shuffle(chunk_order)
+
+        for ci in chunk_order:
+            # Load one chunk
+            chunk_path = self.chunks_dir / self.chunk_infos[ci]['path']
+            chunk = torch.load(chunk_path, map_location='cpu')
+
+            n = chunk['seq_lens'].shape[0]
+            egpt = chunk['egpt_hidden']
+            vl = chunk['vl_hidden']
+            seq_lens = chunk['seq_lens']
+
+            # Shuffle within chunk
+            perm = torch.randperm(n)
+
+            # Yield batches
+            for start in range(0, n, self.batch_size):
+                end = min(start + self.batch_size, n)
+                indices = perm[start:end]
+
+                batch_items = []
+                for idx in indices:
+                    sl = seq_lens[idx].item()
+                    batch_items.append({
+                        'egpt_hidden': egpt[idx, :sl],
+                        'vl_hidden': vl[idx, :sl],
+                        'seq_len': sl,
+                    })
+
+                if self.collate_fn:
+                    yield self.collate_fn(batch_items)
+                else:
+                    yield batch_items
+
+            # Free chunk memory
+            del chunk, egpt, vl, seq_lens
+
+
+class ChunkedValLoader:
+    """Stream val chunks one at a time for memory-efficient validation.
+
+    Like ChunkedTrainLoader but sequential (no shuffling).
+    Loads ~1.6GB per chunk instead of all chunks at once.
+    """
+
+    def __init__(self, data_dir, batch_size, collate_fn=None):
+        self.data_dir = Path(data_dir)
+        self.batch_size = batch_size
+        self.collate_fn = collate_fn
+
+        with open(self.data_dir / 'index.json') as f:
+            self.index = json.load(f)
+
+        self.chunks_dir = self.data_dir / 'chunks'
+        self.chunk_infos = self.index['chunks']
+        self.total_samples = self.index['total_samples']
+
+        self.num_batches = 0
+        for ci in self.chunk_infos:
+            self.num_batches += (ci['n_samples'] + batch_size - 1) // batch_size
+
+        print(f"  ChunkedValLoader: {self.total_samples} samples in {len(self.chunk_infos)} chunks")
+        print(f"  Batch size: {batch_size}, ~{self.num_batches} batches/epoch")
+
+    def __len__(self):
+        return self.num_batches
+
+    def __iter__(self):
+        """Iterate sequentially through all chunks (no shuffling for val)."""
+        for ci_idx in range(len(self.chunk_infos)):
+            chunk_path = self.chunks_dir / self.chunk_infos[ci_idx]['path']
+            chunk = torch.load(chunk_path, map_location='cpu')
+
+            n = chunk['seq_lens'].shape[0]
+            egpt = chunk['egpt_hidden']
+            vl = chunk['vl_hidden']
+            seq_lens = chunk['seq_lens']
+
+            for start in range(0, n, self.batch_size):
+                end = min(start + self.batch_size, n)
+
+                batch_items = []
+                for idx in range(start, end):
+                    sl = seq_lens[idx].item()
+                    batch_items.append({
+                        'egpt_hidden': egpt[idx, :sl],
+                        'vl_hidden': vl[idx, :sl],
+                        'seq_len': sl,
+                    })
+
+                if self.collate_fn:
+                    yield self.collate_fn(batch_items)
+                else:
+                    yield batch_items
+
+            del chunk, egpt, vl, seq_lens
 
 
 def collate_fn(batch):
@@ -131,6 +267,10 @@ class HiddenAdapterTrainer:
             'train_cos_sim': [],
             'val_loss': [],
             'val_cos_sim': [],
+            'val_accept_80': [],
+            'val_accept_85': [],
+            'val_accept_90': [],
+            'val_accept_95': [],
         }
 
         self.best_val_loss = float('inf')
@@ -259,6 +399,10 @@ class HiddenAdapterTrainer:
                 val_metrics = self.validate()
                 self.history['val_loss'].append(val_metrics['loss'])
                 self.history['val_cos_sim'].append(val_metrics['cos_sim'])
+                self.history['val_accept_80'].append(val_metrics.get('accept_80', 0))
+                self.history['val_accept_85'].append(val_metrics.get('accept_85', 0))
+                self.history['val_accept_90'].append(val_metrics.get('accept_90', 0))
+                self.history['val_accept_95'].append(val_metrics.get('accept_95', 0))
 
                 print(f"  Val   - Loss: {val_metrics['loss']:.4f}, CosSim: {val_metrics['cos_sim']:.4f}")
                 print(f"  Accept@0.80: {val_metrics['accept_80']:.2%}")
@@ -310,15 +454,17 @@ class HiddenAdapterTrainer:
             json.dump(self.history, f, indent=2)
 
     def plot_curves(self, save_path: Path):
-        """Plot training curves."""
-        fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+        """Plot training curves: loss, cosine sim, and acceptance rates."""
+        has_accept = 'val_accept_90' in self.history and len(self.history['val_accept_90']) > 0
+        ncols = 3 if has_accept else 2
+        fig, axes = plt.subplots(1, ncols, figsize=(6 * ncols, 4))
 
         # Loss curve
         axes[0].plot(self.history['train_loss'], label='Train')
         if self.history['val_loss']:
             axes[0].plot(self.history['val_loss'], label='Val')
         axes[0].set_xlabel('Epoch')
-        axes[0].set_ylabel('Loss')
+        axes[0].set_ylabel('Loss (MSE + 0.5*CosLoss)')
         axes[0].set_title('Training Loss')
         axes[0].legend()
         axes[0].grid(True)
@@ -329,9 +475,22 @@ class HiddenAdapterTrainer:
             axes[1].plot(self.history['val_cos_sim'], label='Val')
         axes[1].set_xlabel('Epoch')
         axes[1].set_ylabel('Cosine Similarity')
-        axes[1].set_title('Feature Alignment')
+        axes[1].set_title('Feature Alignment (EGPT → VLLaVA)')
         axes[1].legend()
         axes[1].grid(True)
+
+        # Acceptance rate curves
+        if has_accept:
+            for thresh in ['80', '85', '90', '95']:
+                key = f'val_accept_{thresh}'
+                if key in self.history:
+                    axes[2].plot(self.history[key], label=f'@0.{thresh}')
+            axes[2].set_xlabel('Epoch')
+            axes[2].set_ylabel('Acceptance Rate')
+            axes[2].set_title('Token Acceptance Rate (SD)')
+            axes[2].legend()
+            axes[2].grid(True)
+            axes[2].set_ylim(0, 1)
 
         plt.tight_layout()
         plt.savefig(save_path / 'training_curves.png', dpi=150)
@@ -351,8 +510,8 @@ def main():
                         default='./feasible/feature_alignment/checkpoints/hidden_adapter')
 
     # Adapter level selection
-    parser.add_argument('--adapter_level', type=int, default=1, choices=[1, 2, 3, 4],
-                        help='Adapter complexity level: 1=Bottleneck(2M), 2=MultiLayer(8M), 3=Wide(16M), 4=Attention(50M)')
+    parser.add_argument('--adapter_level', type=int, default=1, choices=[1, 2, 3, 4, 5],
+                        help='Adapter complexity level: 1=Bottleneck(2M), 2=MultiLayer(8M), 3=Wide(16M), 4=Attention(100M), 5=EAGLE(100M)')
 
     # L1/L2/L3 parameters
     parser.add_argument('--hidden_dim', type=int, default=4096,
@@ -377,60 +536,123 @@ def main():
     parser.add_argument('--early_stopping', type=int, default=10)
     args = parser.parse_args()
 
-    # Load data
+    # Load data (supports both single .pt file and chunked directory)
     print("Loading data...")
-    data = torch.load(args.train_data)
-    egpt_hidden = data['egpt_hidden']
-    vl_hidden = data['vl_hidden']
-    seq_lens = data['seq_lens']
 
-    print(f"  Loaded {len(egpt_hidden)} samples")
-    print(f"  Hidden dim: {egpt_hidden.shape[-1]}")
-    print(f"  Max seq len: {egpt_hidden.shape[1]}")
+    def load_small_data(data_path):
+        """Load data fully into memory (for small files or val data)."""
+        if os.path.isdir(data_path):
+            index_path = os.path.join(data_path, 'index.json')
+            with open(index_path) as f:
+                index = json.load(f)
 
-    # Create dataset
-    full_dataset = HiddenStateDataset(egpt_hidden, vl_hidden, seq_lens)
+            all_egpt, all_vl, all_lens = [], [], []
+            chunks_dir = os.path.join(data_path, 'chunks')
 
-    # Split into train/val
-    if args.val_data:
-        val_data = torch.load(args.val_data)
-        train_dataset = full_dataset
-        val_dataset = HiddenStateDataset(
-            val_data['egpt_hidden'],
-            val_data['vl_hidden'],
-            val_data['seq_lens'],
+            for chunk_info in index['chunks']:
+                chunk_path = os.path.join(chunks_dir, chunk_info['path'])
+                print(f"  Loading chunk: {chunk_info['path']}")
+                chunk = torch.load(chunk_path, map_location='cpu')
+                all_egpt.append(chunk['egpt_hidden'])
+                all_vl.append(chunk['vl_hidden'])
+                all_lens.append(chunk['seq_lens'])
+
+            return {
+                'egpt_hidden': torch.cat(all_egpt, dim=0),
+                'vl_hidden': torch.cat(all_vl, dim=0),
+                'seq_lens': torch.cat(all_lens, dim=0),
+            }
+        else:
+            return torch.load(data_path, map_location='cpu')
+
+    # Determine if train data is chunked directory
+    is_chunked_train = os.path.isdir(args.train_data)
+
+    if is_chunked_train:
+        # Memory-efficient: stream 1 chunk at a time (~1.6GB instead of 80GB)
+        print(f"  Using ChunkedTrainLoader (memory-efficient)")
+        train_loader = ChunkedTrainLoader(
+            args.train_data, batch_size=args.batch_size, collate_fn=collate_fn,
         )
+        train_samples = train_loader.total_samples
+
+        # Get hidden_dim from first chunk
+        first_chunk = torch.load(
+            os.path.join(args.train_data, 'chunks', 'chunk_000000.pt'),
+            map_location='cpu',
+        )
+        hidden_dim = first_chunk['egpt_hidden'].shape[-1]
+        del first_chunk
     else:
-        val_size = int(len(full_dataset) * args.val_split)
-        train_size = len(full_dataset) - val_size
-        train_dataset, val_dataset = random_split(
-            full_dataset,
-            [train_size, val_size],
-            generator=torch.Generator().manual_seed(42),
+        print(f"  Loading train data into memory...")
+        data = load_small_data(args.train_data)
+        hidden_dim = data['egpt_hidden'].shape[-1]
+        train_dataset = HiddenStateDataset(
+            data['egpt_hidden'], data['vl_hidden'], data['seq_lens'],
+        )
+        train_samples = len(train_dataset)
+        print(f"  Loaded {train_samples} samples, hidden_dim={hidden_dim}")
+        train_loader = DataLoader(
+            train_dataset, batch_size=args.batch_size, shuffle=True,
+            collate_fn=collate_fn, num_workers=4, pin_memory=True,
         )
 
-    print(f"  Train: {len(train_dataset)}, Val: {len(val_dataset)}")
+    # Load val data - stream all chunks (memory-efficient, like train)
+    val_loader = None
+    if args.val_data:
+        if os.path.isdir(args.val_data):
+            # Use chunked streaming for val (loads 1 chunk at a time, ~1.6GB)
+            val_loader = ChunkedValLoader(
+                args.val_data, batch_size=args.batch_size, collate_fn=collate_fn,
+            )
+            val_samples = val_loader.total_samples
+        else:
+            val_data = load_small_data(args.val_data)
+            val_dataset = HiddenStateDataset(
+                val_data['egpt_hidden'], val_data['vl_hidden'], val_data['seq_lens'],
+            )
+            del val_data
+            val_samples = len(val_dataset)
+            val_loader = DataLoader(
+                val_dataset, batch_size=args.batch_size, shuffle=False,
+                collate_fn=collate_fn, num_workers=0, pin_memory=True,
+            )
+    else:
+        if not is_chunked_train:
+            val_size = int(train_samples * args.val_split)
+            train_size = train_samples - val_size
+            train_dataset, val_dataset = random_split(
+                train_dataset,
+                [train_size, val_size],
+                generator=torch.Generator().manual_seed(42),
+            )
+            train_loader = DataLoader(
+                train_dataset, batch_size=args.batch_size, shuffle=True,
+                collate_fn=collate_fn, num_workers=4, pin_memory=True,
+            )
+            val_samples = val_size
+            val_loader = DataLoader(
+                val_dataset, batch_size=args.batch_size, shuffle=False,
+                collate_fn=collate_fn, num_workers=0, pin_memory=True,
+            )
+        else:
+            # Use last train chunk as val
+            print(f"  No val_data, using last train chunk as validation")
+            last_path = os.path.join(
+                args.train_data, 'chunks', train_loader.chunk_infos[-1]['path'],
+            )
+            last_chunk = torch.load(last_path, map_location='cpu')
+            val_dataset = HiddenStateDataset(
+                last_chunk['egpt_hidden'], last_chunk['vl_hidden'], last_chunk['seq_lens'],
+            )
+            val_samples = len(val_dataset)
+            del last_chunk
+            val_loader = DataLoader(
+                val_dataset, batch_size=args.batch_size, shuffle=False,
+                collate_fn=collate_fn, num_workers=0, pin_memory=True,
+            )
 
-    # Create data loaders
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        collate_fn=collate_fn,
-        num_workers=4,
-        pin_memory=True,
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        collate_fn=collate_fn,
-        num_workers=4,
-        pin_memory=True,
-    )
-
-    # Create model based on adapter level
-    hidden_dim = egpt_hidden.shape[-1]
+    print(f"  Train: {train_samples}, Val: {val_samples}")
 
     # Set default bottleneck dims based on level
     if args.bottleneck_dim is None:
@@ -457,34 +679,61 @@ def main():
         learning_rate=args.learning_rate,
     )
 
-    # Create output directory with timestamp and level
+    # Create output directory: tasks/<adapter>_<timestamp>/
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = Path(args.output_dir) / f"L{args.adapter_level}_{timestamp}"
+    task_dir = Path(args.output_dir) / f"L{args.adapter_level}_{timestamp}"
 
     # Train
     trainer.train(
         num_epochs=args.num_epochs,
-        save_dir=str(output_dir),
+        save_dir=str(task_dir),
         early_stopping=args.early_stopping,
     )
 
-    # Save config
-    config = {
-        'adapter_level': args.adapter_level,
-        'hidden_dim': hidden_dim,
-        'bottleneck_dim': bottleneck_dim,
-        'num_blocks': args.num_blocks,
-        'num_heads': args.num_heads,
-        'num_layers': args.num_layers,
-        'ffn_dim': args.ffn_dim,
-        'train_samples': len(train_dataset),
-        'val_samples': len(val_dataset),
-        'batch_size': args.batch_size,
-        'learning_rate': args.learning_rate,
-        'timestamp': timestamp,
+    # Save comprehensive config
+    level_names = {
+        1: 'Bottleneck', 2: 'MultiLayerBottleneck',
+        3: 'WideBottleneck', 4: 'Attention', 5: 'EAGLE',
     }
-    with open(output_dir / 'config.json', 'w') as f:
+    config = {
+        'task': f'train_L{args.adapter_level}_{level_names.get(args.adapter_level, "Unknown")}',
+        'adapter': {
+            'level': args.adapter_level,
+            'name': level_names.get(args.adapter_level, 'Unknown'),
+            'hidden_dim': hidden_dim,
+            'bottleneck_dim': bottleneck_dim,
+            'num_blocks': args.num_blocks,
+            'num_heads': args.num_heads,
+            'num_layers': args.num_layers,
+            'ffn_dim': args.ffn_dim,
+            'params': model.get_num_parameters(),
+        },
+        'data': {
+            'train_path': args.train_data,
+            'val_path': args.val_data or 'split from train',
+            'train_samples': train_samples,
+            'val_samples': val_samples,
+            'questions_per_sample': 10,
+            'duration': '1s',
+            'quant': '4bit',
+            'alignment': 'EventGPT → Video-LLaVA (hidden states)',
+        },
+        'training': {
+            'epochs': args.num_epochs,
+            'batch_size': args.batch_size,
+            'learning_rate': args.learning_rate,
+            'early_stopping': args.early_stopping,
+            'optimizer': 'AdamW',
+            'scheduler': 'CosineAnnealingLR',
+            'loss': 'MSE + 0.5 * CosLoss',
+        },
+        'timestamp': timestamp,
+        'best_val_loss': trainer.best_val_loss,
+    }
+    with open(task_dir / 'config.json', 'w') as f:
         json.dump(config, f, indent=2)
+
+    print(f"\nTask saved to: {task_dir}")
 
 
 if __name__ == "__main__":
