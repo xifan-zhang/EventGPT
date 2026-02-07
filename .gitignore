@@ -13,8 +13,14 @@ test_images.zip
 # Training data and caches
 feasible/feature_alignment/data/
 feasible/feature_alignment/hidden_states/
+feasible/feature_alignment/clip-vit-large-patch14-336/
 feasible/benchmark_cache/
 feasible/download_pretrained/
+
+# Large JSON data files
+feasible/token_alignment/train_tokens_full.json
+feasible/token_alignment/train_tokens_10q.json
+feasible/my_dsec_align_dataset/my_dsec_align_train_1s.json
 
 # Logs
 *.log
