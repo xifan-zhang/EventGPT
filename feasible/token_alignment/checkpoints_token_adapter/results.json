@@ -1,0 +1,8 @@
+{
+  "baseline_acceptance": 0.02875399361022364,
+  "final_acceptance": 0.1422924901185771,
+  "top5_rate": 0.3375494071146245,
+  "improvement": 0.11353849650835345,
+  "num_samples": 200,
+  "model_params": 45475328
+}

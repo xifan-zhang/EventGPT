@@ -1,10 +1,11 @@
 # Hidden State Adapter for Cross-Modal Speculative Decoding
 
-> **Last Updated:** 2026-02-06 11:15
+> **Last Updated:** 2026-02-07
 
-Lightweight bottleneck adapter (~2M params) to align EventGPT decoder hidden states to Video-LLaVA space for feature-level speculative decoding.
+Cross-modal adapter training pipeline for EventGPT → Video-LLaVA speculative decoding.
+7 adapter architectures (L1-L5, B1, L5F) trained and evaluated on DSEC 1s event-video pairs.
 
-**Key Result:** Achieves **5.77x speedup** (vs 1.0x for token-level SD which failed with 0% acceptance).
+**Best Result:** L4+VL cross-modal speculative decoding achieves **1.02-1.24x** E2E wall-clock speedup with 20.3% acceptance rate and ~22 free tokens hidden behind VL prefill. L5F fused adapter beats VLM-only baseline (B1) for hidden-state acceptance.
 
 ---
 
@@ -1827,7 +1828,127 @@ python feasible/feature_alignment/measure_feature_acceptance.py \
 - Consecutive acceptance statistics
 - Cosine similarity histograms
 
-### 4. hidden_adapter.py
+### 4. evaluate_e2e_sd.py
+
+End-to-end speculative decoding evaluation combining hidden-state metrics, token-level metrics (VL LM head projection), and two-phase speedup simulation.
+
+```bash
+# Cached mode (fast, uses pre-extracted hidden states)
+python feasible/feature_alignment/evaluate_e2e_sd.py \
+    --mode cached \
+    --adapter_checkpoint ./feasible/feature_alignment/tasks/L1/.../best_model.pt \
+    --cached_hidden_states /mnt/hdd/data/egpt/hidden_states/chunked_test_1s_4bit
+
+# Live mode (loads both models, generates fresh hidden states + timing)
+python feasible/feature_alignment/evaluate_e2e_sd.py \
+    --mode live \
+    --adapter_checkpoint ./feasible/feature_alignment/tasks/L1/.../best_model.pt \
+    --dataset_dir ./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s \
+    --max_samples 50 --max_questions 10
+```
+
+**Three Metric Levels:**
+| Level | What | Key Metrics |
+|-------|------|-------------|
+| A. Hidden-State | cos_sim between adapter output and VL hidden | Accept@tau, consecutive accepts |
+| B. Token Level | argmax through VL LM head | token_match_rate, top5_match, consecutive |
+| C. Wall-Clock | Two-phase SD simulation | prefill hiding + decode speedup |
+
+**L1-L4 vs L5:** L1-L4 only gain speedup from prefill hiding. L5 additionally accelerates decode phase via EAGLE-style drafting at ~3ms/token.
+
+See also: `METRICS_COMPARISON.md` for detailed explanation.
+
+---
+
+### 5. benchmark_e2e.py (E2E Benchmark Runner)
+
+Three phases: (0) debug validation, (1) VL standalone, (2) SD wallclock.
+
+```bash
+# Run all phases: debug → VL standalone → SD wallclock
+conda run -n egpt python feasible/feature_alignment/benchmark_e2e.py \
+    --max_samples 50 --max_new_tokens 50
+
+# Skip phases
+conda run -n egpt python feasible/feature_alignment/benchmark_e2e.py \
+    --max_samples 50 --skip_vl    # SD wallclock only
+conda run -n egpt python feasible/feature_alignment/benchmark_e2e.py \
+    --max_samples 50 --skip_debug # Skip adapter + 1-sample debug
+```
+
+**Phase 0 (Debug):** Loads all 7 adapter checkpoints, verifies forward pass with dummy data, then runs 1-sample E2E through all 6 SD configs with real data. Aborts if any fail.
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--max_samples` | 50 | Samples to benchmark |
+| `--max_new_tokens` | 50 | Tokens to generate per sample |
+| `--gamma` | 5 | SD draft tokens per iteration |
+| `--warmup` | 3 | Warmup samples (excluded from results) |
+| `--questions_file` | auto (top 10) | Custom questions JSON |
+| `--adapter_dir` | `tasks/` | Directory with adapter checkpoints |
+| `--save_hidden` | false | Save VL hidden states to disk |
+| `--skip_vl` | false | Skip VL standalone benchmark |
+| `--skip_sd` | false | Skip SD wallclock benchmark |
+| `--skip_debug` | false | Skip debug validation phase |
+
+**Output:** `tasks/e2e_<timestamp>/` containing results from both benchmarks.
+
+**Sub-scripts:**
+
+#### 5a. benchmark_e2e_vl.py — Video-LLaVA Standalone
+
+Loads Video-LLaVA, processes raw MP4, measures 3-stage timing + extracts hidden states.
+
+```bash
+conda run -n egpt python feasible/feature_alignment/benchmark_e2e_vl.py \
+    --max_samples 50 --max_new_tokens 50
+```
+
+**Measures:**
+- Stage 1: Vision Encoder (CLIP ViT)
+- Stage 2: LLM Prefill
+- Stage 3: LLM Decode + hidden state extraction
+
+**Output:** JSON with per-sample timing, generated text, and optionally hidden states (`.pt`).
+
+#### 5b. benchmark_e2e_wallclock.py — True E2E Speculative Decoding
+
+Both models loaded simultaneously in 4-bit (~8GB VRAM). SD runs two models in parallel. Strictly from raw data.
+
+```bash
+conda run -n egpt python feasible/feature_alignment/benchmark_e2e_wallclock.py \
+    --max_samples 50 --max_new_tokens 50
+```
+
+**Pipeline (per sample, per question):**
+1. **3-stage timing:** Both models measured independently (vision/prefill/decode)
+2. **VL Baseline:** VL prefill + autoregressive decode (standalone)
+3. **Parallel prefill:** EGPT + VL via threading + CUDA streams
+4. **EGPT decode:** EGPT generates tokens autoregressively, collecting per-step decode hidden states (matches training data format)
+5. **SD decode:** Adapter uses EGPT/VL decode hidden states to draft → VL verifies
+6. Repeat for all adapter configs
+
+**Hidden state handling by adapter type:**
+- **B1 (VLM-only):** Uses VL hidden states accumulated during verification (`output_hidden_states=True`)
+- **L5F (fused):** Uses pre-generated EGPT decode hidden states + VL hidden states from verification
+- **L1-L4, L5:** Uses pre-generated EGPT decode hidden states only
+
+**Configs benchmarked (from TRAINING_RESULTS_20260207.md):**
+| Config | Type | Description |
+|--------|------|-------------|
+| VL baseline | No SD | Standard VL autoregressive |
+| B1-only | Decode-only | VLM-only EAGLE (VL hidden states) |
+| L5F-only | Decode-only | Fused EAGLE (EGPT + VL hidden states) |
+| L1+L5F | Two-phase | Prefill hiding (L1) + SD decode (L5F) |
+| L2+L5F | Two-phase | Prefill hiding (L2) + SD decode (L5F) |
+| L3+L5F | Two-phase | Prefill hiding (L3) + SD decode (L5F) |
+| L4+L5F | Two-phase | Prefill hiding (L4) + SD decode (L5F) |
+
+**Output:** JSON (per-sample timing + text), matplotlib graphs (speedup, timing breakdown, accept rate), markdown report.
+
+---
+
+### 6. hidden_adapter.py
 
 Module containing all adapter implementations. Can be run directly to test.
 
@@ -1900,7 +2021,9 @@ feasible/feature_alignment/
 │
 ├── extract_hidden_states.py        # Extract decoder hidden states
 ├── train_hidden_adapter.py         # Training script (supports L1-L4)
-├── measure_feature_acceptance.py   # Evaluation script
+├── measure_feature_acceptance.py   # Hidden-state acceptance metrics
+├── evaluate_e2e_sd.py             # E2E SD eval (hidden + token + speedup)
+├── METRICS_COMPARISON.md           # Hidden-state vs token-level explainer
 │
 ├── hidden_states/                  # Extracted data
 │   ├── hidden_states_train_10q.pt  # Train: 52,080 pairs

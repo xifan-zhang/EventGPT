@@ -1,0 +1,20 @@
+{
+  "label": "B1_only",
+  "no_prefill": true,
+  "prefill_adapter": null,
+  "decode_adapter": "/home/ps/Documents/code/EventGPT/feasible/feature_alignment/tasks/B1/B1_20260206_213805/best_model.pt",
+  "decode_vlm_only": true,
+  "gamma_prefill": 7,
+  "gamma_decode": 5,
+  "num_output_tokens": 50,
+  "phase1_prefill_top1": 0.0,
+  "phase1_free_tokens": 0.0,
+  "phase1_time_saved_ms": 0.0,
+  "phase2_same_pos_top1": 0.19111907482147217,
+  "phase2_shifted_top1": 0.40959787368774414,
+  "phase2_shifted_top5": 0.7715505361557007,
+  "phase2_decode_consecutive": 0.5084545612335205,
+  "baseline_time_ms": 1560.0,
+  "sd_time_ms": 1188.3824412427095,
+  "e2e_speedup": 1.312708725625973
+}

@@ -1,0 +1,87 @@
+{
+  "timestamp": "20260126_005809",
+  "datetime": "2026-01-26 00:58:09",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 5,
+    "max_new_tokens": 50,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {
+    "n_samples": 5,
+    "gamma": 5,
+    "egpt_tokens_avg": 43.8,
+    "vl_tokens_avg": 50.0,
+    "egpt_time_avg": 0.4070601463317871,
+    "vl_time_avg": 0.9097804069519043,
+    "word_overlap_avg": 0.4569275362318841,
+    "char_similarity_avg": 0.06100191863401892,
+    "acceptance_rate_avg": 0.2589647274329515
+  },
+  "results": [
+    {
+      "sample_idx": 0,
+      "egpt_tokens": 46,
+      "vl_tokens": 50,
+      "egpt_time": 0.4325728416442871,
+      "vl_time": 0.9391722679138184,
+      "egpt_text": "the scene, there is a car parked on the side of a road. The car has a visible license plate and is positioned near a curb. There is also a streetlight and some trees in the background.",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is another smaller vehicle visible further ahead on the same street. A person can be seen standing near one of the vehicles, possibly observing or waiting for someone to",
+      "word_overlap": 0.44,
+      "char_similarity": 0.045627376425855515,
+      "acceptance_estimate": 0.24281368821292776
+    },
+    {
+      "sample_idx": 1,
+      "egpt_tokens": 37,
+      "vl_tokens": 50,
+      "egpt_time": 0.34349942207336426,
+      "vl_time": 0.9032728672027588,
+      "egpt_text": "the scene, there is a car driving on a road with its headlights on. The road has a white line marking the edge and there are trees on both sides.",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is another smaller vehicle visible further ahead on the same street. A person can be seen standing near one of the vehicles, possibly observing or waiting for someone to",
+      "word_overlap": 0.391304347826087,
+      "char_similarity": 0.060836501901140684,
+      "acceptance_estimate": 0.22607042486361384
+    },
+    {
+      "sample_idx": 2,
+      "egpt_tokens": 45,
+      "vl_tokens": 50,
+      "egpt_time": 0.41149282455444336,
+      "vl_time": 0.9020545482635498,
+      "egpt_text": "the scene, there is a car parked on the side of a road. The car has a visible license plate and is positioned near a building. There is also a streetlight and some trees in the background.",
+      "vl_text": "The image features a car driving down an empty road, with trees on both sides of it. There is also another smaller vehicle visible further ahead along the same stretch of road. In addition to these vehicles, there's a person standing near one side",
+      "word_overlap": 0.56,
+      "char_similarity": 0.06882591093117409,
+      "acceptance_estimate": 0.31441295546558706
+    },
+    {
+      "sample_idx": 3,
+      "egpt_tokens": 46,
+      "vl_tokens": 50,
+      "egpt_time": 0.4288308620452881,
+      "vl_time": 0.9073371887207031,
+      "egpt_text": "the scene, there is a car with its headlights on, positioned on a road. The road has a white line marking its edge. There are trees and grassy areas on both sides of the road.",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees on both sides. There is also another smaller vehicle visible further ahead of the main one. A person can be seen standing near the edge of the road, possibly observing or waiting",
+      "word_overlap": 0.3333333333333333,
+      "char_similarity": 0.05976095617529881,
+      "acceptance_estimate": 0.19654714475431606
+    },
+    {
+      "sample_idx": 4,
+      "egpt_tokens": 45,
+      "vl_tokens": 50,
+      "egpt_time": 0.41890478134155273,
+      "vl_time": 0.8970651626586914,
+      "egpt_text": "the scene, there is a car parked on the side of a road. The car has a visible license plate and is positioned near a building. There is also a streetlight and some trees in the background.",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is also another smaller vehicle visible on the right side of the main car. In addition to these vehicles, there's a person standing near one of them,",
+      "word_overlap": 0.56,
+      "char_similarity": 0.06995884773662552,
+      "acceptance_estimate": 0.3149794238683128
+    }
+  ],
+  "errors": []
+}

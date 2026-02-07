@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-01-25T00:20:28.089331",
+  "source_dataset": "/mnt/hdd/data/my_egpt_dsec_train/my_egpt_dsec_train_1s",
+  "num_samples": 500,
+  "num_questions": 1,
+  "total_entries": 517,
+  "questions": [
+    "What are the key elements in this scene?"
+  ],
+  "model_path": "llava-hf/llava-1.5-7b-hf"
+}

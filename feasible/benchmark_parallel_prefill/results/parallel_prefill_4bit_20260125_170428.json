@@ -1,0 +1,201 @@
+{
+  "timestamp": "20260125_170428",
+  "datetime": "2026-01-25 17:04:28",
+  "config": {
+    "quantization": "4bit",
+    "max_samples": 2,
+    "max_new_tokens": 50,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {
+    "n_samples": 2,
+    "eventgpt": {
+      "vision_time_avg": 0.06462204456329346,
+      "prefill_time_avg": 0.17572247982025146,
+      "prefill_length_avg": 637.0,
+      "draft_time_avg": 1.413580298423767,
+      "draft_tokens_avg": 50.0,
+      "prefill_complete_time": 0.24034452438354492,
+      "output_tokens_avg": 50.0
+    },
+    "videollava": {
+      "prefill_time_avg": 0.31708991527557373,
+      "generation_time_avg": 0.3788543939590454,
+      "total_time_avg": 0.6959443092346191,
+      "prefill_length_avg": 2075.0,
+      "output_tokens_avg": 2.0
+    },
+    "parallel": {
+      "overlap_window_avg": 0.10380566120147705,
+      "theoretical_draft_tokens_avg": 3.5,
+      "actual_draft_tokens_avg": 50.0
+    }
+  },
+  "results": [
+    {
+      "sample_idx": 0,
+      "eventgpt": {
+        "vision_time": 0.12200617790222168,
+        "prefill_time": 0.2838470935821533,
+        "prefill_length": 637,
+        "draft_tokens": 50,
+        "draft_time": 1.368180513381958,
+        "total_time": 1.774033784866333,
+        "output_tokens": [
+          512,
+          278,
+          9088,
+          29892,
+          727,
+          338,
+          263,
+          1559,
+          19500,
+          373,
+          263,
+          6520,
+          411,
+          967,
+          2343,
+          4366,
+          29879,
+          373,
+          29889,
+          450,
+          6520,
+          756,
+          263,
+          4796,
+          1196,
+          2791,
+          292,
+          278,
+          7636,
+          322,
+          263,
+          7254,
+          1196,
+          23941,
+          263,
+          694,
+          29899,
+          3364,
+          292,
+          10640,
+          29889,
+          1670,
+          526,
+          13814,
+          373,
+          1716,
+          11192,
+          310,
+          278,
+          6520
+        ],
+        "output_text": "In the scene, there is a car driving on a road with its headlights on. The road has a white line marking the edge and a blue line indicating a no-passing zone. There are buildings on both sides of the road"
+      },
+      "videollava": {
+        "vision_time": 0,
+        "prefill_time": 0.3517327308654785,
+        "prefill_length": 2075,
+        "generation_time": 0.42368483543395996,
+        "total_time": 0.7754175662994385,
+        "output_tokens": [
+          10887,
+          2
+        ],
+        "output_text": "ms"
+      },
+      "parallel": {
+        "overlap_window": 0,
+        "theoretical_draft_tokens": 0,
+        "actual_draft_tokens": 50
+      }
+    },
+    {
+      "sample_idx": 1,
+      "eventgpt": {
+        "vision_time": 0.007237911224365234,
+        "prefill_time": 0.06759786605834961,
+        "prefill_length": 637,
+        "draft_tokens": 50,
+        "draft_time": 1.4589800834655762,
+        "total_time": 1.533815860748291,
+        "output_tokens": [
+          512,
+          278,
+          9088,
+          29892,
+          727,
+          338,
+          263,
+          1559,
+          19500,
+          373,
+          263,
+          6520,
+          411,
+          967,
+          2343,
+          4366,
+          29879,
+          373,
+          29889,
+          450,
+          6520,
+          756,
+          263,
+          4796,
+          1196,
+          2791,
+          292,
+          278,
+          7636,
+          322,
+          263,
+          7254,
+          1196,
+          297,
+          278,
+          4818,
+          29889,
+          1670,
+          526,
+          10697,
+          322,
+          17455,
+          29891,
+          10161,
+          373,
+          1716,
+          11192,
+          310,
+          278,
+          6520
+        ],
+        "output_text": "In the scene, there is a car driving on a road with its headlights on. The road has a white line marking the edge and a blue line in the center. There are trees and grassy areas on both sides of the road"
+      },
+      "videollava": {
+        "vision_time": 0,
+        "prefill_time": 0.28244709968566895,
+        "prefill_length": 2075,
+        "generation_time": 0.33402395248413086,
+        "total_time": 0.6164710521697998,
+        "output_tokens": [
+          10887,
+          2
+        ],
+        "output_text": "ms"
+      },
+      "parallel": {
+        "overlap_window": 0.2076113224029541,
+        "theoretical_draft_tokens": 7,
+        "actual_draft_tokens": 50
+      }
+    }
+  ],
+  "errors": []
+}

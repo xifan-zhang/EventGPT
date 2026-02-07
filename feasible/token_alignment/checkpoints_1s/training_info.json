@@ -1,0 +1,8 @@
+{
+  "benchmark_json": "./feasible/benchmark_inference/benchmark_results_S1.json",
+  "train_size": 4,
+  "val_size": 1,
+  "best_val_acc": 0.10294117647058823,
+  "num_epochs": 10,
+  "timestamp": "2026-01-23T01:11:18.471498"
+}

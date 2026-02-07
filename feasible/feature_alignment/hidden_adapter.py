@@ -956,6 +956,247 @@ class EAGLEStyleAdapter(nn.Module):
 
 
 # =============================================================================
+# Level 5F: Fused Cross-Modal EAGLE (~67M params)
+# =============================================================================
+
+class FusedEAGLEAdapter(nn.Module):
+    """
+    Level 5F: Fused EAGLE - concatenates h_egpt + h_vl as input.
+
+    Architecture:
+        - Input: concat(h_egpt[t], h_vl[t]) → [8192]
+        - Fusion: Linear(8192→4096) + LayerNorm
+        - Core: Same causal transformer as L5
+        - Output: h_{t+1}_predicted in VL space
+
+    Guarantees ≥ B1 (VLM-only) because:
+        - Sees strictly more information (events + video vs video only)
+        - Can learn to ignore h_egpt if unhelpful (collapsing to B1)
+        - Event stream provides complementary temporal/motion signal
+
+    Parameters: ~67M (L5's 50M + fusion projection 33M)
+    """
+
+    def __init__(
+        self,
+        hidden_dim: int = 4096,
+        num_heads: int = 8,
+        ffn_dim: int = 2048,
+        num_layers: int = 1,
+        dropout: float = 0.1,
+        max_seq_len: int = 512,
+    ):
+        super().__init__()
+
+        self.hidden_dim = hidden_dim
+        self.num_heads = num_heads
+        self.ffn_dim = ffn_dim
+        self.num_layers = num_layers
+
+        # Fusion: concat(h_egpt, h_vl) → h_fused
+        self.fusion_proj = nn.Linear(hidden_dim * 2, hidden_dim)
+        self.fusion_norm = nn.LayerNorm(hidden_dim)
+
+        # Learnable gate: how much to weight EGPT vs VL
+        self.gate = nn.Sequential(
+            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.Sigmoid(),
+        )
+
+        # Positional encoding for autoregressive prediction
+        self.pos_embed = nn.Parameter(torch.zeros(1, max_seq_len, hidden_dim))
+        nn.init.trunc_normal_(self.pos_embed, std=0.02)
+
+        # Transformer layers (causal attention)
+        self.layers = nn.ModuleList()
+        for _ in range(num_layers):
+            self.layers.append(nn.ModuleDict({
+                'attn_norm': nn.LayerNorm(hidden_dim),
+                'attn': nn.MultiheadAttention(
+                    embed_dim=hidden_dim,
+                    num_heads=num_heads,
+                    dropout=dropout,
+                    batch_first=True,
+                ),
+                'ffn_norm': nn.LayerNorm(hidden_dim),
+                'ffn': nn.Sequential(
+                    nn.Linear(hidden_dim, ffn_dim),
+                    nn.GELU(),
+                    nn.Dropout(dropout),
+                    nn.Linear(ffn_dim, hidden_dim),
+                    nn.Dropout(dropout),
+                ),
+            }))
+
+        # Output projection
+        self.output_norm = nn.LayerNorm(hidden_dim)
+        self.output_proj = nn.Linear(hidden_dim, hidden_dim)
+
+        # Learnable residual scale
+        self.alpha = nn.Parameter(torch.tensor(0.1))
+
+        self._init_weights()
+
+    def _init_weights(self):
+        nn.init.eye_(self.output_proj.weight)
+        nn.init.zeros_(self.output_proj.bias)
+        # Initialize fusion to average of both inputs
+        nn.init.xavier_uniform_(self.fusion_proj.weight)
+        nn.init.zeros_(self.fusion_proj.bias)
+
+    def _create_causal_mask(self, seq_len: int, device: torch.device) -> torch.Tensor:
+        mask = torch.triu(torch.ones(seq_len, seq_len, device=device), diagonal=1)
+        mask = mask.masked_fill(mask == 1, float('-inf'))
+        return mask
+
+    def forward(
+        self,
+        egpt_hidden: torch.Tensor,
+        vl_hidden: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Forward pass with gated fusion of EGPT + VL hidden states.
+
+        Args:
+            egpt_hidden: [batch, seq, hidden_dim] from EGPT
+            vl_hidden: [batch, seq, hidden_dim] from VL
+            attention_mask: [batch, seq] mask (1=keep, 0=mask)
+
+        Returns:
+            predicted: [batch, seq, hidden_dim] predicted hidden states in VL space
+        """
+        batch, seq_len, _ = egpt_hidden.shape
+        device = egpt_hidden.device
+
+        # Gated fusion: learn how to combine EGPT + VL
+        concat = torch.cat([egpt_hidden, vl_hidden], dim=-1)  # [B, S, 8192]
+        gate_values = self.gate(concat)  # [B, S, 4096] in [0, 1]
+        fused = gate_values * egpt_hidden + (1 - gate_values) * vl_hidden
+
+        # Also add projection path for richer fusion
+        proj = self.fusion_proj(concat)  # [B, S, 4096]
+        x = self.fusion_norm(fused + proj)
+
+        # Add positional encoding
+        x = x + self.pos_embed[:, :seq_len, :]
+
+        # Create causal mask
+        causal_mask = self._create_causal_mask(seq_len, device)
+
+        key_padding_mask = None
+        if attention_mask is not None:
+            key_padding_mask = (attention_mask == 0)
+
+        # Transformer layers
+        for layer in self.layers:
+            normed = layer['attn_norm'](x)
+            attn_out, _ = layer['attn'](
+                normed, normed, normed,
+                attn_mask=causal_mask,
+                key_padding_mask=key_padding_mask,
+                need_weights=False,
+            )
+            x = x + attn_out
+
+            normed = layer['ffn_norm'](x)
+            ffn_out = layer['ffn'](normed)
+            x = x + ffn_out
+
+        # Output projection with residual from VL input
+        output = self.output_proj(self.output_norm(x))
+        aligned = vl_hidden + self.alpha * (output - vl_hidden)
+
+        return aligned
+
+    def compute_loss(
+        self,
+        egpt_hidden: torch.Tensor,
+        vl_hidden: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        prediction_weight: float = 0.5,
+    ) -> Dict[str, torch.Tensor]:
+        """
+        Compute combined alignment + prediction loss.
+
+        Uses BOTH egpt_hidden and vl_hidden as input (fused).
+        Target is vl_hidden for alignment, vl_hidden shifted for prediction.
+        """
+        predicted = self.forward(egpt_hidden, vl_hidden, attention_mask=attention_mask)
+
+        # === Alignment loss ===
+        mse_loss = F.mse_loss(predicted, vl_hidden, reduction='none')
+        if attention_mask is not None:
+            mask = attention_mask.unsqueeze(-1).expand_as(mse_loss)
+            mse_loss_align = (mse_loss * mask).sum() / mask.sum()
+        else:
+            mse_loss_align = mse_loss.mean()
+
+        pred_norm = F.normalize(predicted, dim=-1)
+        vl_norm = F.normalize(vl_hidden, dim=-1)
+        cos_sim = (pred_norm * vl_norm).sum(dim=-1)
+        if attention_mask is not None:
+            cos_sim_mean = (cos_sim * attention_mask).sum() / attention_mask.sum()
+        else:
+            cos_sim_mean = cos_sim.mean()
+        cos_loss = 1 - cos_sim_mean
+
+        # === Prediction loss (next-token) ===
+        if egpt_hidden.shape[1] > 1:
+            pred_shifted = predicted[:, :-1, :]
+            target_shifted = vl_hidden[:, 1:, :]
+            pred_loss = F.mse_loss(pred_shifted, target_shifted, reduction='none')
+            if attention_mask is not None:
+                mask_shifted = attention_mask[:, 1:].unsqueeze(-1).expand_as(pred_loss)
+                pred_loss = (pred_loss * mask_shifted).sum() / mask_shifted.sum()
+            else:
+                pred_loss = pred_loss.mean()
+        else:
+            pred_loss = torch.tensor(0.0, device=egpt_hidden.device)
+
+        align_loss = mse_loss_align + 0.5 * cos_loss
+        total_loss = (1 - prediction_weight) * align_loss + prediction_weight * pred_loss
+
+        return {
+            'total_loss': total_loss,
+            'mse_loss': mse_loss_align,
+            'cos_loss': cos_loss,
+            'cos_sim': cos_sim_mean,
+            'pred_loss': pred_loss,
+            'align_loss': align_loss,
+        }
+
+    def get_num_parameters(self) -> int:
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def save_checkpoint(self, path: str, optimizer=None, epoch: int = 0, metrics: dict = None):
+        checkpoint = {
+            'model_state_dict': self.state_dict(),
+            'adapter_type': 'L5F_FusedEAGLE',
+            'config': {
+                'hidden_dim': self.hidden_dim,
+                'num_heads': self.num_heads,
+                'ffn_dim': self.ffn_dim,
+                'num_layers': self.num_layers,
+            },
+            'epoch': epoch,
+        }
+        if optimizer is not None:
+            checkpoint['optimizer_state_dict'] = optimizer.state_dict()
+        if metrics is not None:
+            checkpoint['metrics'] = metrics
+        torch.save(checkpoint, path)
+
+    @classmethod
+    def load_checkpoint(cls, path: str, device: str = 'cuda'):
+        checkpoint = torch.load(path, map_location=device)
+        config = checkpoint['config']
+        model = cls(**config)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        return model, checkpoint
+
+
+# =============================================================================
 # Legacy: Multi-Layer Hidden Adapter (for multi-layer input fusion)
 # =============================================================================
 
@@ -1070,12 +1311,13 @@ def create_adapter(
     Unified factory function to create adapters at any complexity level.
 
     Args:
-        level: Adapter complexity level (1-5)
+        level: Adapter complexity level (1-6)
             L1: Bottleneck (~2M) - Simple, fast
             L2: Multi-layer bottleneck (~8M) - Better nonlinearity
             L3: Wide bottleneck (~16M) - More capacity
             L4: Attention (~50M) - Token dependencies
             L5: Hybrid Cross-Modal EAGLE (~50M) - Alignment + Prediction
+            L5F (6): Fused EAGLE (~67M) - Gated fusion of h_egpt + h_vl
         hidden_dim: LLM hidden dimension (4096 for Vicuna 7B)
         **kwargs: Level-specific arguments
 
@@ -1097,6 +1339,9 @@ def create_adapter(
 
         # L5: EAGLE-style (50M params, ~3ms) - with next-token prediction
         adapter = create_adapter(level=5, num_layers=2, prediction_weight=0.5)
+
+        # L5F: Fused EAGLE (67M params, ~3ms) - gated h_egpt + h_vl fusion
+        adapter = create_adapter(level=6)
     """
     if level == 1:
         # L1: Simple bottleneck
@@ -1154,8 +1399,19 @@ def create_adapter(
         )
         name = "L5_EAGLE"
 
+    elif level == 6:
+        # L5F: Fused EAGLE (~67M) - gated fusion of h_egpt + h_vl
+        adapter = FusedEAGLEAdapter(
+            hidden_dim=hidden_dim,
+            num_heads=kwargs.get('num_heads', 8),
+            ffn_dim=kwargs.get('ffn_dim', 2048),
+            num_layers=kwargs.get('num_layers', 1),
+            dropout=kwargs.get('dropout', 0.1),
+        )
+        name = "L5F_FusedEAGLE"
+
     else:
-        raise ValueError(f"Invalid level {level}. Must be 1-5.")
+        raise ValueError(f"Invalid level {level}. Must be 1-6.")
 
     params = adapter.get_num_parameters()
     print(f"Created {name}:")
@@ -1183,6 +1439,8 @@ def load_any_adapter(path: str, device: str = 'cuda') -> Tuple[nn.Module, dict]:
         model, ckpt = AttentionAdapter.load_checkpoint(path, device)
     elif adapter_type == 'L5_EAGLE':
         model, ckpt = EAGLEStyleAdapter.load_checkpoint(path, device)
+    elif adapter_type == 'L5F_FusedEAGLE':
+        model, ckpt = FusedEAGLEAdapter.load_checkpoint(path, device)
     else:
         # Default to L1
         model, ckpt = HiddenStateAdapter.load_checkpoint(path, device)

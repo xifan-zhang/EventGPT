@@ -1,0 +1,52 @@
+{
+  "dataset": "1s",
+  "checkpoint": "./feasible/feature_alignment/checkpoints/alignment_1s/lightweight_alignment.pt",
+  "test_samples": 1042,
+  "feature_dim": 150528,
+  "before_alignment": {
+    "mean_cosine_similarity": 0.6460562944412231,
+    "std_cosine_similarity": 0.1016194149851799,
+    "min_cosine_similarity": 0.2747971713542938,
+    "max_cosine_similarity": 0.8611106872558594,
+    "acceptance_at_0.5": 91.65067076683044,
+    "acceptance_at_0.6": 73.70441555976868,
+    "acceptance_at_0.7": 31.57389760017395,
+    "acceptance_at_0.8": 2.2072937339544296,
+    "acceptance_at_0.85": 0.19193857442587614,
+    "acceptance_at_0.9": 0.0,
+    "acceptance_at_0.95": 0.0
+  },
+  "after_alignment": {
+    "mean_cosine_similarity": 0.8841512799263,
+    "std_cosine_similarity": 0.07615502178668976,
+    "min_cosine_similarity": 0.5054551362991333,
+    "max_cosine_similarity": 0.9768609404563904,
+    "acceptance_at_0.5": 100.0,
+    "acceptance_at_0.6": 99.52015280723572,
+    "acceptance_at_0.7": 96.44913673400879,
+    "acceptance_at_0.8": 85.7005774974823,
+    "acceptance_at_0.85": 77.54318714141846,
+    "acceptance_at_0.9": 55.27831315994263,
+    "acceptance_at_0.95": 13.147792220115662
+  },
+  "percentiles_after": {
+    "P10": 0.764477014541626,
+    "P25": 0.8582189679145813,
+    "P50": 0.9098358154296875,
+    "P75": 0.9382438659667969,
+    "P90": 0.9532468318939209,
+    "P95": 0.9598789811134338,
+    "P99": 0.9686602354049683
+  },
+  "improvement": {
+    "cosine_similarity_gain": 0.2380949854850769,
+    "relative_improvement": 36.853597361976995
+  },
+  "config": {
+    "event_dim": 150528,
+    "target_dim": 150528,
+    "hidden_dim": 512,
+    "num_layers": 2,
+    "adapter_type": "mlp"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "timestamp": "20260126_005119",
+  "datetime": "2026-01-26 00:51:19",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 5,
+    "max_new_tokens": 50,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "error": "'NoneType' object has no attribute 'shape'\n \"/home/ps/anaconda3/envs/egpt/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 115, in decorate_context\n    return func(*args, **kwargs)\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 275, in generate\n    ) = self.prepare_inputs_labels_for_multimodal(\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 322, in prepare_inputs_labels_for_multimodal\n    if input_ids.shape[1] == 1:\nAttributeError: 'NoneType' object has no attribute 'shape'\n"
+    },
+    {
+      "sample_idx": 1,
+      "error": "'NoneType' object has no attribute 'shape'\n \"/home/ps/anaconda3/envs/egpt/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 115, in decorate_context\n    return func(*args, **kwargs)\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 275, in generate\n    ) = self.prepare_inputs_labels_for_multimodal(\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 322, in prepare_inputs_labels_for_multimodal\n    if input_ids.shape[1] == 1:\nAttributeError: 'NoneType' object has no attribute 'shape'\n"
+    },
+    {
+      "sample_idx": 2,
+      "error": "'NoneType' object has no attribute 'shape'\n \"/home/ps/anaconda3/envs/egpt/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 115, in decorate_context\n    return func(*args, **kwargs)\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 275, in generate\n    ) = self.prepare_inputs_labels_for_multimodal(\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 322, in prepare_inputs_labels_for_multimodal\n    if input_ids.shape[1] == 1:\nAttributeError: 'NoneType' object has no attribute 'shape'\n"
+    },
+    {
+      "sample_idx": 3,
+      "error": "'NoneType' object has no attribute 'shape'\n \"/home/ps/anaconda3/envs/egpt/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 115, in decorate_context\n    return func(*args, **kwargs)\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 275, in generate\n    ) = self.prepare_inputs_labels_for_multimodal(\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 322, in prepare_inputs_labels_for_multimodal\n    if input_ids.shape[1] == 1:\nAttributeError: 'NoneType' object has no attribute 'shape'\n"
+    },
+    {
+      "sample_idx": 4,
+      "error": "'NoneType' object has no attribute 'shape'\n \"/home/ps/anaconda3/envs/egpt/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 115, in decorate_context\n    return func(*args, **kwargs)\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 275, in generate\n    ) = self.prepare_inputs_labels_for_multimodal(\n  File \"/home/ps/Documents/code/EventGPT/model/EventChatModel.py\", line 322, in prepare_inputs_labels_for_multimodal\n    if input_ids.shape[1] == 1:\nAttributeError: 'NoneType' object has no attribute 'shape'\n"
+    }
+  ]
+}

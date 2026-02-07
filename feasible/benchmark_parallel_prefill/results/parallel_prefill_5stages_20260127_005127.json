@@ -1,0 +1,35 @@
+{
+  "timestamp": "20260127_005127",
+  "datetime": "2026-01-27 00:52:16",
+  "dataset_name": "my_egpt_dsec_seq_1s",
+  "config": {
+    "quantization": "4bit",
+    "max_samples": 3,
+    "max_new_tokens": 50,
+    "device": "cuda"
+  },
+  "gpu_memory": {
+    "eventgpt_model_mb": 3904.73095703125,
+    "videollava_model_mb": 3897.466796875,
+    "total_models_mb": 7802.19775390625
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "egpt_error": null,
+      "vl_error": "Boolean value of Tensor with more than one value is ambiguous"
+    },
+    {
+      "sample_idx": 1,
+      "egpt_error": null,
+      "vl_error": "Boolean value of Tensor with more than one value is ambiguous"
+    },
+    {
+      "sample_idx": 2,
+      "egpt_error": null,
+      "vl_error": "Boolean value of Tensor with more than one value is ambiguous"
+    }
+  ]
+}

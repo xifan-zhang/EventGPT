@@ -1,0 +1,19 @@
+{
+  "timestamp": "20260125_041330",
+  "datetime": "2026-01-25 04:13:30",
+  "config": {
+    "quantization": "8bit",
+    "max_samples": 1,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s"
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "egpt_error": "CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacty of 23.49 GiB of which 18.31 MiB is free. Including non-PyTorch memory, this process has 22.61 GiB memory in use. Of the allocated memory 21.96 GiB is allocated by PyTorch, and 167.55 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF",
+      "vl_error": "CUDA out of memory. Tried to allocate 44.00 MiB. GPU 0 has a total capacty of 23.49 GiB of which 18.31 MiB is free. Including non-PyTorch memory, this process has 22.61 GiB memory in use. Of the alloc"
+    }
+  ]
+}

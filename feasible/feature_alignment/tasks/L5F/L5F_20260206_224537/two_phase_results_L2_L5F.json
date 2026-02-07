@@ -1,0 +1,20 @@
+{
+  "label": "L2_L5F",
+  "no_prefill": false,
+  "prefill_adapter": "/home/ps/Documents/code/EventGPT/feasible/feature_alignment/tasks/L2/L2_20260206_181048/best_model.pt",
+  "decode_adapter": "/home/ps/Documents/code/EventGPT/feasible/feature_alignment/tasks/L5F/L5F_20260206_224537/best_model.pt",
+  "decode_vlm_only": false,
+  "gamma_prefill": 7,
+  "gamma_decode": 5,
+  "num_output_tokens": 50,
+  "phase1_prefill_top1": 0.22590358555316925,
+  "phase1_free_tokens": 4.722908973693848,
+  "phase1_time_saved_ms": 118.07272434234619,
+  "phase2_same_pos_top1": 0.24642908573150635,
+  "phase2_shifted_top1": 0.3618236184120178,
+  "phase2_shifted_top5": 0.6909287571907043,
+  "phase2_decode_consecutive": 0.7334545254707336,
+  "baseline_time_ms": 1560.0,
+  "sd_time_ms": 1002.1686693057529,
+  "e2e_speedup": 1.556624196883626
+}

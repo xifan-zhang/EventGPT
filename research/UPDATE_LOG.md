@@ -4,7 +4,134 @@ This file tracks all updates made to the research markdown files.
 
 ---
 
-## Latest Update (January 28, 2026) - Cascaded SD Research
+## Latest Update (February 7, 2026) - E2E Wall-Clock Benchmark + Prefill Hiding
+
+### True E2E Wall-Clock Benchmark (50 samples, 10 questions, max_new_tokens=50)
+
+| Config | Prefill | Decode | Total | Accept | Speedup | FreeTok |
+|--------|---------|--------|-------|--------|---------|---------|
+| VL baseline | 326ms | 691ms | 1017ms | --- | 1.00x | --- |
+| L1+VL | 326ms | 691ms | 1018ms | 15.9% | 1.00x | 21.9 |
+| L2+VL | 326ms | 681ms | 1007ms | 19.3% | 1.02x | 21.9 |
+| L3+VL | 326ms | 681ms | 1007ms | 19.6% | 1.02x | 21.9 |
+| L4+VL | 326ms | 679ms | 1005ms | **20.3%** | **1.02x** | 21.9 |
+
+### Pipeline: Prefill Hiding + Cross-Modal Speculative Decoding
+
+1. **EGPT prefill + decode** runs first (vision encode + LLM prefill + AR decode)
+2. **VL prefill** runs independently (no GPU contention model)
+3. **~22 EGPT decode tokens are FREE** — hidden behind VL prefill latency gap
+4. **Adapter** maps EGPT hidden states → VL token predictions (draft tokens)
+5. **VL verify** accepts/rejects draft tokens in single batched forward pass
+6. **VL AR decode** continues from last accepted position
+
+### Key Fixes in This Session
+- **Off-by-one bug**: draft_tokens[0] duplicated vl_first token → fixed by using draft_tokens[1:]
+- **GPU contention**: Single-GPU can't truly parallelize two models → sequential execution with theoretical overlap timing model
+- **OOM in 3-stage timing**: Added KV cache cleanup between EGPT and VL timing runs
+
+### All 7 Adapters Trained & Evaluated
+
+| Level | Architecture | Params | Accept@0.90 | Val Loss |
+|-------|-------------|--------|-------------|----------|
+| L1 | Bottleneck | 2.1M | 21.9% | 1.2798 |
+| L2 | Multi-Layer Bottleneck | 6.3M | 23.2% | 1.2787 |
+| L3 | Wide Bottleneck | 16M | 24.9% | 1.2499 |
+| L4 | Attention | 101M | 24.8% | 1.2458 |
+| L5 | EAGLE (cross-modal) | 103M | 11.2% | 1.3413 |
+| B1 | EAGLE (VLM-only baseline) | 103M | 61.2% | 0.6812 |
+| L5F | Fused EAGLE | 170M | 66.2% | 0.7282 |
+
+### Key Findings
+- **B1 >> L5**: Cross-modal gap is dominant bottleneck (61.2% vs 11.2%)
+- **L5F > B1**: Fused adapter beats VLM-only baseline (+5% Accept@0.90)
+- **~22 free tokens**: EGPT decode fully hidden behind VL prefill (~230ms gap)
+- **L4+VL best E2E**: 20.3% accept, 1.02x avg speedup, up to 1.24x per-sample
+- **L1-L4 diminishing returns**: 2M→101M params only +3% Accept@0.90
+
+### Files Created/Modified
+- `feasible/feature_alignment/hidden_adapter.py` — All adapter architectures
+- `feasible/feature_alignment/train_hidden_adapter.py` — Training with chunked data
+- `feasible/feature_alignment/benchmark_e2e_wallclock.py` — True E2E wall-clock benchmark with prefill hiding, per-token timestamps, batched VL verification
+- `feasible/feature_alignment/measure_feature_acceptance.py` — Token-level evaluation
+- `feasible/feature_alignment/eval_two_phase.py` — Two-phase pipeline evaluation
+
+### Data Pipeline
+- Hidden states extracted from both models on DSEC 1s dataset
+- EventGPT: uses first frame of 5 preprocessed event images per clip
+- Video-LLaVA: uses 8 uniformly-sampled frames from MP4
+- 52K train + 11K test samples, 4-bit quantized, chunked storage
+
+---
+
+## Update (January 28, 2026) - Stream-to-Cloud Speculative Decoding
+
+### New Directory: `edge_cloud_SD/`
+
+Created consolidated folder for edge-cloud speculative decoding research.
+
+### New Document: `VIDEO_STREAMING_COMPUTE_OFFLOAD.md`
+
+**Core Idea:** Reverse the edge-cloud paradigm
+- Traditional: Process video on edge, send tokens to cloud
+- New: Stream raw video to cloud, draft tokens on edge
+
+**Why This Works:**
+- Video streaming: 5G offers 100Mbps+, <1ms latency, $0.01-0.05/GB
+- Vision encoding: 50-500ms compute, requires GPU
+- Stream-to-cloud saves edge compute, leverages cloud GPUs
+
+**Research Support:**
+- [SLED: Edge Speculative Decoding](https://arxiv.org/html/2506.09397v3)
+- [Disaggregated Inference (Hao AI Lab)](https://hao-ai-lab.github.io/blogs/distserve-retro/)
+- [5G Streaming Revolution](https://www.dacast.com/blog/5g-streaming/)
+- [NVIDIA Dynamo](https://developer.nvidia.com/blog/introducing-nvidia-dynamo-a-low-latency-distributed-inference-framework-for-scaling-reasoning-ai-models/)
+
+**EventGPT Advantage:**
+Event camera streams are 50-500x smaller than RGB video (10-100 KB/s vs 5-10 MB/s), making stream-to-cloud especially attractive.
+
+### Files Moved
+- `edge_cloud_speculative_decoding.md` → `edge_cloud_SD/`
+
+---
+
+## Update (January 28, 2026) - Token Alignment Success
+
+### Token Alignment Training Results
+
+**First successful end-to-end TokenAdapter training:**
+
+| Metric | Value |
+|--------|-------|
+| Test Acceptance | **27.90%** (was 1.58% baseline) |
+| Top-5 Accuracy | 51.64% |
+| Improvement | 17.6x over baseline |
+| Theoretical Speedup | 1.39x |
+
+### Files Created/Modified:
+1. **`feasible/token_alignment/extract_tokens_parallel.py`** - NEW parallel extraction
+   - Both models loaded simultaneously (~8GB VRAM)
+   - ~1.5s/pair extraction speed
+   - Currently running 10-question extraction (52,080 pairs)
+
+2. **`feasible/token_alignment/top50_questions.json`** - Top 50 DSEC questions
+
+3. **`feasible/token_alignment/README.md`** - Comprehensive usage documentation
+   - Quick start guides (1q, 50q workflows)
+   - Sequential vs parallel extraction
+   - Architecture diagrams
+
+4. **`feasible/token_alignment/task/starred/1q_20260128_151847/`** - Starred results
+
+### Key Findings:
+- **Token-level alignment works:** 27.9% acceptance validates approach
+- **Ceiling ~50%:** Semantic gap limits token-level mapping
+- **Next step:** Multi-question training for diversity (10q extraction running)
+- **Path forward:** Feature-level alignment for higher acceptance
+
+---
+
+## Update (January 28, 2026) - Cascaded SD Research
 
 ### New Directory: `egpt_vllava_roadmap/`
 Comprehensive research on cascaded/hierarchical speculative decoding for EventGPT → VideoLLaVA.
@@ -174,10 +301,16 @@ Created comprehensive research folder for cross-modal speculative decoding.
 
 | File | Last Update | Status | Next Update |
 |------|-------------|--------|-------------|
+| feasible/token_alignment/README.md | 2026-01-28 | ✅ Complete | After 10q results |
+| feasible/token_alignment/extract_tokens_parallel.py | 2026-01-28 | ✅ Complete | As needed |
+| feasible/token_alignment/task/starred/ | 2026-01-28 | ✅ Results saved | After 10q results |
+| edge_cloud_SD/VIDEO_STREAMING_COMPUTE_OFFLOAD.md | 2026-01-28 | ✅ Complete | As needed |
+| edge_cloud_SD/edge_cloud_speculative_decoding.md | 2026-01-28 | ✅ Moved | Weekly |
 | prefill_hiding/README.md | 2026-01-26 | ✅ Complete | Weekly |
 | prefill_hiding/RELATED_WORK.md | 2026-01-26 | ✅ Complete | Weekly |
 | prefill_hiding/NOVELTY_ANALYSIS.md | 2026-01-26 | ✅ Complete | Weekly |
 | prefill_hiding/ABSTRACT.md | 2026-01-26 | ✅ Complete | As needed |
+| egpt_vllava_roadmap/*.md | 2026-01-28 | ✅ Complete | Weekly |
 | README.md | 2026-01-23 | ✅ Complete | Hourly |
 | token_level_speculative_decoding.md | 2026-01-23 | ✅ Complete | Hourly |
 | embedding_level_speculative_decoding.md | 2026-01-23 | ✅ Complete | Hourly |
@@ -198,5 +331,5 @@ To contribute updates:
 
 ---
 
-**Last Updated:** January 26, 2026
-**Next Scheduled Update:** Hourly
+**Last Updated:** February 7, 2026
+**Next Scheduled Update:** After true E2E wall-clock benchmark

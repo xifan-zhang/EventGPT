@@ -1,0 +1,57 @@
+{
+  "timestamp": "20260126_003617",
+  "datetime": "2026-01-26 00:36:17",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 10,
+    "max_new_tokens": 100,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 1,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 2,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 3,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 4,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 5,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 6,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 7,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 8,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    },
+    {
+      "sample_idx": 9,
+      "error": "No module named 'common.common'; 'common' is not a package"
+    }
+  ]
+}

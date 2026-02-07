@@ -1,0 +1,142 @@
+{
+  "timestamp": "20260207_022657",
+  "config": {
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "max_samples": 1,
+    "max_new_tokens": 10,
+    "gamma": 5,
+    "warmup": 0,
+    "n_questions": 10,
+    "questions": [
+      "What are the key elements in this scene?",
+      "Can you elaborate on the elements of the scene provided?",
+      "What is this scene about?",
+      "What is the layout of the road in the scene?",
+      "What type of vehicles are present in the scene and how are they positioned?",
+      "What do you think is going on in this scene?",
+      "What elements are present in the scene?",
+      "What do you see happening in this scene?",
+      "Describe the following scene.",
+      "What types of vehicles are present in the scene and how are they positioned?"
+    ]
+  },
+  "stage_timing": {
+    "eventgpt": {
+      "vision_ms": 130.8276653289795,
+      "prefill_ms": 140.53106307983398,
+      "decode_ms": 97.01895713806152,
+      "total_ms": 368.377685546875,
+      "per_token_ms": 9.701895713806152,
+      "avg_tokens": 10.0
+    },
+    "videollava": {
+      "vision_ms": 0.0,
+      "prefill_ms": 355.9892177581787,
+      "decode_ms": 140.75756072998047,
+      "total_ms": 496.7467784881592,
+      "per_token_ms": 14.075756072998047,
+      "avg_tokens": 10.0
+    }
+  },
+  "aggregate": {
+    "VL baseline": {
+      "speedup_mean": 1.0,
+      "prefill_ms_mean": 315.17016887664795,
+      "decode_ms_mean": 146.66330814361572,
+      "accept_rate_mean": 0
+    }
+  },
+  "baseline_per_sample": [
+    {
+      "sample": 0,
+      "question": "What are the key elements in this scene?",
+      "prefill_ms": 318.56274604797363,
+      "decode_ms": 133.9402198791504,
+      "total_ms": 452.502965927124,
+      "n_tokens": 10,
+      "text": "The key elements in this scene include a car driving"
+    },
+    {
+      "sample": 0,
+      "question": "Can you elaborate on the elements of the scene provided?",
+      "prefill_ms": 315.1590824127197,
+      "decode_ms": 135.56408882141113,
+      "total_ms": 450.72317123413086,
+      "n_tokens": 10,
+      "text": "The image captures a car driving down a w"
+    },
+    {
+      "sample": 0,
+      "question": "What is this scene about?",
+      "prefill_ms": 313.8623237609863,
+      "decode_ms": 136.10172271728516,
+      "total_ms": 449.9640464782715,
+      "n_tokens": 10,
+      "text": "This scene is about a car driving down a w"
+    },
+    {
+      "sample": 0,
+      "question": "What is the layout of the road in the scene?",
+      "prefill_ms": 314.4347667694092,
+      "decode_ms": 136.43121719360352,
+      "total_ms": 450.8659839630127,
+      "n_tokens": 10,
+      "text": "The road in the scene is a two-way"
+    },
+    {
+      "sample": 0,
+      "question": "What type of vehicles are present in the scene and how are they positioned?",
+      "prefill_ms": 315.0167465209961,
+      "decode_ms": 137.1750831604004,
+      "total_ms": 452.1918296813965,
+      "n_tokens": 10,
+      "text": "In the scene, there are two vehicles present:"
+    },
+    {
+      "sample": 0,
+      "question": "What do you think is going on in this scene?",
+      "prefill_ms": 314.4538402557373,
+      "decode_ms": 136.96694374084473,
+      "total_ms": 451.42078399658203,
+      "n_tokens": 10,
+      "text": "In the image, a car is driving down a"
+    },
+    {
+      "sample": 0,
+      "question": "What elements are present in the scene?",
+      "prefill_ms": 314.94832038879395,
+      "decode_ms": 137.62974739074707,
+      "total_ms": 452.578067779541,
+      "n_tokens": 10,
+      "text": "The scene features a car driving down a winding"
+    },
+    {
+      "sample": 0,
+      "question": "What do you see happening in this scene?",
+      "prefill_ms": 314.0404224395752,
+      "decode_ms": 186.20848655700684,
+      "total_ms": 500.24890899658203,
+      "n_tokens": 10,
+      "text": "The image captures a car driving down a w"
+    },
+    {
+      "sample": 0,
+      "question": "Describe the following scene.",
+      "prefill_ms": 315.5653476715088,
+      "decode_ms": 137.07804679870605,
+      "total_ms": 452.64339447021484,
+      "n_tokens": 10,
+      "text": "The scene shows a car driving down a winding"
+    },
+    {
+      "sample": 0,
+      "question": "What types of vehicles are present in the scene and how are they positioned?",
+      "prefill_ms": 315.6580924987793,
+      "decode_ms": 189.53752517700195,
+      "total_ms": 505.19561767578125,
+      "n_tokens": 10,
+      "text": "In the scene, there are two types of vehicles"
+    }
+  ],
+  "sd_per_sample": {}
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": "20260126_001732",
+  "datetime": "2026-01-26 00:17:32",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 2,
+    "max_new_tokens": 512,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "error": "'VideoLlavaForConditionalGeneration' object has no attribute 'lm_head'"
+    },
+    {
+      "sample_idx": 1,
+      "error": "'VideoLlavaForConditionalGeneration' object has no attribute 'lm_head'"
+    }
+  ]
+}

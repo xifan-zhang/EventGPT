@@ -1,0 +1,25 @@
+{
+  "timestamp": "20260126_002252",
+  "datetime": "2026-01-26 00:22:52",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 2,
+    "max_new_tokens": 100,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "error": "mat1 and mat2 shapes cannot be multiplied (1x32064 and 4096x32064)"
+    },
+    {
+      "sample_idx": 1,
+      "error": "mat1 and mat2 shapes cannot be multiplied (1x32064 and 4096x32064)"
+    }
+  ]
+}

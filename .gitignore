@@ -2,3 +2,23 @@ checkpoints/
 __pycache__/
 *.pyc
 test_images.zip
+
+# Large model/data files
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.onnx
+
+# Training data and caches
+feasible/feature_alignment/data/
+feasible/feature_alignment/hidden_states/
+feasible/benchmark_cache/
+feasible/download_pretrained/
+
+# Logs
+*.log
+logs/
+
+# Environment
+env/

@@ -1,0 +1,65 @@
+{
+  "timestamp": "20260125_012202",
+  "datetime": "2026-01-25 01:22:02",
+  "config": {
+    "max_samples": 5,
+    "device": "cuda",
+    "max_draft_tokens": 32,
+    "quantization": "bf16"
+  },
+  "statistics": {
+    "n_samples": 1,
+    "eventgpt": {
+      "prefill_time_avg": 0.2373485565185547,
+      "prefill_time_std": 0.0,
+      "prefill_length_avg": 637.0
+    },
+    "videollava": {
+      "prefill_time_avg": 0.0,
+      "prefill_time_std": 0.0,
+      "prefill_length_avg": 0.0
+    },
+    "parallel": {
+      "overlap_window_avg": -0.2373485565185547,
+      "draft_tokens_avg": 30.0,
+      "draft_tokens_max": 30,
+      "draft_time_avg": 0.5434620380401611,
+      "total_time_avg": 0.7833843231201172,
+      "parallel_efficiency_avg": 0.30297843537795915
+    }
+  },
+  "results": [
+    {
+      "sample_idx": 0,
+      "egpt_prefill_time": 0.2373485565185547,
+      "egpt_prefill_length": 637,
+      "vl_prefill_time": 0,
+      "vl_prefill_length": 0,
+      "draft_tokens": 30,
+      "draft_time": 0.5434620380401611,
+      "total_time": 0.7833843231201172,
+      "parallel_efficiency": 0.30297843537795915,
+      "overlap_window": -0.2373485565185547,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    }
+  ],
+  "errors": [
+    {
+      "sample_idx": 1,
+      "error": "CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacty of 23.49 GiB of which 13.00 MiB is free. Including non-PyTorch memory, this process has 22.74 GiB memory in use. Of the allocated memory 22.02 GiB is allocated by PyTorch, and 262.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF"
+    },
+    {
+      "sample_idx": 2,
+      "error": "CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacty of 23.49 GiB of which 13.00 MiB is free. Including non-PyTorch memory, this process has 22.74 GiB memory in use. Of the allocated memory 22.02 GiB is allocated by PyTorch, and 262.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF"
+    },
+    {
+      "sample_idx": 3,
+      "error": "CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacty of 23.49 GiB of which 13.00 MiB is free. Including non-PyTorch memory, this process has 22.74 GiB memory in use. Of the allocated memory 22.02 GiB is allocated by PyTorch, and 262.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF"
+    },
+    {
+      "sample_idx": 4,
+      "error": "CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacty of 23.49 GiB of which 13.00 MiB is free. Including non-PyTorch memory, this process has 22.74 GiB memory in use. Of the allocated memory 22.02 GiB is allocated by PyTorch, and 262.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF"
+    }
+  ]
+}

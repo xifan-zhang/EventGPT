@@ -673,6 +673,436 @@ def load_chunked_data(data_path: Path, device: str) -> Tuple[torch.Tensor, torch
     return egpt_hidden, vl_hidden, mask
 
 
+# =========================================================================
+# TOKEN-LEVEL METRICS (requires LM head weights)
+# =========================================================================
+
+def load_lm_head(lm_head_path: str) -> torch.Tensor:
+    """Load pre-extracted VL LM head weights."""
+    data = torch.load(lm_head_path, map_location='cpu')
+    weight = data['lm_head_weight']  # [vocab_size, hidden_dim]
+    print(f"  LM head: [{weight.shape[0]}, {weight.shape[1]}] {weight.dtype}")
+    return weight
+
+
+def project_to_tokens(
+    hidden: torch.Tensor,
+    lm_head_weight: torch.Tensor,
+    mask: torch.Tensor,
+    top_k: int = 10,
+    batch_size: int = 64,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Project hidden states to token IDs via LM head (memory-efficient).
+
+    Does chunked matmul + immediate argmax to avoid materialising [B, S, 32000].
+
+    Args:
+        hidden: [N, seq, 4096]
+        lm_head_weight: [vocab_size, 4096]
+        mask: [N, seq]
+        top_k: number of top-k predictions to keep
+        batch_size: chunk size for processing
+
+    Returns:
+        token_ids: [N, seq] greedy token IDs
+        topk_ids:  [N, seq, k] top-k token IDs
+    """
+    N, S, D = hidden.shape
+    # Use GPU for matmul even if data is on CPU (much faster)
+    gpu = 'cuda' if torch.cuda.is_available() else hidden.device
+    W = lm_head_weight.to(gpu).float()  # [V, D]
+
+    token_ids = torch.zeros(N, S, dtype=torch.long)
+    topk_ids = torch.zeros(N, S, top_k, dtype=torch.long)
+
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        h_batch = hidden[start:end].to(gpu).float()  # [B, S, D]
+        # logits = h @ W^T  →  [B, S, V]
+        logits = torch.matmul(h_batch, W.T)
+        token_ids[start:end] = logits.argmax(dim=-1).cpu()
+        topk_ids[start:end] = logits.topk(top_k, dim=-1).indices.cpu()
+        del logits, h_batch
+
+    return token_ids, topk_ids
+
+
+def compute_token_level_metrics(
+    aligned_hidden: torch.Tensor,
+    vl_hidden: torch.Tensor,
+    mask: torch.Tensor,
+    lm_head_weight: torch.Tensor,
+    top_k: int = 10,
+    batch_size: int = 64,
+) -> Dict:
+    """
+    Compute token-level acceptance metrics via LM head projection.
+
+    Returns dict with top-1/5/10 match rates, consecutive token accepts,
+    and per-position token acceptance.
+    """
+    print("  Projecting aligned hidden states to tokens...")
+    aligned_tokens, aligned_topk = project_to_tokens(
+        aligned_hidden, lm_head_weight, mask, top_k=top_k, batch_size=batch_size,
+    )
+    print("  Projecting VL hidden states to tokens...")
+    vl_tokens, _ = project_to_tokens(
+        vl_hidden, lm_head_weight, mask, top_k=1, batch_size=batch_size,
+    )
+
+    mask_bool = mask.bool()
+    valid_count = mask.sum().item()
+
+    metrics = {}
+
+    # --- Top-1 match ---
+    top1_match = (aligned_tokens == vl_tokens) & mask_bool
+    metrics['token_top1_match'] = top1_match.float().sum().item() / valid_count
+
+    # --- Top-5 match ---
+    vl_expanded = vl_tokens.unsqueeze(-1)  # [N, S, 1]
+    top5_hit = (aligned_topk[:, :, :5] == vl_expanded).any(dim=-1) & mask_bool
+    metrics['token_top5_match'] = top5_hit.float().sum().item() / valid_count
+
+    # --- Top-10 match ---
+    top10_hit = (aligned_topk == vl_expanded).any(dim=-1) & mask_bool
+    metrics['token_top10_match'] = top10_hit.float().sum().item() / valid_count
+
+    # --- Consecutive token accepts (cumprod trick) ---
+    accept_int = top1_match.int()
+    cumprod = accept_int.cumprod(dim=1)
+    consecutive = cumprod.sum(dim=1).float()  # [N]
+    seq_lens = mask.sum(dim=1)
+    consecutive = torch.minimum(consecutive, seq_lens)
+
+    metrics['token_consecutive_mean'] = consecutive.mean().item()
+    metrics['token_consecutive_std'] = consecutive.std().item()
+    metrics['token_consecutive_median'] = consecutive.median().item()
+    metrics['token_consecutive_max'] = consecutive.max().item()
+    metrics['token_consecutive_min'] = consecutive.min().item()
+
+    # --- Per-position token acceptance (first 20 positions) ---
+    max_seq = aligned_tokens.shape[1]
+    position_token_accept = []
+    for pos in range(min(max_seq, 20)):
+        valid_at_pos = mask_bool[:, pos]
+        if valid_at_pos.sum() == 0:
+            break
+        match_at_pos = top1_match[valid_at_pos, pos].float().mean().item()
+        position_token_accept.append(match_at_pos)
+
+    metrics['position_token_accept'] = position_token_accept
+
+    return metrics, aligned_tokens, vl_tokens
+
+
+def compute_two_phase_sd_metrics(
+    aligned_tokens: torch.Tensor,
+    vl_tokens: torch.Tensor,
+    mask: torch.Tensor,
+    timing_config: TimingConfig,
+    gamma_decode: int = 5,
+) -> Dict:
+    """
+    Compute two-phase speculative decoding metrics using token-level matches.
+
+    Phase 1 (Prefill Hiding): gamma_prefill = (VL_prefill - EGPT_prefill) / EGPT_per_token
+      Count consecutive token matches in first gamma_prefill positions.
+    Phase 2 (Decode): gamma_decode=5
+      Per-iteration: draft gamma tokens, accept consecutive prefix.
+    """
+    t = timing_config
+    mask_bool = mask.bool()
+
+    # gamma_prefill: how many free draft tokens during VL prefill overlap
+    free_draft_time = max(0, t.vl_prefill - t.egpt_prefill)
+    gamma_prefill = int(free_draft_time / t.egpt_per_token) if t.egpt_per_token > 0 else 0
+
+    metrics = {'token_sd_gamma_prefill': gamma_prefill}
+
+    # --- Phase 1: Prefill hiding ---
+    if gamma_prefill > 0:
+        first_gp = min(gamma_prefill, aligned_tokens.shape[1])
+        match_prefill = (aligned_tokens[:, :first_gp] == vl_tokens[:, :first_gp])
+        match_prefill = match_prefill & mask_bool[:, :first_gp]
+        cumprod_prefill = match_prefill.int().cumprod(dim=1)
+        consec_prefill = cumprod_prefill.sum(dim=1).float()
+        metrics['token_sd_prefill_consecutive_mean'] = consec_prefill.mean().item()
+        metrics['token_sd_prefill_accept_rate'] = consec_prefill.mean().item() / first_gp
+    else:
+        metrics['token_sd_prefill_consecutive_mean'] = 0.0
+        metrics['token_sd_prefill_accept_rate'] = 0.0
+
+    # --- Phase 2: Decode (gamma=gamma_decode) ---
+    # Look at first gamma_decode positions for expected accept per iteration
+    max_seq = aligned_tokens.shape[1]
+    if max_seq >= gamma_decode:
+        first_g = gamma_decode
+        match_decode = (aligned_tokens[:, :first_g] == vl_tokens[:, :first_g])
+        match_decode = match_decode & mask_bool[:, :first_g]
+        cumprod_decode = match_decode.int().cumprod(dim=1)
+        consec_decode = cumprod_decode.sum(dim=1).float()
+        avg_accepted = consec_decode.mean().item()
+    else:
+        avg_accepted = 0.0
+
+    metrics['token_sd_decode_consecutive_mean'] = avg_accepted
+    metrics['token_sd_decode_accept_rate'] = avg_accepted / gamma_decode if gamma_decode > 0 else 0.0
+    metrics['token_sd_gamma_decode'] = gamma_decode
+
+    # --- E2E speedup estimate from token-level rates ---
+    num_output_tokens = 50
+    baseline_time = t.vl_prefill + num_output_tokens * t.vl_per_token
+
+    # Prefill phase (parallel)
+    parallel_prefill = max(t.vl_prefill, t.egpt_prefill + t.adapter_latency)
+    prefill_saved = metrics.get('token_sd_prefill_consecutive_mean', 0) * t.vl_per_token
+
+    # Decode phase with SD
+    if avg_accepted > 0:
+        iterations = num_output_tokens / (avg_accepted + 1)
+        decode_time = iterations * (t.vl_per_token * (gamma_decode + 1) + t.adapter_latency)
+    else:
+        decode_time = num_output_tokens * t.vl_per_token
+
+    total_sd_time = parallel_prefill + decode_time
+    metrics['token_sd_e2e_speedup'] = baseline_time / total_sd_time if total_sd_time > 0 else 1.0
+    metrics['token_sd_e2e_baseline_ms'] = baseline_time
+    metrics['token_sd_e2e_sd_ms'] = total_sd_time
+
+    return metrics
+
+
+def compute_cosim_vs_token_correlation(
+    cos_sim: torch.Tensor,
+    token_match: torch.Tensor,
+    mask: torch.Tensor,
+) -> Dict:
+    """
+    Sweep cos_sim thresholds and measure what fraction also match at token level.
+
+    Answers: "is cos_sim > 0.90 a good proxy for token acceptance?"
+    """
+    mask_bool = mask.bool()
+    results = {}
+
+    for thresh in [0.80, 0.85, 0.90, 0.92, 0.95, 0.98]:
+        above = (cos_sim > thresh) & mask_bool
+        n_above = above.sum().item()
+        if n_above > 0:
+            token_match_given_above = (token_match & above).sum().item() / n_above
+        else:
+            token_match_given_above = 0.0
+        results[f'cosim_{int(thresh*100)}_token_match'] = token_match_given_above
+        results[f'cosim_{int(thresh*100)}_count'] = int(n_above)
+
+    # Overall correlation (Pearson on valid positions)
+    valid = mask_bool
+    cs_flat = cos_sim[valid].float().cpu()
+    tm_flat = token_match[valid].float().cpu()
+    if len(cs_flat) > 1:
+        corr = torch.corrcoef(torch.stack([cs_flat, tm_flat]))[0, 1].item()
+    else:
+        corr = 0.0
+    results['cosim_token_pearson_r'] = corr
+
+    return results
+
+
+def print_token_metrics_report(metrics: Dict):
+    """Print formatted token-level metrics report section."""
+    print("\n" + "=" * 80)
+    print("TOKEN-LEVEL METRICS (via LM head projection)")
+    print("=" * 80)
+
+    print("\n[T1] TOKEN MATCH RATES")
+    print("-" * 40)
+    for k, label in [('token_top1_match', 'Top-1'), ('token_top5_match', 'Top-5'),
+                     ('token_top10_match', 'Top-10')]:
+        rate = metrics.get(k, 0)
+        bar = "\u2588" * int(rate * 20)
+        print(f"  {label:>6}: {rate:6.2%} {bar}")
+
+    print("\n[T2] CONSECUTIVE TOKEN ACCEPTS")
+    print("-" * 40)
+    print(f"  Mean:    {metrics.get('token_consecutive_mean', 0):.2f} tokens")
+    print(f"  Std:     {metrics.get('token_consecutive_std', 0):.2f}")
+    print(f"  Median:  {metrics.get('token_consecutive_median', 0):.2f}")
+    print(f"  Max:     {metrics.get('token_consecutive_max', 0):.0f}")
+
+    print("\n[T3] TWO-PHASE SD (Token-Level)")
+    print("-" * 40)
+    gp = metrics.get('token_sd_gamma_prefill', 0)
+    gd = metrics.get('token_sd_gamma_decode', 5)
+    print(f"  Phase 1 - Prefill Hiding (\u03b3_prefill={gp}):")
+    print(f"    Consecutive accepts: {metrics.get('token_sd_prefill_consecutive_mean', 0):.2f}")
+    print(f"    Accept rate:         {metrics.get('token_sd_prefill_accept_rate', 0):.2%}")
+    print(f"  Phase 2 - Decode (\u03b3_decode={gd}):")
+    print(f"    Consecutive accepts: {metrics.get('token_sd_decode_consecutive_mean', 0):.2f}")
+    print(f"    Accept rate:         {metrics.get('token_sd_decode_accept_rate', 0):.2%}")
+    print(f"  E2E Speedup Estimate:  {metrics.get('token_sd_e2e_speedup', 1.0):.2f}x")
+
+    print("\n[T4] COSINE SIM vs TOKEN MATCH CORRELATION")
+    print("-" * 40)
+    for thresh in [80, 85, 90, 92, 95, 98]:
+        k = f'cosim_{thresh}_token_match'
+        rate = metrics.get(k, 0)
+        count = metrics.get(f'cosim_{thresh}_count', 0)
+        t_str = f"0.{thresh}" if thresh < 100 else f"1.{thresh-100:02d}"
+        print(f"  cos>{t_str}: {rate:6.2%} also token-match  (n={count})")
+    print(f"  Pearson r: {metrics.get('cosim_token_pearson_r', 0):.4f}")
+
+    print("\n[T5] PER-POSITION TOKEN ACCEPT (First 10)")
+    print("-" * 40)
+    for i, rate in enumerate(metrics.get('position_token_accept', [])[:10]):
+        bar = "\u2588" * int(rate * 20)
+        print(f"  Pos {i:2d}: {rate:6.2%} {bar}")
+
+
+def generate_metrics_comparison_md(metrics: Dict, output_dir: Path):
+    """Auto-generate METRICS_COMPARISON.md comparing hidden-state vs token-level."""
+    md_path = output_dir / 'METRICS_COMPARISON.md'
+
+    lines = [
+        "# Metrics Comparison: Hidden-State vs Token-Level",
+        "",
+        f"Generated: {datetime.now().isoformat()}",
+        "",
+        "## Summary",
+        "",
+        "| Metric | Hidden-State (@0.90) | Token-Level (Top-1) |",
+        "|--------|---------------------|---------------------|",
+    ]
+
+    hs_accept = metrics.get('accept_90', 0)
+    tk_accept = metrics.get('token_top1_match', 0)
+    lines.append(f"| Overall Accept Rate | {hs_accept:.2%} | {tk_accept:.2%} |")
+
+    hs_consec = metrics.get('consecutive_mean_90', 0)
+    tk_consec = metrics.get('token_consecutive_mean', 0)
+    lines.append(f"| Consecutive Accepts | {hs_consec:.2f} | {tk_consec:.2f} |")
+
+    hs_e2e = metrics.get('speedup_e2e', 1.0)
+    tk_e2e = metrics.get('token_sd_e2e_speedup', 1.0)
+    lines.append(f"| E2E Speedup | {hs_e2e:.2f}x | {tk_e2e:.2f}x |")
+
+    lines.extend([
+        "",
+        "## Cosine Similarity as Token Proxy",
+        "",
+        "| cos_sim threshold | P(token match | cos > thresh) | Count |",
+        "|-------------------|-------------------------------|-------|",
+    ])
+    for thresh in [80, 85, 90, 92, 95, 98]:
+        rate = metrics.get(f'cosim_{thresh}_token_match', 0)
+        count = metrics.get(f'cosim_{thresh}_count', 0)
+        t_str = f"0.{thresh}" if thresh < 100 else f"1.{thresh-100:02d}"
+        lines.append(f"| > {t_str} | {rate:.2%} | {count} |")
+
+    r = metrics.get('cosim_token_pearson_r', 0)
+    lines.extend([
+        "",
+        f"Pearson r (cos_sim, token_match): **{r:.4f}**",
+        "",
+        "## Per-Position Comparison (First 10)",
+        "",
+        "| Position | Hidden Accept @0.90 | Token Top-1 |",
+        "|----------|--------------------:|------------:|",
+    ])
+    hs_pos = metrics.get('position_accept_90', [])
+    tk_pos = metrics.get('position_token_accept', [])
+    for i in range(min(10, len(hs_pos), len(tk_pos))):
+        lines.append(f"| {i} | {hs_pos[i]:.2%} | {tk_pos[i]:.2%} |")
+
+    lines.extend([
+        "",
+        "## Two-Phase SD (Token-Level)",
+        "",
+        f"- gamma_prefill = {metrics.get('token_sd_gamma_prefill', 0)}",
+        f"- Prefill consecutive accepts: {metrics.get('token_sd_prefill_consecutive_mean', 0):.2f}",
+        f"- gamma_decode = {metrics.get('token_sd_gamma_decode', 5)}",
+        f"- Decode consecutive accepts: {metrics.get('token_sd_decode_consecutive_mean', 0):.2f}",
+        f"- E2E speedup estimate: {metrics.get('token_sd_e2e_speedup', 1.0):.2f}x",
+        "",
+    ])
+
+    with open(md_path, 'w') as f:
+        f.write('\n'.join(lines))
+    print(f"  Saved: {md_path}")
+
+
+def plot_token_metrics(
+    metrics: Dict,
+    output_dir: Path,
+):
+    """Generate token-level metrics plot panel."""
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+    # 1. Token match rates bar chart
+    ax1 = axes[0]
+    labels = ['Top-1', 'Top-5', 'Top-10']
+    values = [metrics.get('token_top1_match', 0),
+              metrics.get('token_top5_match', 0),
+              metrics.get('token_top10_match', 0)]
+    colors = ['#e74c3c', '#f39c12', '#2ecc71']
+    bars = ax1.bar(labels, values, color=colors, alpha=0.8, edgecolor='black')
+    for bar, val in zip(bars, values):
+        ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
+                 f'{val:.1%}', ha='center', va='bottom', fontsize=11, fontweight='bold')
+    ax1.set_ylabel('Match Rate')
+    ax1.set_title('Token Match Rates (via LM Head)')
+    ax1.set_ylim(0, 1.05)
+    ax1.grid(True, alpha=0.3, axis='y')
+
+    # 2. Per-position token accept
+    ax2 = axes[1]
+    tk_pos = metrics.get('position_token_accept', [])
+    hs_pos = metrics.get('position_accept_90', [])
+    n_pos = min(len(tk_pos), len(hs_pos), 20)
+    if n_pos > 0:
+        positions = list(range(n_pos))
+        ax2.plot(positions, tk_pos[:n_pos], 'o-', color='#e74c3c', label='Token Top-1', alpha=0.8)
+        ax2.plot(positions, hs_pos[:n_pos], 's--', color='#3498db', label='Hidden @0.90', alpha=0.8)
+        ax2.set_xlabel('Position in Sequence')
+        ax2.set_ylabel('Acceptance Rate')
+        ax2.set_title('Per-Position: Hidden vs Token Accept')
+        ax2.legend()
+        ax2.set_ylim(0, 1.05)
+    ax2.grid(True, alpha=0.3)
+
+    # 3. Cosim threshold → token match
+    ax3 = axes[2]
+    thresholds = [80, 85, 90, 92, 95, 98]
+    cos_token_rates = [metrics.get(f'cosim_{t}_token_match', 0) for t in thresholds]
+    thresh_labels = [f'.{t}' for t in thresholds]
+    ax3.plot(thresh_labels, cos_token_rates, 'D-', color='#9b59b6', markersize=8, alpha=0.8)
+    for i, (lbl, val) in enumerate(zip(thresh_labels, cos_token_rates)):
+        ax3.annotate(f'{val:.0%}', (lbl, val), textcoords="offset points",
+                     xytext=(0, 10), ha='center', fontsize=9)
+    ax3.set_xlabel('Cosine Similarity Threshold')
+    ax3.set_ylabel('P(token match | cos > thresh)')
+    ax3.set_title('Cosine Sim as Token Match Proxy')
+    ax3.set_ylim(0, 1.05)
+    ax3.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output_dir / 'token_metrics.png', dpi=150)
+    plt.close()
+    print(f"  Saved: {output_dir / 'token_metrics.png'}")
+
+
+def _serialize_metrics(metrics: Dict) -> Dict:
+    """Convert metrics dict to JSON-serializable form."""
+    out = {}
+    for k, v in metrics.items():
+        if isinstance(v, (list, tuple)):
+            out[k] = [float(x) if isinstance(x, (int, float)) else x for x in v]
+        else:
+            out[k] = v
+    return out
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Measure feature-level acceptance metrics")
@@ -685,6 +1115,10 @@ def main():
     parser.add_argument('--batch_size', type=int, default=64,
                         help='Batch size for processing')
 
+    # Token-level metrics (optional)
+    parser.add_argument('--lm_head', type=str, default=None,
+                        help='Path to vl_lm_head.pt (enables token-level metrics)')
+
     # Timing configuration
     parser.add_argument('--egpt_prefill_ms', type=float, default=130.0)
     parser.add_argument('--egpt_per_token_ms', type=float, default=25.0)
@@ -694,6 +1128,10 @@ def main():
 
     # SD configuration
     parser.add_argument('--gamma_decode', type=int, default=5)
+
+    # Adapter mode overrides
+    parser.add_argument('--vlm_only', action='store_true',
+                        help='VLM-only mode (B1): use vl_hidden as adapter input')
 
     args = parser.parse_args()
 
@@ -705,15 +1143,33 @@ def main():
     model, checkpoint = load_any_adapter(args.checkpoint, device)
     model = model.to(device)
     model.eval()
-    print(f"  Adapter type: {type(model).__name__}")
+    adapter_class = type(model).__name__
+    print(f"  Adapter type: {adapter_class}")
     print(f"  Parameters: {model.get_num_parameters():,}")
 
-    # Load test data
+    # Detect adapter mode from checkpoint config or CLI flag
+    is_vlm_only = args.vlm_only
+    is_fused = adapter_class == 'FusedEAGLEAdapter'
+
+    if is_vlm_only:
+        print(f"  Mode: VLM-only (B1) — using vl_hidden as input")
+    elif is_fused:
+        print(f"  Mode: Fused (L5F) — using both egpt_hidden + vl_hidden as input")
+    else:
+        print(f"  Mode: Standard — using egpt_hidden as input")
+
+    # Load test data to CPU (avoid GPU OOM with large test sets)
     print(f"\nLoading test data: {args.test_data}")
-    egpt_hidden, vl_hidden, mask = load_chunked_data(args.test_data, device)
+    egpt_hidden, vl_hidden, mask = load_chunked_data(args.test_data, 'cpu')
     print(f"  Samples: {len(egpt_hidden)}")
     print(f"  Max seq len: {egpt_hidden.shape[1]}")
     print(f"  Hidden dim: {egpt_hidden.shape[-1]}")
+
+    # Optionally load LM head for token-level metrics
+    lm_head_weight = None
+    if args.lm_head:
+        print(f"\nLoading LM head: {args.lm_head}")
+        lm_head_weight = load_lm_head(args.lm_head)
 
     # Create configs
     timing_config = TimingConfig(
@@ -728,20 +1184,31 @@ def main():
         gamma_decode=args.gamma_decode,
     )
 
-    # Compute aligned hidden states
-    print("\nComputing aligned hidden states...")
+    # Compute aligned hidden states batch-by-batch (data on CPU, compute on GPU)
+    # B1 (vlm_only): source = vl_hidden
+    # L5F (fused): forward(egpt_hidden, vl_hidden)
+    # L1-L5: source = egpt_hidden
+    print("\nComputing aligned hidden states (batch-by-batch on GPU)...")
+    aligned_list = []
     with torch.no_grad():
-        # Process in batches if needed
-        if len(egpt_hidden) > args.batch_size:
-            aligned_list = []
-            for i in tqdm(range(0, len(egpt_hidden), args.batch_size)):
-                batch = egpt_hidden[i:i+args.batch_size]
-                aligned_list.append(model(batch))
-            aligned_hidden = torch.cat(aligned_list, dim=0)
-        else:
-            aligned_hidden = model(egpt_hidden)
+        for i in tqdm(range(0, len(egpt_hidden), args.batch_size)):
+            if is_fused:
+                batch_egpt = egpt_hidden[i:i+args.batch_size].to(device)
+                batch_vl = vl_hidden[i:i+args.batch_size].to(device)
+                out = model(batch_egpt, batch_vl).cpu()
+            elif is_vlm_only:
+                batch_vl = vl_hidden[i:i+args.batch_size].to(device)
+                out = model(batch_vl).cpu()
+            else:
+                batch = egpt_hidden[i:i+args.batch_size].to(device)
+                out = model(batch).cpu()
+            aligned_list.append(out)
+    aligned_hidden = torch.cat(aligned_list, dim=0)
 
-    # Compute all metrics in parallel
+    # =====================================================================
+    # HIDDEN-STATE METRICS
+    # =====================================================================
+    print("\n[HIDDEN-STATE METRICS]")
     print("Computing metrics (parallel)...")
     metrics, cos_sim, valid_sims = compute_all_metrics_parallel(
         aligned_hidden, vl_hidden, mask,
@@ -752,10 +1219,49 @@ def main():
     # Compute per-position stats
     position_stats = compute_per_position_stats(cos_sim, mask)
 
-    # Print report
+    # Print hidden-state report
     print_metrics_report(metrics, position_stats)
 
-    # Save results
+    # =====================================================================
+    # TOKEN-LEVEL METRICS (if LM head provided)
+    # =====================================================================
+    if lm_head_weight is not None:
+        print("\n[TOKEN-LEVEL METRICS]")
+        print("Computing token-level metrics via LM head projection...")
+
+        with torch.no_grad():
+            token_metrics, aligned_tokens, vl_tokens = compute_token_level_metrics(
+                aligned_hidden, vl_hidden, mask, lm_head_weight,
+                top_k=10, batch_size=args.batch_size,
+            )
+        metrics.update(token_metrics)
+
+        # Two-phase SD metrics
+        sd_token_metrics = compute_two_phase_sd_metrics(
+            aligned_tokens, vl_tokens, mask, timing_config,
+            gamma_decode=args.gamma_decode,
+        )
+        metrics.update(sd_token_metrics)
+
+        # Cosine sim vs token match correlation
+        top1_match = (aligned_tokens == vl_tokens) & mask.bool()
+        corr_metrics = compute_cosim_vs_token_correlation(cos_sim, top1_match, mask)
+        metrics.update(corr_metrics)
+
+        # Print token-level report
+        print_token_metrics_report(metrics)
+
+        # Sanity check: VL hidden → tokens should be self-consistent
+        print("\n[SANITY CHECK] VL self-consistency:")
+        vl_self_tokens, _ = project_to_tokens(
+            vl_hidden, lm_head_weight, mask, top_k=1, batch_size=args.batch_size,
+        )
+        self_match = ((vl_self_tokens == vl_tokens) & mask.bool()).float().sum() / mask.sum()
+        print(f"  VL→tokens self-match: {self_match.item():.4f} (should be 1.0000)")
+
+    # =====================================================================
+    # SAVE RESULTS
+    # =====================================================================
     if args.output_dir:
         output_path = Path(args.output_dir)
     else:
@@ -766,14 +1272,7 @@ def main():
     # Save metrics JSON
     metrics_file = output_path / 'acceptance_metrics.json'
     with open(metrics_file, 'w') as f:
-        # Convert any remaining tensors to Python types
-        metrics_serializable = {}
-        for k, v in metrics.items():
-            if isinstance(v, (list, tuple)):
-                metrics_serializable[k] = [float(x) if isinstance(x, (int, float)) else x for x in v]
-            else:
-                metrics_serializable[k] = v
-        json.dump(metrics_serializable, f, indent=2)
+        json.dump(_serialize_metrics(metrics), f, indent=2)
     print(f"\nSaved metrics: {metrics_file}")
 
     # Save position stats
@@ -790,15 +1289,14 @@ def main():
     stage_metrics = plot_stage_timeline(metrics, timing_config, output_path)
     metrics.update(stage_metrics)
 
-    # Save updated metrics with stage breakdown
+    # Token-level plots and comparison MD
+    if lm_head_weight is not None:
+        plot_token_metrics(metrics, output_path)
+        generate_metrics_comparison_md(metrics, output_path)
+
+    # Save final metrics with all sections
     with open(metrics_file, 'w') as f:
-        metrics_serializable = {}
-        for k, v in metrics.items():
-            if isinstance(v, (list, tuple)):
-                metrics_serializable[k] = [float(x) if isinstance(x, (int, float)) else x for x in v]
-            else:
-                metrics_serializable[k] = v
-        json.dump(metrics_serializable, f, indent=2)
+        json.dump(_serialize_metrics(metrics), f, indent=2)
 
     print(f"\nAll results saved to: {output_path}")
 

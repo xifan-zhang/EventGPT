@@ -78,7 +78,10 @@ class ChunkedTrainLoader:
     Loads ONE chunk at a time (~1.6GB), shuffles within it, yields batches,
     then moves to next chunk. Chunk order is also shuffled each epoch.
 
-    Memory: ~3.2GB (1 chunk loaded + 1 batch on GPU) instead of 80GB.
+    Uses a background prefetch thread to load the next chunk while GPU
+    processes the current one, hiding HDD I/O latency.
+
+    Memory: ~4.8GB (current chunk + prefetched chunk + batch on GPU) instead of 80GB.
     """
 
     def __init__(self, data_dir: str, batch_size: int = 64, collate_fn=None):
@@ -100,58 +103,73 @@ class ChunkedTrainLoader:
 
         print(f"  ChunkedTrainLoader: {self.total_samples} samples in {len(self.chunk_infos)} chunks")
         print(f"  Batch size: {batch_size}, ~{self.num_batches} batches/epoch")
-        print(f"  Memory: ~1.6GB per chunk (not {self.total_samples * 4096 * 4 * 2 / 1e9:.0f}GB all at once)")
+        print(f"  Memory: ~3.2GB (current + prefetch) instead of {self.total_samples * 4096 * 4 * 2 / 1e9:.0f}GB all at once")
 
     def __len__(self):
         return self.num_batches
 
+    def _load_chunk(self, chunk_idx):
+        """Load a single chunk from disk."""
+        chunk_path = self.chunks_dir / self.chunk_infos[chunk_idx]['path']
+        return torch.load(chunk_path, map_location='cpu')
+
     def __iter__(self):
-        """Iterate: shuffle chunk order, within each chunk shuffle samples."""
+        """Iterate: shuffle chunk order, within each chunk shuffle samples.
+        Prefetches the next chunk in a background thread."""
         import random
+        from concurrent.futures import ThreadPoolExecutor
+
         chunk_order = list(range(len(self.chunk_infos)))
         random.shuffle(chunk_order)
 
-        for ci in chunk_order:
-            # Load one chunk
-            chunk_path = self.chunks_dir / self.chunk_infos[ci]['path']
-            chunk = torch.load(chunk_path, map_location='cpu')
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            # Start prefetching the first chunk
+            future = executor.submit(self._load_chunk, chunk_order[0])
 
-            n = chunk['seq_lens'].shape[0]
-            egpt = chunk['egpt_hidden']
-            vl = chunk['vl_hidden']
-            seq_lens = chunk['seq_lens']
+            for i, ci in enumerate(chunk_order):
+                # Wait for the current chunk
+                chunk = future.result()
 
-            # Shuffle within chunk
-            perm = torch.randperm(n)
+                # Start prefetching the next chunk
+                if i + 1 < len(chunk_order):
+                    future = executor.submit(self._load_chunk, chunk_order[i + 1])
 
-            # Yield batches
-            for start in range(0, n, self.batch_size):
-                end = min(start + self.batch_size, n)
-                indices = perm[start:end]
+                n = chunk['seq_lens'].shape[0]
+                egpt = chunk['egpt_hidden']
+                vl = chunk['vl_hidden']
+                seq_lens = chunk['seq_lens']
 
-                batch_items = []
-                for idx in indices:
-                    sl = seq_lens[idx].item()
-                    batch_items.append({
-                        'egpt_hidden': egpt[idx, :sl],
-                        'vl_hidden': vl[idx, :sl],
-                        'seq_len': sl,
-                    })
+                # Shuffle within chunk
+                perm = torch.randperm(n)
 
-                if self.collate_fn:
-                    yield self.collate_fn(batch_items)
-                else:
-                    yield batch_items
+                # Yield batches
+                for start in range(0, n, self.batch_size):
+                    end = min(start + self.batch_size, n)
+                    indices = perm[start:end]
 
-            # Free chunk memory
-            del chunk, egpt, vl, seq_lens
+                    batch_items = []
+                    for idx in indices:
+                        sl = seq_lens[idx].item()
+                        batch_items.append({
+                            'egpt_hidden': egpt[idx, :sl],
+                            'vl_hidden': vl[idx, :sl],
+                            'seq_len': sl,
+                        })
+
+                    if self.collate_fn:
+                        yield self.collate_fn(batch_items)
+                    else:
+                        yield batch_items
+
+                # Free chunk memory
+                del chunk, egpt, vl, seq_lens
 
 
 class ChunkedValLoader:
     """Stream val chunks one at a time for memory-efficient validation.
 
     Like ChunkedTrainLoader but sequential (no shuffling).
-    Loads ~1.6GB per chunk instead of all chunks at once.
+    Uses background prefetch thread to hide HDD I/O latency.
     """
 
     def __init__(self, data_dir, batch_size, collate_fn=None):
@@ -176,19 +194,35 @@ class ChunkedValLoader:
     def __len__(self):
         return self.num_batches
 
+    def _load_chunk(self, chunk_idx):
+        """Load a single chunk from disk."""
+        chunk_path = self.chunks_dir / self.chunk_infos[chunk_idx]['path']
+        return torch.load(chunk_path, map_location='cpu')
+
     def __iter__(self):
-        """Iterate sequentially through all chunks (no shuffling for val)."""
-        for ci_idx in range(len(self.chunk_infos)):
-            chunk_path = self.chunks_dir / self.chunk_infos[ci_idx]['path']
-            chunk = torch.load(chunk_path, map_location='cpu')
+        """Iterate sequentially through all chunks with prefetching."""
+        from concurrent.futures import ThreadPoolExecutor
 
-            n = chunk['seq_lens'].shape[0]
-            egpt = chunk['egpt_hidden']
-            vl = chunk['vl_hidden']
-            seq_lens = chunk['seq_lens']
+        n_chunks = len(self.chunk_infos)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            # Start prefetching the first chunk
+            future = executor.submit(self._load_chunk, 0)
 
-            for start in range(0, n, self.batch_size):
-                end = min(start + self.batch_size, n)
+            for ci_idx in range(n_chunks):
+                # Wait for current chunk
+                chunk = future.result()
+
+                # Prefetch next chunk
+                if ci_idx + 1 < n_chunks:
+                    future = executor.submit(self._load_chunk, ci_idx + 1)
+
+                n = chunk['seq_lens'].shape[0]
+                egpt = chunk['egpt_hidden']
+                vl = chunk['vl_hidden']
+                seq_lens = chunk['seq_lens']
+
+                for start in range(0, n, self.batch_size):
+                    end = min(start + self.batch_size, n)
 
                 batch_items = []
                 for idx in range(start, end):
@@ -235,17 +269,21 @@ class HiddenAdapterTrainer:
 
     def __init__(
         self,
-        model: nn.Module,  # Any adapter type (L1-L4)
+        model: nn.Module,  # Any adapter type (L1-L5, L5F, B1)
         train_loader: DataLoader,
         val_loader: Optional[DataLoader] = None,
         learning_rate: float = 1e-3,
         weight_decay: float = 0.01,
         device: str = 'cuda',
+        vlm_only: bool = False,
+        fused: bool = False,
     ):
         self.model = model.to(device)
         self.device = device
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.vlm_only = vlm_only
+        self.fused = fused
 
         # Optimizer
         self.optimizer = torch.optim.AdamW(
@@ -284,13 +322,16 @@ class HiddenAdapterTrainer:
 
         pbar = tqdm(self.train_loader, desc=f"Epoch {epoch}")
         for batch in pbar:
-            egpt_hidden = batch['egpt_hidden'].to(self.device)
-            vl_hidden = batch['vl_hidden'].to(self.device)
+            if self.vlm_only:
+                source_hidden = batch['vl_hidden'].to(self.device)
+            else:
+                source_hidden = batch['egpt_hidden'].to(self.device)
+            target_hidden = batch['vl_hidden'].to(self.device)
             mask = batch['mask'].to(self.device)
 
             self.optimizer.zero_grad()
 
-            losses = self.model.compute_loss(egpt_hidden, vl_hidden, mask)
+            losses = self.model.compute_loss(source_hidden, target_hidden, mask)
             loss = losses['total_loss']
 
             loss.backward()
@@ -328,20 +369,26 @@ class HiddenAdapterTrainer:
         all_cos_sims = []
 
         for batch in self.val_loader:
-            egpt_hidden = batch['egpt_hidden'].to(self.device)
-            vl_hidden = batch['vl_hidden'].to(self.device)
+            if self.vlm_only:
+                source_hidden = batch['vl_hidden'].to(self.device)
+            else:
+                source_hidden = batch['egpt_hidden'].to(self.device)
+            target_hidden = batch['vl_hidden'].to(self.device)
             mask = batch['mask'].to(self.device)
 
-            losses = self.model.compute_loss(egpt_hidden, vl_hidden, mask)
+            losses = self.model.compute_loss(source_hidden, target_hidden, mask)
 
             total_loss += losses['total_loss'].item()
             total_cos_sim += losses['cos_sim'].item()
             num_batches += 1
 
             # Per-position cosine similarity
-            aligned = self.model(egpt_hidden)
+            if self.fused:
+                aligned = self.model(source_hidden, target_hidden)
+            else:
+                aligned = self.model(source_hidden)
             aligned_norm = F.normalize(aligned, dim=-1)
-            vl_norm = F.normalize(vl_hidden, dim=-1)
+            vl_norm = F.normalize(target_hidden, dim=-1)
             cos_sim = (aligned_norm * vl_norm).sum(dim=-1)  # [batch, seq]
 
             # Flatten and filter by mask
@@ -510,8 +557,8 @@ def main():
                         default='./feasible/feature_alignment/checkpoints/hidden_adapter')
 
     # Adapter level selection
-    parser.add_argument('--adapter_level', type=int, default=1, choices=[1, 2, 3, 4, 5],
-                        help='Adapter complexity level: 1=Bottleneck(2M), 2=MultiLayer(8M), 3=Wide(16M), 4=Attention(100M), 5=EAGLE(100M)')
+    parser.add_argument('--adapter_level', type=int, default=1, choices=[1, 2, 3, 4, 5, 6],
+                        help='Adapter complexity level: 1=Bottleneck(2M), 2=MultiLayer(8M), 3=Wide(16M), 4=Attention(50M), 5=EAGLE(50M), 6=L5F FusedEAGLE(67M)')
 
     # L1/L2/L3 parameters
     parser.add_argument('--hidden_dim', type=int, default=4096,
@@ -534,6 +581,10 @@ def main():
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--early_stopping', type=int, default=10)
+
+    # Baseline mode
+    parser.add_argument('--vlm_only', action='store_true',
+                        help='B1 VLM-only EAGLE baseline: use VL hidden states as both input and target')
     args = parser.parse_args()
 
     # Load data (supports both single .pt file and chunked directory)
@@ -660,7 +711,10 @@ def main():
     else:
         bottleneck_dim = args.bottleneck_dim
 
-    print(f"\nCreating L{args.adapter_level} adapter...")
+    if args.vlm_only:
+        print(f"\nCreating B1 VLM-only EAGLE baseline (adapter_level={args.adapter_level})...")
+    else:
+        print(f"\nCreating L{args.adapter_level} adapter...")
     model = create_adapter(
         level=args.adapter_level,
         hidden_dim=hidden_dim,
@@ -677,11 +731,19 @@ def main():
         train_loader=train_loader,
         val_loader=val_loader,
         learning_rate=args.learning_rate,
+        vlm_only=args.vlm_only,
+        fused=(args.adapter_level == 6),
     )
 
     # Create output directory: tasks/<adapter>_<timestamp>/
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    task_dir = Path(args.output_dir) / f"L{args.adapter_level}_{timestamp}"
+    if args.vlm_only:
+        prefix = 'B1'
+    elif args.adapter_level == 6:
+        prefix = 'L5F'
+    else:
+        prefix = f'L{args.adapter_level}'
+    task_dir = Path(args.output_dir) / f"{prefix}_{timestamp}"
 
     # Train
     trainer.train(
@@ -694,9 +756,20 @@ def main():
     level_names = {
         1: 'Bottleneck', 2: 'MultiLayerBottleneck',
         3: 'WideBottleneck', 4: 'Attention', 5: 'EAGLE',
+        6: 'FusedEAGLE',
     }
+    if args.vlm_only:
+        task_name = f'train_B1_VLMOnly_{level_names.get(args.adapter_level, "Unknown")}'
+        alignment_desc = 'Video-LLaVA → Video-LLaVA (VLM-only baseline)'
+    elif args.adapter_level == 6:
+        task_name = 'train_L5F_FusedEAGLE'
+        alignment_desc = 'Fused(EventGPT + Video-LLaVA) → Video-LLaVA (gated fusion)'
+    else:
+        task_name = f'train_L{args.adapter_level}_{level_names.get(args.adapter_level, "Unknown")}'
+        alignment_desc = 'EventGPT → Video-LLaVA (hidden states)'
     config = {
-        'task': f'train_L{args.adapter_level}_{level_names.get(args.adapter_level, "Unknown")}',
+        'task': task_name,
+        'vlm_only': args.vlm_only,
         'adapter': {
             'level': args.adapter_level,
             'name': level_names.get(args.adapter_level, 'Unknown'),
@@ -716,7 +789,7 @@ def main():
             'questions_per_sample': 10,
             'duration': '1s',
             'quant': '4bit',
-            'alignment': 'EventGPT → Video-LLaVA (hidden states)',
+            'alignment': alignment_desc,
         },
         'training': {
             'epochs': args.num_epochs,

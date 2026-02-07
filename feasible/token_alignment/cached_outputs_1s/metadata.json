@@ -1,0 +1,6 @@
+{
+  "source": "./feasible/benchmark_inference/benchmark_results_S1.json",
+  "num_samples": 5,
+  "max_seq_len": 128,
+  "extracted_at": "2026-01-23T15:05:20.302840"
+}

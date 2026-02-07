@@ -1,0 +1,55 @@
+Wall-Clock Time Analysis Summary
+======================================================================
+
+======================================================================
+CRITICAL INSIGHT: WHY STANDARD SD DOESN'T HELP HERE
+======================================================================
+
+Draft model speed:  14ms/token (EventGPT)
+Target model speed: 15ms/token (VideoLLaVA)
+Speed ratio (c):    0.93 (almost same!)
+
+For SD to speed up decoding, draft model needs to be MUCH faster.
+With c ≈ 1.0, acceptance rate >95% needed for any benefit.
+Our 27.9% acceptance rate is good, but draft model is too slow.
+
+======================================================================
+WHERE THE REAL BENEFIT COMES FROM: PARALLEL PREFILL
+======================================================================
+
+EventGPT prefill:   97ms
+VideoLLaVA prefill: 470ms
+Free window:        373ms (VL - EGPT)
+Free draft tokens:  26 tokens during VL prefill
+
+With α=27.9%: ~7 tokens accepted FREE
+With α=51.6%: ~13 tokens accepted FREE
+
+======================================================================
+TIME TO GENERATE 50 TOKENS
+======================================================================
+
+AR (VideoLLaVA only):     1220ms  (baseline)
+  - Prefill: 470ms, Decode: 750ms
+Parallel (α=27.9%):       3183ms  (-1963ms, -160.9%)
+  - Prefill: 470ms, Decode: 2713ms
+Parallel (α=51.6%):       2057ms  (-837ms, -68.6%)
+  - Prefill: 470ms, Decode: 1587ms
+
+Note: SD rounds are slower than AR with similar model speeds!
+The 'free' tokens from parallel prefill help, but decode is slower.
+
+======================================================================
+PATH FORWARD FOR REAL SPEEDUP
+======================================================================
+
+Option 1: Use smaller/faster draft model (EAGLE-style, ~10x faster)
+  → With c=0.1 and α=27.9%, expect 1.3-1.5x speedup
+
+Option 2: Use EventGPT for prefill benefit only (no SD during decode)
+  → Free tokens during parallel prefill, then AR decode
+  → Saves 373ms prefill overhead
+
+Option 3: Feature-level alignment (bypass tokenizer)
+  → Higher acceptance (50-70%) + faster draft head
+  → Expected 2-2.5x speedup

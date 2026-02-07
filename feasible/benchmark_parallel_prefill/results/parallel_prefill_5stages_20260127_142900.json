@@ -1,0 +1,35 @@
+{
+  "timestamp": "20260127_142900",
+  "datetime": "2026-01-27 14:29:29",
+  "dataset_name": "my_egpt_dsec_seq_16s",
+  "config": {
+    "quantization": "4bit",
+    "max_samples": 3,
+    "max_new_tokens": 20,
+    "device": "cuda"
+  },
+  "gpu_memory": {
+    "eventgpt_model_mb": 3904.73095703125,
+    "videollava_model_mb": 4047.82470703125,
+    "total_models_mb": 7952.5556640625
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 1,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 2,
+      "egpt_error": "No result",
+      "vl_error": null
+    }
+  ]
+}

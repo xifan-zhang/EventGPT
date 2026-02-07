@@ -1,0 +1,652 @@
+{
+  "dataset": "1s",
+  "total_samples": 5208,
+  "adapter_checkpoint": "./feasible/feature_alignment/checkpoints/alignment_1s/lightweight_alignment.pt",
+  "acceptance_threshold": 0.8,
+  "before_adapter": {
+    "mean_cosine_similarity": 0.6477259397506714,
+    "std": 0.09732631593942642,
+    "min": 0.20217351615428925,
+    "max": 0.871228814125061,
+    "acceptance_at_0.5": 92.3003077507019,
+    "acceptance_at_0.6": 75.0,
+    "acceptance_at_0.7": 30.933180451393127,
+    "acceptance_at_0.8": 2.2849462926387787,
+    "acceptance_at_0.85": 0.09600614430382848,
+    "acceptance_at_0.9": 0.0,
+    "acceptance_at_0.95": 0.0
+  },
+  "after_adapter": {
+    "mean_cosine_similarity": 0.8828352689743042,
+    "std": 0.07675875723361969,
+    "min": 0.47177720069885254,
+    "max": 0.9775058031082153,
+    "acceptance_at_0.5": 99.94239807128906,
+    "acceptance_at_0.6": 99.36636090278625,
+    "acceptance_at_0.7": 96.15975618362427,
+    "acceptance_at_0.8": 86.80875301361084,
+    "acceptance_at_0.85": 76.68970823287964,
+    "acceptance_at_0.9": 54.301077127456665,
+    "acceptance_at_0.95": 12.365591526031494
+  },
+  "percentiles_after": {
+    "P10": 0.7696797847747803,
+    "P25": 0.8557143211364746,
+    "P50": 0.9074796438217163,
+    "P75": 0.9369876980781555,
+    "P90": 0.9526580572128296,
+    "P95": 0.9594573974609375,
+    "P99": 0.9688597917556763
+  },
+  "improvement": {
+    "cosine_sim_gain": 0.2351093292236328,
+    "acceptance_gain_0.8": 84.52380672097206
+  },
+  "timing": {
+    "avg_adapter_time_per_batch": 0.0013163322355689072,
+    "total_adapter_time": 0.10793924331665039,
+    "samples_per_second": 48249.36547611159
+  },
+  "sample_results": [
+    {
+      "id": "d1790afd-6212-4050-b0c4-098e0a918f82",
+      "cos_sim_before": 0.6959671974182129,
+      "cos_sim_after": 0.8846566677093506,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "448c2919-41ba-4f0b-9060-73d5e2bfcebb",
+      "cos_sim_before": 0.6670113801956177,
+      "cos_sim_after": 0.9100150465965271,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "1e9c3183-4be3-435f-998b-161fa16b9795",
+      "cos_sim_before": 0.6598873138427734,
+      "cos_sim_after": 0.9035208225250244,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "d437c9c7-b599-4327-af99-103ac74c401a",
+      "cos_sim_before": 0.6499651670455933,
+      "cos_sim_after": 0.9016292691230774,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "37d5e097-f700-45fe-a623-8115440ec780",
+      "cos_sim_before": 0.6639466285705566,
+      "cos_sim_after": 0.9097253084182739,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "cb50e243-e73a-45aa-bec5-59c83e1476b2",
+      "cos_sim_before": 0.6566410660743713,
+      "cos_sim_after": 0.9092986583709717,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "c3be08bd-9a7b-4317-87fe-98c351f85438",
+      "cos_sim_before": 0.6332104206085205,
+      "cos_sim_after": 0.9133503437042236,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "bde32e31-7e10-483b-b0ce-b2187bcf8ab7",
+      "cos_sim_before": 0.6111514568328857,
+      "cos_sim_after": 0.9068402051925659,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "1ac31f92-56b0-49a6-a35a-2feb5c745fd6",
+      "cos_sim_before": 0.5908281207084656,
+      "cos_sim_after": 0.8822071552276611,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "e68edbae-9b39-42b3-a31a-4420a502471f",
+      "cos_sim_before": 0.5421169400215149,
+      "cos_sim_after": 0.8553944826126099,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "6c6c062f-cb66-4906-a628-158fd6fbb450",
+      "cos_sim_before": 0.6050702929496765,
+      "cos_sim_after": 0.834316611289978,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "636fa023-e892-4400-be88-c0b35a2fa082",
+      "cos_sim_before": 0.615986168384552,
+      "cos_sim_after": 0.8733663558959961,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "0aae297f-e60d-4daf-9980-89ba544f9352",
+      "cos_sim_before": 0.5652967095375061,
+      "cos_sim_after": 0.8557777404785156,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "6805f400-3c70-45d4-baca-4e5ec116ae0b",
+      "cos_sim_before": 0.5378727316856384,
+      "cos_sim_after": 0.8455944657325745,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "49980419-7164-4b5e-af34-a0c4457006fa",
+      "cos_sim_before": 0.5058960914611816,
+      "cos_sim_after": 0.8097072243690491,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "f061d7b8-b4bb-4f4f-976a-8bb1ed850273",
+      "cos_sim_before": 0.5076915621757507,
+      "cos_sim_after": 0.8107427954673767,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "83ffde8b-fbbe-4576-bfec-6c66ebb24745",
+      "cos_sim_before": 0.5382987260818481,
+      "cos_sim_after": 0.8263620138168335,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "50728784-f73d-4bb0-898f-f60fe3a69c02",
+      "cos_sim_before": 0.5539315938949585,
+      "cos_sim_after": 0.811920166015625,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "3ef6279f-6a39-4962-966d-6bf8f3799266",
+      "cos_sim_before": 0.5675576329231262,
+      "cos_sim_after": 0.8298623561859131,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "92c4590c-935b-4008-9fc5-b2a66a94f30c",
+      "cos_sim_before": 0.6002671122550964,
+      "cos_sim_after": 0.8189836144447327,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "fa04ef4e-0f3f-4587-819e-4d58afea2bfc",
+      "cos_sim_before": 0.627171516418457,
+      "cos_sim_after": 0.8255138397216797,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "6d7676d1-5e21-47a0-ac51-fe7e578fa6c9",
+      "cos_sim_before": 0.6113960146903992,
+      "cos_sim_after": 0.8403211236000061,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "ffbf693e-249a-4fbf-a2a4-97e99853cc3c",
+      "cos_sim_before": 0.597343921661377,
+      "cos_sim_after": 0.8280594348907471,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "e8fd66f2-c549-4863-a7ea-25941a89ebdb",
+      "cos_sim_before": 0.6080759763717651,
+      "cos_sim_after": 0.8291765451431274,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "a0d1d1a2-571a-484d-bce7-bb9ab1facdce",
+      "cos_sim_before": 0.6092619895935059,
+      "cos_sim_after": 0.8280520439147949,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "1e6f469a-b238-47d7-8f52-1507f8b81e6d",
+      "cos_sim_before": 0.5231409072875977,
+      "cos_sim_after": 0.8085052371025085,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "24d15f9f-925a-4946-8962-e54847a2c444",
+      "cos_sim_before": 0.500836968421936,
+      "cos_sim_after": 0.7945195436477661,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "cce4a9e7-c583-4baf-ae99-0b74e0f70da9",
+      "cos_sim_before": 0.5179533958435059,
+      "cos_sim_after": 0.7757605314254761,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "2f57f11f-aeb2-4421-971c-bc6b063c176d",
+      "cos_sim_before": 0.5643243789672852,
+      "cos_sim_after": 0.7958670854568481,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "604e365d-ca16-4e0d-b84d-d8f60a8731bd",
+      "cos_sim_before": 0.5841052532196045,
+      "cos_sim_after": 0.7815661430358887,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "e2bce11d-0302-4a0a-8a2a-c9c7a488aa9d",
+      "cos_sim_before": 0.5876022577285767,
+      "cos_sim_after": 0.7958372235298157,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "607cf0dc-653a-4e6c-a2a9-3d8a50db621e",
+      "cos_sim_before": 0.5369769930839539,
+      "cos_sim_after": 0.7855544090270996,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "6ca7c27f-5a71-416a-915b-8b8abbb0ce77",
+      "cos_sim_before": 0.5064628720283508,
+      "cos_sim_after": 0.7665197849273682,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "136f293d-1840-4643-92a5-97f355dd686a",
+      "cos_sim_before": 0.4941053092479706,
+      "cos_sim_after": 0.7613877654075623,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "40f3de02-265e-451f-95fa-33e1c54985d6",
+      "cos_sim_before": 0.4929233491420746,
+      "cos_sim_after": 0.7792063355445862,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "f15e73ca-47e4-45d8-ae14-95284441e2ec",
+      "cos_sim_before": 0.4904361069202423,
+      "cos_sim_after": 0.7903667688369751,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "7d10aad2-5e47-445b-a6c0-4edbac1f3414",
+      "cos_sim_before": 0.4919958710670471,
+      "cos_sim_after": 0.8097599744796753,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "8455261f-33cc-4ef4-afb3-abe9dce6a016",
+      "cos_sim_before": 0.48389485478401184,
+      "cos_sim_after": 0.8231057524681091,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "c67d6205-6a44-46c4-9c67-43467367bf23",
+      "cos_sim_before": 0.4567132294178009,
+      "cos_sim_after": 0.8009569048881531,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "35d5bd95-9e87-4aea-8b8c-646a83ddf784",
+      "cos_sim_before": 0.43886852264404297,
+      "cos_sim_after": 0.7438456416130066,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "0bdbe683-0fcc-49bc-acd3-1105d099dd9f",
+      "cos_sim_before": 0.44751542806625366,
+      "cos_sim_after": 0.7641874551773071,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "82fcd931-5c81-4472-9f13-2e557370739c",
+      "cos_sim_before": 0.48281967639923096,
+      "cos_sim_after": 0.8266518115997314,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "a56d4b29-c39c-46a8-b7b2-ba292df5afa3",
+      "cos_sim_before": 0.5128366947174072,
+      "cos_sim_after": 0.8550553321838379,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "b50dc544-3c57-4b1d-bc1a-c229e2b3099c",
+      "cos_sim_before": 0.5241381525993347,
+      "cos_sim_after": 0.8780341148376465,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "fed797bd-b0c3-455a-91b0-9ea65262256f",
+      "cos_sim_before": 0.6182305812835693,
+      "cos_sim_after": 0.8925949931144714,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "0b942eda-1c1b-4823-9c8d-850949d10e03",
+      "cos_sim_before": 0.6515110731124878,
+      "cos_sim_after": 0.8722491264343262,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "24d8a9b0-7d7c-4fca-8be1-b09a8c48be3e",
+      "cos_sim_before": 0.6454607248306274,
+      "cos_sim_after": 0.8306576609611511,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "cb30cfb7-c3fb-4a5a-bf8e-36406200efbb",
+      "cos_sim_before": 0.6136288642883301,
+      "cos_sim_after": 0.8236938118934631,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "3004cf9e-7c06-4859-a7c0-a99c77890e2c",
+      "cos_sim_before": 0.6059860587120056,
+      "cos_sim_after": 0.846960723400116,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "24086f00-2bcf-4bbf-84b9-2e442c002f36",
+      "cos_sim_before": 0.6979374289512634,
+      "cos_sim_after": 0.82474684715271,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "6a4595ca-a7ac-4f6d-abe2-3e123aa1e297",
+      "cos_sim_before": 0.6689082980155945,
+      "cos_sim_after": 0.8547543883323669,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "a67154df-bd15-4875-935d-6f0057d04d9d",
+      "cos_sim_before": 0.6639266014099121,
+      "cos_sim_after": 0.8704612851142883,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "0fd4e49d-bb36-4376-b2e3-ae329e289981",
+      "cos_sim_before": 0.668703019618988,
+      "cos_sim_after": 0.8864675760269165,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "d8f245bc-15d9-489e-a45e-883d3cd63f79",
+      "cos_sim_before": 0.6820055842399597,
+      "cos_sim_after": 0.9128692150115967,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "244ea3d1-d57d-4f31-8cd1-6ab659187c72",
+      "cos_sim_before": 0.69349205493927,
+      "cos_sim_after": 0.9306381940841675,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "034049a5-98c4-4240-844b-eb3f23c9109e",
+      "cos_sim_before": 0.6961663961410522,
+      "cos_sim_after": 0.9228418469429016,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "986f2f35-2e7a-4446-86b6-a2e0a10bc655",
+      "cos_sim_before": 0.7141073942184448,
+      "cos_sim_after": 0.918476939201355,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "a31ce127-8e83-4763-ae82-ad56bd38e4c1",
+      "cos_sim_before": 0.7342278361320496,
+      "cos_sim_after": 0.9133707880973816,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "e7f6cf89-8cd8-483e-af11-e7c86a16515f",
+      "cos_sim_before": 0.7473083138465881,
+      "cos_sim_after": 0.9007947444915771,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "9435c789-20f9-4214-a0d9-d1a7da0e8d5d",
+      "cos_sim_before": 0.7913912534713745,
+      "cos_sim_after": 0.9117980003356934,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "8efdd79e-cc13-4e35-980f-24bce793968e",
+      "cos_sim_before": 0.7877876162528992,
+      "cos_sim_after": 0.9065808057785034,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "4f52989c-9034-4932-9d78-f09f287a12e8",
+      "cos_sim_before": 0.7774174809455872,
+      "cos_sim_after": 0.8974945545196533,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "968d566b-1334-4b3a-bfb2-01bc2b6fc6e0",
+      "cos_sim_before": 0.7531499862670898,
+      "cos_sim_after": 0.9173836708068848,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "f228eb7c-2d7a-40f1-a2c2-37359befd9f6",
+      "cos_sim_before": 0.7322678565979004,
+      "cos_sim_after": 0.9247736930847168,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "0c11a245-4915-4fb0-9331-ba77a13d4aa5",
+      "cos_sim_before": 0.7142336964607239,
+      "cos_sim_after": 0.9320051670074463,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "95a52149-fd5c-4c2d-8e2c-0fec029cbb36",
+      "cos_sim_before": 0.7176687717437744,
+      "cos_sim_after": 0.9311329126358032,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "f5492754-1c54-40a5-ab0c-9be4fd3f5091",
+      "cos_sim_before": 0.7034868001937866,
+      "cos_sim_after": 0.943077802658081,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "18e6dcef-e163-4ab6-998e-b457338827fa",
+      "cos_sim_before": 0.6882182955741882,
+      "cos_sim_after": 0.9346776604652405,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "93fe5e5f-a9d6-4bdd-88e4-55ae6c7f2621",
+      "cos_sim_before": 0.6696916818618774,
+      "cos_sim_after": 0.9233402013778687,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "13103503-aa7c-43d1-b48b-dfa2e3d4a2b4",
+      "cos_sim_before": 0.6693354845046997,
+      "cos_sim_after": 0.892733097076416,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "69687b98-02ba-4f98-b89c-f9c6d0dcfded",
+      "cos_sim_before": 0.6622326374053955,
+      "cos_sim_after": 0.857515275478363,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "b5026ef9-8707-4beb-93d1-aaa11b4b4043",
+      "cos_sim_before": 0.6588982939720154,
+      "cos_sim_after": 0.8371155261993408,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "3b1444df-b137-48f3-bf07-174580102f69",
+      "cos_sim_before": 0.6728929281234741,
+      "cos_sim_after": 0.8323726058006287,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "d004109f-c72f-4426-9577-7710116aaddc",
+      "cos_sim_before": 0.6719322204589844,
+      "cos_sim_after": 0.8290401101112366,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "54569926-e0b0-482b-a006-f07fb4e82f11",
+      "cos_sim_before": 0.6635751128196716,
+      "cos_sim_after": 0.8283958435058594,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "81f42fb6-aa12-4903-bac2-d7ed0e00c7f4",
+      "cos_sim_before": 0.664771556854248,
+      "cos_sim_after": 0.8428273797035217,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "d16542b0-0bc7-4eb3-852e-3e8da93945e7",
+      "cos_sim_before": 0.6088181734085083,
+      "cos_sim_after": 0.8016649484634399,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "cef517c5-c66d-4df4-a09b-4e5321fbcd45",
+      "cos_sim_before": 0.5160692930221558,
+      "cos_sim_after": 0.7435665130615234,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "4cc4a839-6b4b-40ee-9b55-2967c6ca3931",
+      "cos_sim_before": 0.4873162508010864,
+      "cos_sim_after": 0.7348536849021912,
+      "accepted_at_0.8": false
+    },
+    {
+      "id": "75967af5-4c50-449c-86d9-abdd3b2ab7fb",
+      "cos_sim_before": 0.5131831765174866,
+      "cos_sim_after": 0.8020772933959961,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "a067db8c-5ee7-4782-a96f-46f80867e7e8",
+      "cos_sim_before": 0.5077990889549255,
+      "cos_sim_after": 0.8188080787658691,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "8e194fac-bd22-40ed-a3e5-ac786ba38e36",
+      "cos_sim_before": 0.5241115689277649,
+      "cos_sim_after": 0.8145110607147217,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "b10b15d9-d1ab-4649-b915-e42c74b195ff",
+      "cos_sim_before": 0.5731004476547241,
+      "cos_sim_after": 0.8524963855743408,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "0b2f9d25-35d1-471b-985d-54a42bbce8e6",
+      "cos_sim_before": 0.550609290599823,
+      "cos_sim_after": 0.8437480926513672,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "35233e45-877a-4d07-a300-66b0094e70ea",
+      "cos_sim_before": 0.5638293623924255,
+      "cos_sim_after": 0.8821607828140259,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "83f00411-dcbc-4504-89d3-4b7ce1e02794",
+      "cos_sim_before": 0.5531390905380249,
+      "cos_sim_after": 0.8663837909698486,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "91fb6f60-3746-45f2-97a1-7f1623fff6b6",
+      "cos_sim_before": 0.5672988295555115,
+      "cos_sim_after": 0.8444551229476929,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "0eaa83bc-7081-4b54-8455-afb8a0af89fa",
+      "cos_sim_before": 0.5459806323051453,
+      "cos_sim_after": 0.8285776376724243,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "633ee469-2d8d-41b6-a7ed-73e8180cc966",
+      "cos_sim_before": 0.5298874974250793,
+      "cos_sim_after": 0.8633840084075928,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "fef9ebcc-4e49-4336-8536-708d7eb72ff7",
+      "cos_sim_before": 0.49396049976348877,
+      "cos_sim_after": 0.8873502016067505,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "832a574d-ceaa-4745-b146-a56433e4f776",
+      "cos_sim_before": 0.5200586915016174,
+      "cos_sim_after": 0.910191535949707,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "db4e7170-d46e-4d77-a5a4-df977e7fe541",
+      "cos_sim_before": 0.524189829826355,
+      "cos_sim_after": 0.8848263025283813,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "c3a37aff-4935-4299-9897-3e1d8fa44dcc",
+      "cos_sim_before": 0.506422758102417,
+      "cos_sim_after": 0.8399125337600708,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "1f2ea183-575d-4454-ace5-0a56eebbc209",
+      "cos_sim_before": 0.531365156173706,
+      "cos_sim_after": 0.872917115688324,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "c9b6c0df-9ded-4f88-9b69-a131c8a31b33",
+      "cos_sim_before": 0.5649106502532959,
+      "cos_sim_after": 0.874830961227417,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "709c2885-dec4-42d4-9119-9f5a72d87580",
+      "cos_sim_before": 0.5335516929626465,
+      "cos_sim_after": 0.8585972785949707,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "b351dd94-ed38-4800-b95a-2859923e8e05",
+      "cos_sim_before": 0.5733340978622437,
+      "cos_sim_after": 0.9016685485839844,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "bcfc5c05-104d-4859-aa9f-918beec29d51",
+      "cos_sim_before": 0.6089013814926147,
+      "cos_sim_after": 0.922309398651123,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "cffb2006-3827-428d-aee3-8ad2b23bdbc6",
+      "cos_sim_before": 0.6094452738761902,
+      "cos_sim_after": 0.9152808785438538,
+      "accepted_at_0.8": true
+    },
+    {
+      "id": "54c627d8-22f4-4495-aa04-4acc84b9f8f5",
+      "cos_sim_before": 0.5868869423866272,
+      "cos_sim_after": 0.8980133533477783,
+      "accepted_at_0.8": true
+    }
+  ]
+}

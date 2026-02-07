@@ -1,0 +1,63 @@
+{
+  "timestamp": "20260125_012841",
+  "datetime": "2026-01-25 01:29:16",
+  "config": {
+    "max_samples": 10,
+    "device": "cuda",
+    "quantization": "4bit"
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 1,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 2,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 3,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 4,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 5,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 6,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 7,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 8,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    },
+    {
+      "sample_idx": 9,
+      "egpt_error": null,
+      "vl_error": "'NoneType' object has no attribute 'shape'"
+    }
+  ]
+}

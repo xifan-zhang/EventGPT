@@ -1,0 +1,63 @@
+{
+  "timestamp": "20260126_005451",
+  "datetime": "2026-01-26 00:54:51",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 3,
+    "max_new_tokens": 30,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {
+    "n_samples": 3,
+    "gamma": 5,
+    "egpt_tokens_avg": 0.0,
+    "vl_tokens_avg": 30.0,
+    "egpt_time_avg": 0.3818803628285726,
+    "vl_time_avg": 0.6470301946004232,
+    "word_overlap_avg": 0.0,
+    "char_similarity_avg": 0.0,
+    "acceptance_rate_avg": 0.0
+  },
+  "results": [
+    {
+      "sample_idx": 0,
+      "egpt_tokens": 0,
+      "vl_tokens": 30,
+      "egpt_time": 0.443603515625,
+      "vl_time": 0.6504478454589844,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is another smaller vehicle visible further ahead on the same street.",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    },
+    {
+      "sample_idx": 1,
+      "egpt_tokens": 0,
+      "vl_tokens": 30,
+      "egpt_time": 0.3507561683654785,
+      "vl_time": 0.6446530818939209,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is another smaller vehicle visible further ahead on the same street.",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    },
+    {
+      "sample_idx": 2,
+      "egpt_tokens": 0,
+      "vl_tokens": 30,
+      "egpt_time": 0.35128140449523926,
+      "vl_time": 0.6459896564483643,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, with trees on both sides of it. There is also another smaller vehicle visible further ahead along the",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    }
+  ],
+  "errors": []
+}

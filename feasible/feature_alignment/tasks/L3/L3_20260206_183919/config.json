@@ -1,0 +1,35 @@
+{
+  "task": "train_L3_WideBottleneck",
+  "adapter": {
+    "level": 3,
+    "name": "WideBottleneck",
+    "hidden_dim": 4096,
+    "bottleneck_dim": 1024,
+    "num_blocks": 3,
+    "num_heads": 8,
+    "num_layers": 1,
+    "ffn_dim": 2048,
+    "params": 25188355
+  },
+  "data": {
+    "train_path": "/home/ps/Documents/code/EventGPT/feasible/feature_alignment/data/chunked_train_1s_4bit",
+    "val_path": "/home/ps/Documents/code/EventGPT/feasible/feature_alignment/data/chunked_test_1s_4bit",
+    "train_samples": 52000,
+    "val_samples": 11000,
+    "questions_per_sample": 10,
+    "duration": "1s",
+    "quant": "4bit",
+    "alignment": "EventGPT \u2192 Video-LLaVA (hidden states)"
+  },
+  "training": {
+    "epochs": 50,
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "early_stopping": 10,
+    "optimizer": "AdamW",
+    "scheduler": "CosineAnnealingLR",
+    "loss": "MSE + 0.5 * CosLoss"
+  },
+  "timestamp": "20260206_183919",
+  "best_val_loss": 1.2499486858194524
+}

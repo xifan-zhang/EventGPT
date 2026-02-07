@@ -26,7 +26,6 @@ and Stage 4 (LLM Decoding) for accurate benchmarking.
 - Stage 3 (Vision): Measured via forward hooks
 - Stage 4 (Generate): LLM token generation
 """
-
 import os
 import sys
 import json

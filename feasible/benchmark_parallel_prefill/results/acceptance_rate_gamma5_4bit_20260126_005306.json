@@ -1,0 +1,87 @@
+{
+  "timestamp": "20260126_005306",
+  "datetime": "2026-01-26 00:53:06",
+  "config": {
+    "gamma": 5,
+    "quantization": "4bit",
+    "max_samples": 5,
+    "max_new_tokens": 50,
+    "device": "cuda",
+    "dataset_dir": "./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s",
+    "query": "What are the key elements in this scene?"
+  },
+  "statistics": {
+    "n_samples": 5,
+    "gamma": 5,
+    "egpt_tokens_avg": 0.0,
+    "vl_tokens_avg": 50.0,
+    "egpt_time_avg": 0.5116120338439941,
+    "vl_time_avg": 0.9084485054016114,
+    "word_overlap_avg": 0.0,
+    "char_similarity_avg": 0.0,
+    "acceptance_rate_avg": 0.0
+  },
+  "results": [
+    {
+      "sample_idx": 0,
+      "egpt_tokens": 0,
+      "vl_tokens": 50,
+      "egpt_time": 0.6072545051574707,
+      "vl_time": 0.910961389541626,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is another smaller vehicle visible further ahead on the same street. A person can be seen standing near one of the vehicles, possibly observing or waiting for someone to",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    },
+    {
+      "sample_idx": 1,
+      "egpt_tokens": 0,
+      "vl_tokens": 50,
+      "egpt_time": 0.4284367561340332,
+      "vl_time": 0.9095211029052734,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is another smaller vehicle visible further ahead on the same street. A person can be seen standing near one of the vehicles, possibly observing or waiting for someone to",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    },
+    {
+      "sample_idx": 2,
+      "egpt_tokens": 0,
+      "vl_tokens": 50,
+      "egpt_time": 0.5027637481689453,
+      "vl_time": 0.9072611331939697,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, with trees on both sides of it. There is also another smaller vehicle visible further ahead along the same stretch of road. In addition to these vehicles, there's a person standing near one side",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    },
+    {
+      "sample_idx": 3,
+      "egpt_tokens": 0,
+      "vl_tokens": 50,
+      "egpt_time": 0.5122900009155273,
+      "vl_time": 0.9053058624267578,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees on both sides. There is also another smaller vehicle visible further ahead of the main one. A person can be seen standing near the edge of the road, possibly observing or waiting",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    },
+    {
+      "sample_idx": 4,
+      "egpt_tokens": 0,
+      "vl_tokens": 50,
+      "egpt_time": 0.5073151588439941,
+      "vl_time": 0.9091930389404297,
+      "egpt_text": "",
+      "vl_text": "The image features a car driving down an empty road, surrounded by trees and mountains. There is also another smaller vehicle visible on the right side of the main car. In addition to these vehicles, there's a person standing near one of them,",
+      "word_overlap": 0,
+      "char_similarity": 0.0,
+      "acceptance_estimate": 0.0
+    }
+  ],
+  "errors": []
+}

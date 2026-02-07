@@ -94,11 +94,37 @@ def get_video_path(event_file, use_mp4=False):
     return base_path
 
 
-def create_dataset_structure(event_files, video_dir, mp4_dir, split_name):
+def get_event_images(event_file, event_image_dir):
+    """Get the list of event image paths for an event file.
+
+    Event images are stored as: event_image/{seq_name}/{clip_id}_{frame_idx}.png
+    For example: event_image/interlaken_00_a/000000_0.png, 000000_1.png, etc.
+    """
+    # event_file is like "interlaken_00_a/000000.npy"
+    seq_name = os.path.dirname(event_file)  # "interlaken_00_a"
+    clip_id = os.path.basename(event_file).replace('.npy', '')  # "000000"
+
+    # Look for event images in event_image/{seq_name}/
+    seq_event_image_dir = os.path.join(event_image_dir, seq_name)
+    if not os.path.isdir(seq_event_image_dir):
+        return []
+
+    # Find all PNG files matching {clip_id}_*.png pattern
+    event_images = []
+    for f in sorted(os.listdir(seq_event_image_dir)):
+        if f.startswith(clip_id + '_') and f.endswith('.png'):
+            # Return relative path: seq_name/filename
+            event_images.append(os.path.join(seq_name, f))
+
+    return event_images
+
+
+def create_dataset_structure(event_files, video_dir, mp4_dir, event_image_dir, split_name):
     """Create the dataset structure with empty question and gpt fields."""
     dataset = []
     missing_videos = 0
     missing_mp4s = 0
+    missing_event_images = 0
 
     for event_file in tqdm(event_files, desc="🏗️  Creating entries", unit="entry"):
         video_path = get_video_path(event_file, use_mp4=False)
@@ -118,12 +144,20 @@ def create_dataset_structure(event_files, video_dir, mp4_dir, split_name):
             if missing_mp4s <= 5:  # Only show first 5 warnings
                 print(f"⚠️  Warning: MP4 file not found: {full_mp4_path}")
 
+        # Get event images
+        event_images = get_event_images(event_file, event_image_dir)
+        if not event_images:
+            missing_event_images += 1
+            if missing_event_images <= 5:
+                print(f"⚠️  Warning: No event images found for: {event_file}")
+
         dataset.append({
             "id": str(uuid.uuid4()),
             "split": split_name,
             "event_data": event_file,
             "video_data": video_path,
             "mp4_data": mp4_path,
+            "event_image": event_images,  # List of event image paths
             "conversations": [
                 {
                     "from": "human",
@@ -140,7 +174,9 @@ def create_dataset_structure(event_files, video_dir, mp4_dir, split_name):
         print(f"⚠️  ... and {missing_videos - 5} more missing video folders")
     if missing_mp4s > 5:
         print(f"⚠️  ... and {missing_mp4s - 5} more missing MP4 files")
-    
+    if missing_event_images > 5:
+        print(f"⚠️  ... and {missing_event_images - 5} more missing event images")
+
     return dataset
 
 
@@ -157,6 +193,7 @@ def main():
     event_npy_dir = os.path.join(args.dataset_dir, "event_npy")
     video_dir = os.path.join(args.dataset_dir, "video")
     mp4_dir = os.path.join(args.dataset_dir, "mp4")
+    event_image_dir = os.path.join(args.dataset_dir, "event_image")
     split_name = os.path.basename(args.dataset_dir.rstrip('/'))  # e.g., "my_egpt_dsec_seq_5s"
     
     # Determine output filename based on sequence
@@ -184,9 +221,10 @@ def main():
     # Create dataset structure with empty fields
     print(f"🎬 Looking for video folders in {video_dir}")
     print(f"🎬 Looking for MP4 files in {mp4_dir}")
+    print(f"🖼️  Looking for event images in {event_image_dir}")
     print(f"📛 Split name: {split_name}")
     print("🏗️  Creating dataset structure...")
-    dataset = create_dataset_structure(event_files, video_dir, mp4_dir, split_name)
+    dataset = create_dataset_structure(event_files, video_dir, mp4_dir, event_image_dir, split_name)
     print(f"📊 Created dataset with {len(dataset)} entries")
 
     # Save dataset

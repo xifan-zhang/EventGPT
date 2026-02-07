@@ -1,0 +1,289 @@
+{
+  "timestamp": "2026-01-28T15:20:02.932586",
+  "config": {
+    "train_json": "./feasible/token_alignment/train_tokens_1q.json",
+    "test_benchmark": "./feasible/token_alignment/test_tokens_1q.json",
+    "output_dir": "feasible/token_alignment/task/1q_20260128_151847",
+    "num_epochs": 50,
+    "batch_size": 32,
+    "learning_rate": 0.0001,
+    "max_seq_len": 128,
+    "embed_dim": 512,
+    "num_layers": 4,
+    "num_heads": 8,
+    "device": "cuda",
+    "max_train_samples": -1,
+    "early_stopping": 10
+  },
+  "model_params": 45486346,
+  "baseline": {
+    "train": {
+      "acceptance_rate": 0.017674271150099907,
+      "total_correct": 4237,
+      "total_tokens": 239727
+    },
+    "test": {
+      "acceptance_rate": 0.015776957135399547,
+      "total_correct": 816,
+      "total_tokens": 51721
+    }
+  },
+  "final": {
+    "train": {
+      "dataset": "train",
+      "num_samples": 5200,
+      "acceptance_rate": 0.27212745413582234,
+      "top5_rate": 0.5139574681874917,
+      "total_correct": 69331,
+      "total_tokens": 254774,
+      "inference_time_sec": 1.6523642539978027,
+      "samples_per_sec": 3147.0058659396022,
+      "timing_stats": {
+        "eventgpt": {
+          "stage1": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage2": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage3": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage4": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage5": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          }
+        },
+        "videollava": {
+          "stage1": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage2": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage3": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage4": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage5": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      }
+    },
+    "test": {
+      "dataset": "test",
+      "num_samples": 1100,
+      "acceptance_rate": 0.27901669758812614,
+      "top5_rate": 0.5163821892393321,
+      "total_correct": 15039,
+      "total_tokens": 53900,
+      "inference_time_sec": 0.3478891849517822,
+      "samples_per_sec": 3161.926405250169,
+      "timing_stats": {
+        "eventgpt": {
+          "stage1": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage2": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage3": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage4": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage5": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          }
+        },
+        "videollava": {
+          "stage1": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage2": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage3": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage4": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "stage5": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "mean": 0,
+            "std": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      }
+    }
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "train_loss": 5.214877871647934,
+      "train_acc": 0.25699230870860484,
+      "val_acc": 0.2785899814471243,
+      "val_top5": 0.5121706864564007
+    },
+    {
+      "epoch": 2,
+      "train_loss": 4.312495295986808,
+      "train_acc": 0.2699274881485781,
+      "val_acc": 0.27901669758812614,
+      "val_top5": 0.5163821892393321
+    },
+    {
+      "epoch": 3,
+      "train_loss": 4.267843729147882,
+      "train_acc": 0.2706638276576996,
+      "val_acc": 0.27820037105751394,
+      "val_top5": 0.5173098330241187
+    },
+    {
+      "epoch": 4,
+      "train_loss": 4.241422811168834,
+      "train_acc": 0.27130468345127223,
+      "val_acc": 0.27682745825602967,
+      "val_top5": 0.5166233766233767
+    },
+    {
+      "epoch": 5,
+      "train_loss": 4.2218690869267,
+      "train_acc": 0.2718483470151761,
+      "val_acc": 0.27747680890538035,
+      "val_top5": 0.5115769944341373
+    },
+    {
+      "epoch": 6,
+      "train_loss": 4.2064335463237175,
+      "train_acc": 0.2724708094735818,
+      "val_acc": 0.277012987012987,
+      "val_top5": 0.5167161410018553
+    },
+    {
+      "epoch": 7,
+      "train_loss": 4.190702450056017,
+      "train_acc": 0.2730654389397498,
+      "val_acc": 0.27827458256029686,
+      "val_top5": 0.5186270871985158
+    },
+    {
+      "epoch": 8,
+      "train_loss": 4.1795828459452995,
+      "train_acc": 0.2731787929871331,
+      "val_acc": 0.2771799628942486,
+      "val_top5": 0.5170871985157699
+    },
+    {
+      "epoch": 9,
+      "train_loss": 4.164782955602634,
+      "train_acc": 0.27416813519834743,
+      "val_acc": 0.27823747680890537,
+      "val_top5": 0.5156400742115028
+    },
+    {
+      "epoch": 10,
+      "train_loss": 4.154362912558339,
+      "train_acc": 0.274042815244271,
+      "val_acc": 0.27549165120593694,
+      "val_top5": 0.5117810760667904
+    },
+    {
+      "epoch": 11,
+      "train_loss": 4.14140630645986,
+      "train_acc": 0.2753226308186361,
+      "val_acc": 0.2758812615955473,
+      "val_top5": 0.5154916512059369
+    }
+  ],
+  "best_val_acc": 0.27901669758812614
+}

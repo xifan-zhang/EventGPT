@@ -8,12 +8,14 @@ significantly reducing EventGPT inference time by eliminating stage1 preprocessi
 
 The script:
 1. Reads event .npy files from event_npy/ folder
-2. Generates 5 event images per .npy file (same as EventGPT preprocessing)
-3. Saves images to event_image/ folder as PNG files
-4. Updates JSON with event_image paths
+2. Generates N event images per .npy file (default 5, same as EventGPT preprocessing)
+3. Saves images to event_image/ (N=5) or event_image_1f/ (N=1) folder as PNG files
+4. Updates JSON with event_image or event_image_1f paths
 
 ## Usage
 python preprocess_event_images.py --data_dir /mnt/hdd/data/my_egpt_dsec_seq_5s
+python preprocess_event_images.py --data_dir /mnt/hdd/data/my_egpt_dsec_seq_5s --num_frames 1
+python preprocess_event_images.py --data_dir /mnt/hdd/data/my_egpt_dsec_seq_5s --hz 2
 
 ## Apply to all datasets
 python preprocess_event_images.py --data_dir /mnt/hdd/data --all_datasets
@@ -22,6 +24,7 @@ python preprocess_event_images.py --data_dir /mnt/hdd/data --all_datasets
 import os
 import sys
 import json
+import re
 import argparse
 import numpy as np
 from pathlib import Path
@@ -30,8 +33,26 @@ from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 
-# Number of event images to generate per .npy file (same as EventGPT)
-NUM_EVENT_IMAGES = 5
+# Default number of event images to generate per .npy file (same as EventGPT)
+DEFAULT_NUM_FRAMES = 5
+
+
+def parse_duration_from_dir(data_dir: Path):
+    """Parse duration in seconds from dataset directory name.
+
+    Supports patterns like: my_egpt_dsec_seq_5s, my_egpt_dsec_train_500ms, etc.
+    Returns duration in seconds as a float, or None if not parseable.
+    """
+    name = data_dir.name
+    # Match trailing duration: e.g., _500ms, _5s, _10s
+    match = re.search(r'_(\d+)(ms|s)$', name)
+    if not match:
+        return None
+    value = int(match.group(1))
+    unit = match.group(2)
+    if unit == 'ms':
+        return value / 1000.0
+    return float(value)
 
 
 def generate_event_image_vectorized(x, y, p, height=None, width=None):
@@ -74,7 +95,7 @@ def generate_event_image(x, y, p):
     return generate_event_image_vectorized(x, y, p)
 
 
-def get_event_images_list(event_npy, n=NUM_EVENT_IMAGES):
+def get_event_images_list(event_npy, n=DEFAULT_NUM_FRAMES):
     """Split event data into n parts and generate event images for each.
 
     This matches the logic in common/common.py:get_event_images_list()
@@ -104,12 +125,12 @@ def process_single_npy(args):
     """Process a single .npy file and save event images.
 
     Args:
-        args: tuple of (npy_path, output_dir, relative_path)
+        args: tuple of (npy_path, output_dir, relative_path, num_frames)
 
     Returns:
         tuple of (relative_path, list of saved image paths, skipped) or (relative_path, None, False) on error
     """
-    npy_path, output_dir, relative_path = args
+    npy_path, output_dir, relative_path, num_frames = args
 
     try:
         # Create output directory path
@@ -119,7 +140,7 @@ def process_single_npy(args):
 
         # Check if all output images already exist
         expected_paths = []
-        for i in range(NUM_EVENT_IMAGES):
+        for i in range(num_frames):
             img_filename = f"{npy_stem}_{i}.png"
             img_path = output_subdir / img_filename
             expected_paths.append((img_path, str(npy_parent / img_filename)))
@@ -133,7 +154,7 @@ def process_single_npy(args):
         event_npy = np.array(event_npy).item()
 
         # Generate event images
-        event_images = get_event_images_list(event_npy, NUM_EVENT_IMAGES)
+        event_images = get_event_images_list(event_npy, num_frames)
 
         # Create output directory
         output_subdir.mkdir(parents=True, exist_ok=True)
@@ -183,15 +204,36 @@ def find_json_file(data_dir: Path):
     return None
 
 
-def preprocess_dataset(data_dir: Path, num_workers: int = None):
+def preprocess_dataset(data_dir: Path, num_workers: int = None, num_frames: int = DEFAULT_NUM_FRAMES, hz: int = None):
     """Preprocess all event .npy files in a dataset directory.
 
     Args:
         data_dir: Path to dataset directory containing event_npy/ folder
         num_workers: Number of parallel workers (default: CPU count)
+        num_frames: Number of event images per clip (1 for single-frame, 5 for default)
+        hz: If set, override num_frames by computing duration * hz from dir name
     """
+    # If --hz is set, compute num_frames from directory name duration
+    if hz is not None:
+        duration = parse_duration_from_dir(data_dir)
+        if duration is None:
+            print(f"Skipping {data_dir}: cannot parse duration from directory name")
+            return False
+        num_frames = max(1, int(duration * hz))
+        print(f"  Hz mode: {duration}s * {hz}Hz = {num_frames} frames")
+
     event_npy_dir = data_dir / "event_npy"
-    event_image_dir = data_dir / "event_image"
+    # Output dir naming
+    if hz is not None:
+        output_dir_name = f"event_image_{hz}Hz"
+        json_image_key = f"event_image_{hz}Hz"
+    elif num_frames == 1:
+        output_dir_name = "event_image_1f"
+        json_image_key = "event_image_1f"
+    else:
+        output_dir_name = "event_image"
+        json_image_key = "event_image"
+    event_image_dir = data_dir / output_dir_name
     json_path = find_json_file(data_dir)
 
     if not event_npy_dir.exists():
@@ -218,7 +260,7 @@ def preprocess_dataset(data_dir: Path, num_workers: int = None):
     process_args = []
     for npy_path in npy_files:
         relative_path = npy_path.relative_to(event_npy_dir)
-        process_args.append((npy_path, event_image_dir, relative_path))
+        process_args.append((npy_path, event_image_dir, relative_path, num_frames))
 
     # Process files in parallel
     if num_workers is None:
@@ -257,14 +299,14 @@ def preprocess_dataset(data_dir: Path, num_workers: int = None):
             if 'event_data' in sample and sample['event_data']:
                 event_data_key = sample['event_data']
                 if event_data_key in results:
-                    sample['event_image'] = results[event_data_key]
+                    sample[json_image_key] = results[event_data_key]
                     updated_count += 1
 
         # Save updated JSON
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(dataset, f, indent=2, ensure_ascii=False)
 
-        print(f"  Updated {updated_count} samples in JSON")
+        print(f"  Updated {updated_count} samples in JSON (key: {json_image_key})")
     else:
         # Create a new JSON with the mappings
         output_json_path = data_dir / "EventGPT_Instruction_Subset.json"
@@ -273,7 +315,7 @@ def preprocess_dataset(data_dir: Path, num_workers: int = None):
         for event_data_key, image_paths in results.items():
             output_json.append({
                 "event_data": event_data_key,
-                "event_image": image_paths
+                json_image_key: image_paths
             })
 
         with open(output_json_path, 'w', encoding='utf-8') as f:
@@ -312,9 +354,23 @@ def main():
         default=None,
         help="Number of parallel workers (default: CPU count - 1)"
     )
+    parser.add_argument(
+        "--num_frames",
+        type=int,
+        default=DEFAULT_NUM_FRAMES,
+        help=f"Number of event images per clip (default: {DEFAULT_NUM_FRAMES}, use 1 for single-frame)"
+    )
+    parser.add_argument(
+        "--hz",
+        type=int,
+        default=None,
+        help="Generate frames at N Hz (e.g., --hz 2 for 2Hz). Overrides --num_frames by computing duration * hz from dir name."
+    )
 
     args = parser.parse_args()
     data_dir = Path(args.data_dir)
+    num_frames = args.num_frames
+    hz = args.hz
 
     if not data_dir.exists():
         print(f"Error: {data_dir} does not exist")
@@ -333,13 +389,13 @@ def main():
 
         success_count = 0
         for dataset_dir in datasets:
-            if preprocess_dataset(dataset_dir, args.num_workers):
+            if preprocess_dataset(dataset_dir, args.num_workers, num_frames, hz):
                 success_count += 1
 
         print(f"\nCompleted: {success_count}/{len(datasets)} datasets processed")
     else:
         # Process single dataset
-        if not preprocess_dataset(data_dir, args.num_workers):
+        if not preprocess_dataset(data_dir, args.num_workers, num_frames, hz):
             sys.exit(1)
 
     print("\nDone!")

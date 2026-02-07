@@ -1,0 +1,280 @@
+{
+  "timestamp": "20260127_141843",
+  "datetime": "2026-01-27 14:20:38",
+  "dataset_name": "my_egpt_dsec_seq_16s",
+  "config": {
+    "quantization": "4bit",
+    "max_samples": -1,
+    "max_new_tokens": 50,
+    "device": "cuda"
+  },
+  "gpu_memory": {
+    "eventgpt_model_mb": 3904.73095703125,
+    "videollava_model_mb": 4047.82470703125,
+    "total_models_mb": 7952.5556640625
+  },
+  "statistics": {},
+  "results": [],
+  "errors": [
+    {
+      "sample_idx": 0,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 1,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 2,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 3,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 4,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 5,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 6,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 7,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 8,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 9,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 10,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 11,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 12,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 13,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 14,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 15,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 16,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 17,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 18,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 19,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 20,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 21,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 22,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 23,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 24,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 25,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 26,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 27,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 28,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 29,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 30,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 31,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 32,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 33,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 34,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 35,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 36,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 37,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 38,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 39,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 40,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 41,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 42,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 43,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 44,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 45,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 46,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 47,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 48,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 49,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 50,
+      "egpt_error": "No result",
+      "vl_error": null
+    },
+    {
+      "sample_idx": 51,
+      "egpt_error": "No result",
+      "vl_error": null
+    }
+  ]
+}
