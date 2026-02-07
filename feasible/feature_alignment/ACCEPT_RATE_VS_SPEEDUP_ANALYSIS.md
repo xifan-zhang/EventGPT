@@ -1,11 +1,117 @@
-# Accept@0.90 = 20%: Is Embedding-Level SD Viable?
+# Accept Rate vs Speedup Analysis
 
-> **Date:** 2026-02-06
-> **Context:** L1 adapter plateauing at cos_sim ~0.77, Accept@0.90 ~20% on full 11k test set
+> **Updated:** 2026-02-07 — E2E wall-clock benchmark results (L4, 10,970 samples)
+> **Previous:** 2026-02-06 — Theoretical projections (L1, cos_sim-based estimates)
 
 ---
 
-## TL;DR
+## UPDATE: Actual E2E Wall-Clock Results (2026-02-07)
+
+### Benchmark Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Dataset | `my_egpt_dsec_seq_1s` (10,970 samples after 3 warmup) |
+| Adapter | L4 (100M params, 50 epochs, val_loss=1.2458) |
+| Max tokens | 30, gamma=5 |
+| Checkpoint | `tasks/L4/L4_20260206_192256/best_model.pt` |
+
+### Results: 1.03x Speedup (Not 5.77x)
+
+| Config | Prefill (ms) | Decode (ms) | Total (ms) | Accept | Speedup |
+|--------|-------------|------------|-----------|--------|---------|
+| VL baseline | 317 | 419 | 736 | --- | 1.00x |
+| L4+VL SD | 317 | 404 | 721 | 21.2% | **1.03x** |
+
+### Why Speedup Is So Low
+
+**Pipeline per sample:**
+1. VL prefill: 317 ms (identical to baseline, unchanged by SD)
+2. EGPT generates ~22 draft tokens during VL prefill gap (free)
+3. VL verify batch: one forward pass over ~21 drafts → **~70 ms**
+4. VL autoregressive: remaining tokens after last accepted
+
+**The math:**
+
+| Component | Value |
+|-----------|-------|
+| VL per-token cost (autoregressive) | 14.0 ms |
+| Mean drafted tokens | 20.9 |
+| Mean accepted tokens | 4.4 |
+| Tokens saved per sample | 5.4 (accepted + 1 bonus) |
+| Value of saved tokens | 5.4 × 14.0 = **75 ms** |
+| Verify batch cost | **~70 ms** |
+| **Net saving** | **~5 ms** per sample |
+
+### Root Causes
+
+**1. Prefill is 43% of wall time**
+- Prefill: 317 ms, Decode: 419 ms → SD only helps decode phase
+- Even with perfect acceptance, max total speedup = 2.3x
+
+**2. Only 21% acceptance rate**
+- Mean 4.4 accepted of 20.9 drafted per iteration
+- 32% of samples get 0-1 accepted → **net slowdown** (verify > savings)
+
+**3. Verify batch nearly cancels savings**
+- 70 ms verify cost eats almost all of the 75 ms saved
+- Net saving only ~5 ms per 736 ms sample
+
+### Acceptance Distribution (10,970 samples)
+
+```
+Accepted  Count    %     Speedup
+   0       1000   9.1%   0.94x  ← slower
+   1       2456  22.4%   0.96x  ← slower
+   2        248   2.3%   0.97x  ← slower
+   3        899   8.2%   0.99x  ← breakeven
+   4        753   6.9%   1.01x
+   5       1821  16.6%   1.03x
+   6       1135  10.3%   1.06x
+   7        950   8.7%   1.08x
+   8        595   5.4%   1.10x
+   9        309   2.8%   1.13x
+  10        189   1.7%   1.15x
+  11        118   1.1%   1.22x
+  12        486   4.4%   1.25x
+```
+
+31.5% of samples are **slower** with SD (0-1 accepted). The average is dragged down by these.
+
+### Projected Speedup at Higher Acceptance Rates
+
+| Accept% | Accepted | AR-remain | Decode (ms) | Total (ms) | Speedup |
+|---------|----------|-----------|-------------|-----------|---------|
+| 21% | 4.4 | 24.6 | 414 | 730 | **1.01x** ← current |
+| 30% | 6.3 | 22.7 | 388 | 704 | 1.04x |
+| 40% | 8.4 | 20.6 | 358 | 675 | 1.09x |
+| 50% | 10.4 | 18.6 | 329 | 646 | 1.14x |
+| 60% | 12.5 | 16.5 | 300 | 617 | 1.19x |
+| 70% | 14.6 | 14.4 | 271 | 588 | 1.25x |
+| 80% | 16.7 | 12.3 | 242 | 558 | 1.32x |
+| 90% | 18.8 | 10.2 | 213 | 529 | 1.39x |
+| 100% | 20.9 | 8.1 | 183 | 500 | 1.47x |
+
+### Correction to Previous Estimates
+
+The earlier 5.77x estimate was based on:
+- Theoretical consecutive accept counts from cos_sim thresholds
+- Assumption that prefill hiding contributes directly to speedup
+- Not accounting for verify batch overhead
+
+**Actual finding:** Prefill hiding generates free draft tokens, but VL acceptance rate (21%) means most are rejected. The verify overhead (~70 ms) nearly cancels the savings from accepted tokens. The bottleneck is **acceptance rate**, not token generation speed.
+
+### Next Steps
+- L4 retraining with 300 epochs (previous 50 epochs didn't converge, T_max bug fixed)
+- B1 VLM-only EAGLE baseline to determine upper bound (cross-modal gap vs adapter capacity)
+
+---
+
+## Original Analysis (2026-02-06) — Theoretical Projections
+
+> **Note:** The projections below were based on cos_sim thresholds before E2E benchmarks existed. Actual E2E results above show significantly lower speedup due to verify overhead and prefill-dominated latency.
+
+### Previous TL;DR (Theoretical)
 
 **20% overall Accept@0.90 sounds low but yields 5.77x speedup** because:
 1. Positions 0-2 have ~100% acceptance (consecutive metric >> overall metric)

@@ -1,2008 +1,387 @@
-# Hidden State Adapter for Cross-Modal Speculative Decoding
+# Feature Alignment for Cross-Modal Speculative Decoding
 
-> **Last Updated:** 2026-02-07
+> EventGPT (drafter) → Adapter → Video-LLaVA (verifier)
 
-Cross-modal adapter training pipeline for EventGPT → Video-LLaVA speculative decoding.
-7 adapter architectures (L1-L5, B1, L5F) trained and evaluated on DSEC 1s event-video pairs.
-
-**Best Result:** L4+VL cross-modal speculative decoding achieves **1.02-1.24x** E2E wall-clock speedup with 20.3% acceptance rate and ~22 free tokens hidden behind VL prefill. L5F fused adapter beats VLM-only baseline (B1) for hidden-state acceptance.
+Train lightweight adapters to align EventGPT decoder hidden states to Video-LLaVA hidden state space, enabling cross-modal speculative decoding with prefill hiding.
 
 ---
 
-## TL;DR: Full Pipeline (L1 Adapter, 1s Dataset)
+## Pipeline Overview
+
+```
+Stage 0          Stage 1              Stage 2             Stage 3              Stage 4
+Extract LM Head  Extract Hidden       Train Adapter       Evaluate Adapter     E2E Wall-Clock
+(one-time)       States (both models) (L1-L5, B1, L5F)   (offline metrics)    Benchmark
+
+vl_lm_head.pt    chunked_train/       best_model.pt       acceptance_metrics   speedup per sample
+                 chunked_test/        history.json        .json, .png          JSON + graphs
+```
+
+---
+
+## Stage 0: Extract VL LM Head (one-time)
+
+Extract Video-LLaVA's LM head weights for offline token-level metrics.
 
 ```bash
-# === Step 1: Extract Train Hidden States (chunked, ~24h) ===
-nohup python feasible/feature_alignment/extract_hidden_states.py \
+python feasible/feature_alignment/extract_vl_lm_head.py \
+    --output_path ./feasible/feature_alignment/vl_lm_head.pt
+```
+
+| | |
+|---|---|
+| **Script** | `extract_vl_lm_head.py` |
+| **Input** | HuggingFace `LanguageBind/Video-LLaVA-7B-hf` (auto-downloaded) |
+| **Output** | `vl_lm_head.pt` (~256MB, float32 `[32000, 4096]`) |
+| **Time** | ~2 min |
+
+---
+
+## Stage 1: Extract Hidden States
+
+Run both EventGPT and Video-LLaVA on the same scenes/questions, save their decoder hidden states.
+
+### Train split (~24h)
+
+```bash
+python feasible/feature_alignment/extract_hidden_states.py \
     --split train --chunked --quant 4bit \
-    > feasible/feature_alignment/extraction_train.log 2>&1 &
+    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
+    --output_dir ./feasible/feature_alignment/data \
+    --max_samples -1 --max_questions 10 --max_new_tokens 50 \
+    --chunk_size 1000
+```
 
-# === Step 2: Extract Test Hidden States (~5h) ===
-nohup python feasible/feature_alignment/extract_hidden_states.py \
+### Test split (~5h)
+
+```bash
+python feasible/feature_alignment/extract_hidden_states.py \
     --split test --chunked --quant 4bit \
-    > feasible/feature_alignment/extraction_test.log 2>&1 &
-
-# === Step 3: Train L1 Adapter (~1-2h) ===
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data /mnt/hdd/data/egpt/chunked_train_1s_4bit \
-    --val_data /mnt/hdd/data/egpt/hidden_states/chunked_test_1s_4bit \
-    --adapter_level 1 --num_epochs 50 --batch_size 64
-
-# === Step 4: Evaluate on Test Set ===
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint ./feasible/feature_alignment/checkpoints/hidden_adapter/L1_*/best_model.pt \
-    --test_data /mnt/hdd/data/egpt/hidden_states/chunked_test_1s_4bit
+    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_test/my_egpt_dsec_seq_1s \
+    --output_dir ./feasible/feature_alignment/data \
+    --max_samples -1 --max_questions 10 --max_new_tokens 50 \
+    --chunk_size 1000
 ```
 
-**Data Storage:** Large features stored on HDD at `/mnt/hdd/data/egpt/`
+### CLI Reference
 
-### Feature Data Paths (Updated 2026-02-06 09:20)
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--dataset_dir` | hardcoded | Path to DSEC dataset with event images + MP4 |
+| `--output_dir` | `./data` | Output directory for chunked data |
+| `--split` | `train` | `train` or `test` |
+| `--chunked` | off | Chunked saving (required for large datasets) |
+| `--chunk_size` | 1000 | Samples per chunk (~1.6GB each) |
+| `--quant` | `4bit` | Model quantization (`4bit`, `8bit`, `fp16`) |
+| `--max_samples` | -1 | Limit samples (-1 = all) |
+| `--max_questions` | 10 | Questions per sample |
+| `--max_new_tokens` | 50 | Max generated tokens per question |
+| `--resume` | off | Resume from last saved chunk |
+| `--save_interval` | 1000 | Emergency checkpoint interval |
+
+### Output Structure
 
 ```
-/mnt/hdd/data/egpt/
-├── chunked_train_1s_4bit/          # Train hidden states (52,080 samples)
-│   ├── index.json                   # Chunk index
+feasible/feature_alignment/data/
+├── chunked_train_1s_4bit/        # 52,000 samples (5,200 scenes x 10 questions)
+│   ├── index.json                # Chunk metadata
 │   └── chunks/
-│       ├── chunk_000000.pt          # 1000 samples, ~1.6GB each
-│       ├── chunk_001000.pt
-│       └── ... (52 chunks, ~80GB total)
+│       ├── chunk_000000.pt       # samples 0-999, ~1.6GB
+│       ├── chunk_001000.pt       # samples 1000-1999
+│       └── ... (52 chunks, ~83GB total)
 │
-└── hidden_states/
-    └── chunked_test_1s_4bit/        # Test hidden states (11,000 samples)
-        ├── index.json
-        └── chunks/
-            ├── chunk_000000.pt
-            └── ... (11 chunks, ~17GB total)
+└── chunked_test_1s_4bit/         # 11,000 samples (1,100 scenes x 10 questions)
+    ├── index.json
+    └── chunks/
+        ├── chunk_000000.pt
+        └── ... (11 chunks, ~18GB total)
+```
 
-# Adapter checkpoints & results
-feasible/feature_alignment/tasks/
-├── L1/L1_20260206_HHMMSS/          # L1 adapter run
-│   ├── best_model.pt               # Best checkpoint
-│   ├── config.json                  # Full training config
-│   └── training_curves.png          # Loss/cos_sim/acceptance plots
-├── L2/                              # L2 adapter runs
-├── L3/                              # L3 adapter runs
-├── L4/                              # L4 adapter runs
-└── L5/                              # L5 EAGLE adapter runs
+### Chunk Format
+
+Each `chunk_XXXXXX.pt` contains:
+
+```python
+{
+    'egpt_hidden': torch.Tensor,  # [n_samples, max_seq, 4096] float32
+    'vl_hidden':   torch.Tensor,  # [n_samples, max_seq, 4096] float32
+    'seq_lens':    torch.Tensor,  # [n_samples] int64
+}
+```
+
+`index.json`:
+```json
+{
+    "total_samples": 52000,
+    "chunk_size": 1000,
+    "chunks": [{"path": "chunk_000000.pt", "start_idx": 0, "n_samples": 1000}, ...],
+    "config": {"split": "train", "duration": "1s", "quant": "4bit",
+               "max_questions": 10, "max_new_tokens": 50, "hidden_dim": 4096}
+}
+```
+
+**Data location:** Symlinked from HDD storage. Actual paths:
+- Train: `/mnt/hdd/data/egpt/chunked_train_1s_4bit/`
+- Test: `/mnt/hdd/data/egpt/hidden_states/chunked_test_1s_4bit/`
+
+---
+
+## Stage 2: Train Adapter
+
+### Quick Reference
+
+```bash
+# L1 Bottleneck (2M params, ~1h)
+python feasible/feature_alignment/train_hidden_adapter.py \
+    --train_data ./feasible/feature_alignment/data/chunked_train_1s_4bit \
+    --val_data   ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --adapter_level 1 --num_epochs 50 --batch_size 64 \
+    --output_dir ./feasible/feature_alignment/tasks/L1
+
+# L4 Attention (101M params, ~10h)
+python feasible/feature_alignment/train_hidden_adapter.py \
+    --train_data ./feasible/feature_alignment/data/chunked_train_1s_4bit \
+    --val_data   ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --adapter_level 4 --num_epochs 300 --batch_size 64 --early_stopping 50 \
+    --output_dir ./feasible/feature_alignment/tasks/L4
+
+# L5 EAGLE cross-modal (103M params, ~12h)
+python feasible/feature_alignment/train_hidden_adapter.py \
+    --train_data ./feasible/feature_alignment/data/chunked_train_1s_4bit \
+    --val_data   ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --adapter_level 5 --num_epochs 100 --batch_size 64 \
+    --output_dir ./feasible/feature_alignment/tasks/L5
+
+# L5F Fused EAGLE (170M params, gated h_egpt + h_vl fusion)
+python feasible/feature_alignment/train_hidden_adapter.py \
+    --train_data ./feasible/feature_alignment/data/chunked_train_1s_4bit \
+    --val_data   ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --adapter_level 6 --num_epochs 100 --batch_size 64 \
+    --output_dir ./feasible/feature_alignment/tasks/L5F
+
+# B1 VLM-only baseline (same arch as L5, no cross-modal gap)
+python feasible/feature_alignment/train_hidden_adapter.py \
+    --train_data ./feasible/feature_alignment/data/chunked_train_1s_4bit \
+    --val_data   ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --adapter_level 5 --vlm_only --num_epochs 50 --batch_size 64 \
+    --output_dir ./feasible/feature_alignment/tasks/B1
+```
+
+### CLI Reference
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--train_data` | required | Chunked dir or single `.pt` file |
+| `--val_data` | none | Chunked dir or `.pt` (splits from train if omitted) |
+| `--adapter_level` | 1 | 1=Bottleneck, 2=MultiLayer, 3=Wide, 4=Attention, 5=EAGLE, 6=FusedEAGLE |
+| `--num_epochs` | 50 | Training epochs |
+| `--batch_size` | 64 | Batch size |
+| `--learning_rate` | 1e-3 | AdamW learning rate |
+| `--early_stopping` | 10 | Patience (epochs without val improvement) |
+| `--vlm_only` | off | B1 mode: VL→VL (upper bound, no cross-modal gap) |
+| `--bottleneck_dim` | 256/1024 | Bottleneck size (L1/L2=256, L3=1024) |
+| `--num_heads` | 8 | Attention heads (L4/L5) |
+| `--num_layers` | 1 | Transformer layers (L4/L5) |
+| `--ffn_dim` | 2048 | FFN dimension (L4/L5) |
+| `--output_dir` | `./tasks/` | Output base directory |
+
+### Adapter Architectures
+
+| Level | Name | Architecture | Params | Key Feature |
+|-------|------|-------------|--------|-------------|
+| **L1** | Bottleneck | `4096→256→4096 + residual` | 2.1M | Simple, fast |
+| **L2** | Multi-Layer Bottleneck | `3x (4096→256→4096)` | 6.3M | Stacked nonlinearity |
+| **L3** | Wide Bottleneck | `3x (4096→1024→4096)` | 16M | Larger bottleneck |
+| **L4** | Attention | `Transformer + FFN + residual` | 101M | Token dependencies |
+| **L5** | EAGLE | `CausalAttn + FFN, dual loss` | 103M | Align + predict next h |
+| **L5F** | Fused EAGLE | `Gate(h_egpt, h_vl) + L5` | 170M | Both input streams |
+| **B1** | VLM-only | Same as L5, `--vlm_only` | 103M | Upper bound (no cross-modal gap) |
+
+### Training Details
+
+- **Loss:** `MSE(aligned, target) + 0.5 * CosineLoss(aligned, target)`
+- **Optimizer:** AdamW, weight_decay=0.01
+- **Scheduler:** CosineAnnealingLR (T_max = num_epochs, eta_min=1e-6)
+- **Gradient clipping:** max_norm=1.0
+- **Memory-efficient:** ChunkedTrainLoader streams 1 chunk (~1.6GB) at a time with background prefetching. Total RAM ~3GB instead of 83GB.
+
+### Output
+
+```
+feasible/feature_alignment/tasks/L4/L4_20260206_192256/
+├── best_model.pt          # Best val loss checkpoint
+├── final_model.pt         # Last epoch checkpoint
+├── config.json            # Full training configuration
+├── history.json           # Per-epoch train/val metrics
+└── training_curves.png    # Loss, cosine sim, acceptance rate plots
 ```
 
 ---
 
-## Metrics Summary
+## Stage 3: Evaluate Adapter (Offline Metrics)
 
-### Training Metrics
+### Feature-Level Acceptance
+
+```bash
+python feasible/feature_alignment/measure_feature_acceptance.py \
+    --checkpoint ./feasible/feature_alignment/tasks/L4/L4_20260206_192256/best_model.pt \
+    --test_data  ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --lm_head    ./feasible/feature_alignment/vl_lm_head.pt \
+    --output_dir ./feasible/feature_alignment/tasks/L4/L4_20260206_192256
+```
+
+### CLI Reference
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--checkpoint` | required | Trained adapter `.pt` file |
+| `--test_data` | required | Chunked dir or `.pt` test data |
+| `--lm_head` | none | VL LM head (enables token-level metrics) |
+| `--output_dir` | checkpoint parent | Where to save results |
+| `--batch_size` | 64 | Processing batch size |
+| `--vlm_only` | off | B1 mode: use `vl_hidden` as input |
+| `--gamma_decode` | 5 | Draft tokens per SD iteration |
+| `--egpt_prefill_ms` | 130.0 | EventGPT prefill latency |
+| `--vl_prefill_ms` | 310.0 | Video-LLaVA prefill latency |
+
+### Output
+
+```
+tasks/L4/L4_20260206_192256/
+├── acceptance_metrics.json   # All metrics (cos_sim, accept rates, speedup estimates)
+├── position_stats.json       # Per-position acceptance breakdown
+├── metrics_summary.png       # 2x2 panel (histogram, per-position, consecutive, speedup)
+├── stage_timeline.png        # Baseline vs SD timing breakdown
+├── token_metrics.png         # Token-level metrics (if --lm_head provided)
+└── METRICS_COMPARISON.md     # Hidden vs token comparison table
+```
+
+### Key Metrics
+
 | Metric | Description |
 |--------|-------------|
-| Train Loss | MSE(adapter(EGPT_h), VL_h) |
-| Val Loss | MSE on validation split |
-| Cosine Similarity | cos(adapter(EGPT_h), VL_h) |
+| `cos_sim_mean` | Mean cosine similarity between aligned and target hidden states |
+| `accept_90` | Fraction of positions with cos_sim > 0.90 |
+| `consecutive_mean_90` | Avg consecutive tokens before first rejection @0.90 |
+| `speedup_e2e` | Estimated end-to-end speedup |
+| `token_top1_match` | Token prediction accuracy (requires `--lm_head`) |
 
-### Evaluation Metrics (All Implemented - Updated 2026-02-06)
+### Two-Phase Evaluation
 
-| Category | Metric | Status | Description |
-|----------|--------|--------|-------------|
-| **Similarity** | cos_sim_mean/std/min/max | ✅ | Cosine similarity statistics |
-| **Overall Accept** | Accept @0.80/0.85/0.90/0.95 | ✅ | % tokens above threshold |
-| **Consecutive** | consecutive_mean/std/max @τ | ✅ | Avg consecutive tokens (key for SD!) |
-| **Tokens** | num_hidden_tokens | ✅ | Sequence length statistics |
-| **Prefill SD** | sd_accept_rate_prefill_gamma | ✅ | Accept rate with γ=seq_len |
-| **Decode SD** | sd_accept_rate_decode_gamma5 | ✅ | Accept rate with γ=5 |
-| **Speedup** | speedup_prefill | ✅ | VL_prefill / (EGPT + adapter) |
-| **Speedup** | speedup_decode_gamma5 | ✅ | (accepted+1) / (1+overhead) |
-| **Speedup** | speedup_e2e | ✅ | End-to-end speedup |
-| **Position** | position_accept_90 | ✅ | Per-position acceptance @0.90 |
+Evaluates the prefill hiding + decode SD pipeline:
 
-### Metrics Implementation Reference
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  FILE: measure_feature_acceptance.py                                         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  FUNCTION: compute_all_metrics_parallel()  [Lines 57-291]                   │
-│  ─────────────────────────────────────────────────────────                  │
-│  All metrics computed in ONE parallel pass using vectorized PyTorch ops:   │
-│                                                                              │
-│  Section 1: COSINE SIMILARITY [Lines 85-112]                                │
-│    - cos_sim = (aligned_norm * vl_norm).sum(dim=-1)  # parallel dot product│
-│    - Outputs: cos_sim_mean, cos_sim_std, cos_sim_min, cos_sim_max, median  │
-│                                                                              │
-│  Section 2: ACCEPTANCE RATES [Lines 114-120]                                │
-│    - accept_mask = (cos_sim > thresh) & mask.bool()  # parallel comparison │
-│    - Outputs: accept_80, accept_85, accept_90, accept_95                   │
-│                                                                              │
-│  Section 3: CONSECUTIVE ACCEPTS [Lines 122-158]                             │
-│    - accept_int = (cos_sim > thresh).int()                                 │
-│    - cumprod = accept_int.cumprod(dim=1)  # parallel cumulative product    │
-│    - consecutive = cumprod.sum(dim=1)      # count before first rejection  │
-│    - Outputs: consecutive_mean/std/max/min/median @each threshold          │
-│                                                                              │
-│  Section 4: NUM HIDDEN TOKENS [Lines 160-170]                               │
-│    - seq_lens = mask.sum(dim=1)  # parallel sequence length                │
-│    - Outputs: num_hidden_tokens_mean/std/min/max (= γ_prefill)             │
-│                                                                              │
-│  Section 5: SD ACCEPTANCE RATES [Lines 172-198]                             │
-│    - Prefill: accept_rate = consecutive / γ_prefill                        │
-│    - Decode:  first_5_cumprod for γ=5                                      │
-│    - Outputs: sd_accept_rate_prefill_gamma, sd_accept_rate_decode_gamma5   │
-│                                                                              │
-│  Section 6: SPEEDUP ESTIMATIONS [Lines 200-270]                             │
-│    - Uses TimingConfig (egpt_prefill, vl_prefill, per_token times)         │
-│    - Prefill: 1 + (tokens_saved * vl_per_token) / vl_prefill               │
-│    - Decode:  (accepted + 1) / (1 + overhead_ratio)                        │
-│    - E2E:     baseline_time / sd_time                                      │
-│    - Outputs: speedup_prefill, speedup_decode_gamma5, speedup_e2e          │
-│                                                                              │
-│  Section 7: PER-POSITION STATS [Lines 272-289]                              │
-│    - Loop over positions (first 20)                                        │
-│    - Outputs: position_accept_90[], position_mean_sim[]                    │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  FUNCTION: compute_per_position_stats()  [Lines 294-321]                    │
-│  ───────────────────────────────────────────────────────                    │
-│    - Detailed per-position statistics at all thresholds                    │
-│    - Outputs: List[{position, mean, std, accept_80/85/90/95, num_samples}] │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  FUNCTION: print_metrics_report()  [Lines 324-394]                          │
-│  ─────────────────────────────────────────────────                          │
-│    - Formatted console output with ASCII bars                              │
-│    - 8 sections: Dataset, CosSim, Accept, Consecutive, Tokens, SD, Speedup │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  FUNCTION: plot_stage_timeline()  [Lines 397-550]                           │
-│  ───────────────────────────────────────────────                            │
-│    - Per-stage time breakdown (horizontal bar timeline)                    │
-│    - Baseline vs SD comparison with parallel visualization                 │
-│    - Time ratio pie charts                                                 │
-│    - Output: stage_timeline.png                                            │
-│    - Returns: stage_metrics (baseline_ms, sd_ms, time_ratios)              │
-│                                                                              │
-│  FUNCTION: plot_metrics()  [Lines 552-627]                                  │
-│  ─────────────────────────────────────────                                  │
-│    - 4-panel visualization: histogram, per-position, consecutive, speedup  │
-│    - Output: metrics_summary.png                                           │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  DATACLASSES:                                                               │
-│    - TimingConfig [Lines 40-47]: egpt_prefill, vl_prefill, per_token, etc. │
-│    - SDConfig [Lines 50-54]: gamma_decode=5, thresholds=(0.80..0.95)       │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  FILE: train_hidden_adapter.py                                               │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  CLASS: HiddenAdapterTrainer                                                │
-│                                                                              │
-│  METHOD: train_epoch()  - Training metrics                                  │
-│    - Outputs: train_loss, train_cos_sim                                    │
-│                                                                              │
-│  METHOD: validate()  - Validation metrics                                   │
-│    - Outputs: val_loss, val_cos_sim, accept_80/85/90/95                   │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+```bash
+python feasible/feature_alignment/eval_two_phase.py \
+    --prefill_checkpoint ./feasible/feature_alignment/tasks/L4/L4_20260206_192256/best_model.pt \
+    --decode_checkpoint  ./feasible/feature_alignment/tasks/L5F/L5F_20260206_224537/best_model.pt \
+    --test_data          ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --lm_head            ./feasible/feature_alignment/vl_lm_head.pt
 ```
 
-### Accept Rate vs Consecutive Accepts
-
-```
-Position:      0    1    2    3    4    5    6
-cos_sim:      0.95 0.92 0.91 0.85 0.93 0.90 0.82
-Accept@0.90:   ✓    ✓    ✓    ✗    ✓    ✓    ✗
-               ─────────────┘
-               Consecutive = 3 tokens (STOPS at first rejection)
-
-Overall Accept@0.90 = 5/7 = 71%    ← Misleading for SD
-Consecutive Accepts = 3 tokens     ← Real speedup metric
-```
-
-**Why Consecutive Matters:**
-- Standard speculative decoding **stops at first rejection**
-- Only consecutive accepted tokens contribute to speedup
-- High overall rate + low consecutive = poor actual speedup
-
-| Scenario | Accept@0.90 | Consecutive | Actual Speedup |
-|----------|-------------|-------------|----------------|
-| Good for SD | 50% | 6 tokens | ~5-6x |
-| Bad for SD | 80% | 1 token | ~1x |
-
-**Our L1 Pilot Result:** 6.35 consecutive tokens → **5.77x speedup**
-
-### Why Feature-Level SD Can Be Lossless (Even with τ=0.90)
-
-**Key Insight:** The threshold τ is for **early screening**, not final acceptance!
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  LOSSLESS FEATURE-LEVEL SD PIPELINE                                      │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  Step 1: Draft Generation (EventGPT)                                    │
-│  ────────────────────────────────────                                   │
-│  EGPT generates γ tokens with hidden states h_egpt[0..γ-1]             │
-│                                                                          │
-│  Step 2: Hidden State Alignment (Adapter)                               │
-│  ─────────────────────────────────────────                              │
-│  h_aligned = adapter(h_egpt)                                            │
-│                                                                          │
-│  Step 3: Early Screening (cos_sim threshold)                            │
-│  ────────────────────────────────────────────                           │
-│  For each position i:                                                    │
-│    cos_sim[i] = cosine(h_aligned[i], h_vl[i])                          │
-│    if cos_sim[i] > τ:  candidate for acceptance                        │
-│    else:               definitely reject                                │
-│                                                                          │
-│  Step 4: ACTUAL TOKEN VERIFICATION (Lossless!)                          │
-│  ─────────────────────────────────────────────                          │
-│  For candidates from Step 3:                                             │
-│    draft_token = EGPT_LM_head(h_egpt[i])                               │
-│    target_token = VL_LM_head(h_vl[i])                                  │
-│                                                                          │
-│    if draft_token == target_token:  ACCEPT (lossless!)                 │
-│    else:                            REJECT, use target_token           │
-│                                                                          │
-│  Result: IDENTICAL output to running Video-LLaVA alone                  │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-**Why τ=0.90 works:**
-
-| cos_sim(h_aligned, h_vl) | P(same token) | Action |
-|--------------------------|---------------|--------|
-| > 0.95 | ~99.9% | Very likely same token |
-| **0.90 - 0.95** | **~98%** | **High chance, worth verifying** |
-| 0.85 - 0.90 | ~90% | Medium chance |
-| < 0.85 | < 80% | Skip verification, use target |
-
-**The τ threshold is a FILTER, not a decision maker:**
-- **High τ (0.95):** Fewer candidates, less verification work, very safe
-- **Medium τ (0.90):** More candidates, some extra verification, still safe
-- **Low τ (0.85):** Many candidates, more verification overhead
-
-**Lossless vs Lossy Modes:**
-
-| Mode | Verification | Output Quality | Use Case |
-|------|--------------|----------------|----------|
-| **Lossless** | Always verify token | Identical to target | Production |
-| Lossy | Skip if cos_sim > τ | ~98% match at τ=0.90 | Prototyping |
-
-**Our implementation is LOSSLESS by default** - we always verify at token level!
-
-### Expected Results & Predictions
-
-| Adapter | Params | Train Time | Cosine Sim | Accept@0.90 | Speedup | Prediction |
-|---------|--------|------------|------------|-------------|---------|------------|
-| L1 | 2.1M | ~1-2h | ~0.76 | ~20% | ~5-6x | Baseline |
-| L2 | 6.3M | ~2-3h | ~0.80 | ~25% | ~6-7x | +nonlinearity |
-| L3 | 16.8M | ~4-5h | ~0.82 | ~28% | ~6-8x | +capacity |
-| L4 | 100M | ~8-10h | ~0.85 | ~32% | ~7-9x | +token deps |
-| **L5** | **100M** | **~10-12h** | **~0.88** | **~40%** | **~10-15x** | **Best (predict ahead)** |
-
-### Which Adapter Will Be Best?
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  PREDICTION: L5 (EAGLE-style) will achieve highest speedup                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Why L5 Should Win:                                                         │
-│  ─────────────────                                                          │
-│  1. DUAL OBJECTIVE: Alignment + Prediction = better feature understanding  │
-│  2. PREDICT AHEAD: Can generate h[t+1], h[t+2]... autoregressively         │
-│  3. CAUSAL ATTENTION: Captures sequential dependencies in hidden states    │
-│  4. EAGLE-PROVEN: EAGLE achieves 3x speedup on same-model SD               │
-│     → Cross-modal (easier task) could achieve even more!                   │
-│                                                                             │
-│  Trade-off Analysis:                                                        │
-│  ───────────────────                                                        │
-│  ┌─────────┬────────────┬──────────────┬─────────────────────────────────┐ │
-│  │ Adapter │ Overhead   │ Accept Rate  │ Best For                        │ │
-│  ├─────────┼────────────┼──────────────┼─────────────────────────────────┤ │
-│  │ L1      │ <0.5ms     │ ~20%         │ Real-time, low latency          │ │
-│  │ L2      │ ~1ms       │ ~25%         │ Balanced efficiency             │ │
-│  │ L3      │ ~1ms       │ ~28%         │ Higher quality alignment        │ │
-│  │ L4      │ ~2ms       │ ~32%         │ Complex sequences               │ │
-│  │ L5      │ ~3ms       │ ~40%         │ Maximum speedup (batch SD)      │ │
-│  └─────────┴────────────┴──────────────┴─────────────────────────────────┘ │
-│                                                                             │
-│  Recommendation by Use Case:                                                │
-│  ───────────────────────────                                                │
-│  • Edge deployment (latency-critical): L1 or L2                            │
-│  • Cloud deployment (throughput-critical): L5                              │
-│  • Balanced (quality + speed): L3 or L4                                    │
-│                                                                             │
-│  Key Insight:                                                               │
-│  ────────────                                                               │
-│  L5's prediction loss trains it to understand the DYNAMICS of hidden       │
-│  states, not just static alignment. This should help it draft tokens       │
-│  that are more likely to be accepted by Video-LLaVA.                       │
-│                                                                             │
-│  Expected Ranking (by end-to-end speedup):                                 │
-│    L5 > L4 > L3 > L2 > L1                                                  │
-│                                                                             │
-│  Expected Ranking (by efficiency = speedup / params):                      │
-│    L1 > L2 > L3 > L4 ≈ L5                                                  │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Why Cross-Modal SD Could Beat Same-Model SD (EAGLE):**
-
-| Factor | EAGLE (Same Model) | Ours (Cross-Modal) |
-|--------|-------------------|-------------------|
-| Draft model | Same LLM (7B) | EventGPT (7B, faster input) |
-| Input modality | Text only | Events (sparse, fast) |
-| Alignment task | N/A | Event→RGB (complementary) |
-| Prediction task | Hard (predict future) | Easier (align + predict) |
-| **Potential** | 3x speedup | **5-15x speedup** |
-
-**The hypothesis:** EventGPT's event-based input provides a "fast preview" of what Video-LLaVA will generate, enabling higher acceptance rates than same-model speculative decoding.
+- **Phase 1 (Prefill Hiding):** L1-L4 adapter drafts tokens during VL prefill gap
+- **Phase 2 (Decode SD):** L5F/B1 adapter with gamma=5 standard speculative decoding
 
 ---
 
-## Table of Contents
+## Stage 4: E2E Wall-Clock Benchmark
 
-1. [Quick Start](#quick-start)
-2. [Results](#results)
-3. [Current Status](#current-status)
-4. [Architecture](#architecture)
-5. [Theory](#theory)
-6. [Scripts Reference](#scripts-reference)
-7. [Python API](#python-api)
-8. [Directory Structure](#directory-structure)
-9. [Roadmap](#roadmap)
+Real end-to-end benchmark with both models loaded, actual inference timing.
 
----
-
-## Quick Start
-
-### Option 1: Quick Test (100 samples, ~30 min total)
+### Run Benchmark
 
 ```bash
-# Step 1: Extract hidden states (~28 min)
-python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples 100 \
-    --max_questions 10 \
-    --split train
+# Quick test (50 samples)
+python feasible/feature_alignment/benchmark_e2e_wallclock.py \
+    --max_samples 50 --max_new_tokens 50 \
+    --output_dir ./feasible/feature_alignment/tasks/benchmark_50tok
 
-# Step 2: Train adapter (~2 min)
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --num_epochs 50
+# Full dataset (1100 samples, ~6h per config pair)
+python feasible/feature_alignment/benchmark_e2e_wallclock.py \
+    --max_samples 1100 --max_new_tokens 30 \
+    --configs "vl_baseline,L4+VL" \
+    --output_dir ./feasible/feature_alignment/tasks/benchmark_30tok_full
 
-# Step 3: Evaluate
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint ./feasible/feature_alignment/checkpoints/hidden_adapter/*/best_model.pt \
-    --test_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt
+# All configs
+python feasible/feature_alignment/benchmark_e2e_wallclock.py \
+    --max_samples 50 --max_new_tokens 50 \
+    --output_dir ./feasible/feature_alignment/tasks/e2e_all
 ```
 
-### Option 2: Full Dataset (~30 hours total)
+### CLI Reference
 
-```bash
-# Step 1: Extract train hidden states (~24h, run in background)
-nohup python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples -1 \
-    --max_questions 10 \
-    --split train \
-    > logs/extract_train.log 2>&1 &
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--dataset_dir` | hardcoded | DSEC dataset with event images + MP4 |
+| `--adapter_dir` | `./tasks/` | Directory containing trained adapter checkpoints |
+| `--max_samples` | all | Number of samples to benchmark |
+| `--max_new_tokens` | 50 | Output tokens to generate |
+| `--gamma` | 1 | Draft tokens per SD step |
+| `--warmup` | 3 | Warmup iterations (excluded from timing) |
+| `--configs` | all | Comma-separated config names to run |
+| `--output_dir` | `./tasks/` | Output directory |
 
-# Step 2: Extract test hidden states (~5h)
-nohup python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_test/my_egpt_dsec_seq_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples -1 \
-    --max_questions 10 \
-    --split test \
-    > logs/extract_test.log 2>&1 &
+### Available Configs
 
-# Step 3: Train adapter
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --val_split 0.1 \
-    --num_epochs 50 \
-    --batch_size 64 \
-    --bottleneck_dim 256 \
-    --learning_rate 1e-3 \
-    --early_stopping 10
+| Config | Description |
+|--------|-------------|
+| `vl_baseline` | Video-LLaVA autoregressive (no SD) |
+| `L1+VL` ... `L4+VL` | Cross-modal SD with prefill hiding |
+| `L5_decode` | EAGLE-style decode-only |
+| `B1_decode` | VLM-only decode-only |
+| `L5F_decode` | Fused EAGLE decode-only |
 
-# Step 4: Evaluate on test set
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint ./feasible/feature_alignment/checkpoints/hidden_adapter/*/best_model.pt \
-    --test_data ./feasible/feature_alignment/hidden_states/hidden_states_test_10q.pt
+### Pipeline per Sample
+
+1. **EGPT prefill + decode** — event image → vision encode → LLM prefill → AR decode (~400ms)
+2. **VL prefill** — video frames → vision encode → LLM prefill (~326ms, runs in parallel on dual GPU)
+3. **~22 free tokens** — EGPT decode tokens hidden behind VL prefill latency gap
+4. **Adapter** — maps EGPT hidden states → VL draft token predictions (~1.5ms)
+5. **VL verify** — batched forward pass accepts/rejects draft tokens
+6. **VL AR decode** — continues from last accepted position
+
+### Output
+
+```
+tasks/benchmark_50tok/
+├── e2e_wallclock_20260207_HHMMSS.json    # Per-sample results
+├── e2e_wallclock_20260207_HHMMSS.md      # Summary table
+├── speedup_comparison_20260207_HHMMSS.png
+├── timing_breakdown_20260207_HHMMSS.png  # Vision + Prefill + Decode stacked bar
+├── accept_rate_comparison_20260207_HHMMSS.png
+└── prefill_hiding_20260207_HHMMSS.png    # Timeline + example text
 ```
 
 ---
 
 ## Results
 
-### Pilot Study (100 samples × 10 questions)
-
-| Metric | Value |
-|--------|-------|
-| Cosine Similarity | 0.772 |
-| Accept@0.90 | 19.5% |
-| **Consecutive Accepts** | **6.35 tokens** |
-| **Estimated Speedup** | **5.77x** |
-
-> ⚠️ **Note:** These results are on **training data** (potentially overfitted).
-> Real test set performance will likely be lower. Full train/test evaluation in progress.
-
-### Per-Position Acceptance (threshold 0.90)
-
-```
-Position 0: 100.0%  ████████████████████  ← Early positions are key!
-Position 1: 100.0%  ████████████████████
-Position 2:  99.9%  ████████████████████
-Position 3:  69.2%  ██████████████
-Position 4:  65.3%  █████████████
-Position 5:  55.6%  ███████████
-Position 6:  50.4%  ██████████
-Position 7:  42.3%  ████████
-Position 8:  26.4%  █████
-Position 9:  18.2%  ████
-```
-
-### Comparison with Token-Level SD
-
-| Method | Consecutive Accepts | Speedup |
-|--------|---------------------|---------|
-| Token-level SD | 0% | 1.0x |
-| **Embedding-level SD** | **6.35 tokens** | **5.77x** |
-
----
-
-## Key Insights
-
-### 1. Consecutive Mode vs Relaxed Mode
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  WHY CONSECUTIVE MODE WINS                                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Relaxed mode (overall acceptance):                             │
-│    Accept@0.90 = 19.5% → Speedup = 0.88x ❌                     │
-│                                                                  │
-│  Consecutive mode (early positions):                            │
-│    Positions 0-2 ≈ 100% → 6.35 tokens → Speedup = 5.77x ✅     │
-│                                                                  │
-│  → The KEY is high acceptance at EARLY positions, not overall   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 2. Required Acceptance Rates for Speedup
-
-| Draft Length (γ) | Speedup > 1.0 | Speedup > 1.5 | Speedup > 2.0 |
-|------------------|---------------|---------------|---------------|
-| 5 tokens | α > 22% | α > 33% | α > 44% |
-| 8 tokens | α > 14% | α > 21% | α > 28% |
-| 10 tokens | α > 11% | α > 17% | α > 22% |
-
-### 3. Threshold Selection
-
-| Threshold (τ) | Accept Rate | Consecutive | Trade-off |
-|---------------|-------------|-------------|-----------|
-| 0.95 | 15% | ~2 tokens | Too strict, few accepts |
-| **0.90** | **19.5%** | **~6 tokens** | **Good balance** ✅ |
-| 0.85 | 26% | ~8 tokens | More tokens, less accurate |
-| 0.80 | 42% | ~10 tokens | Risk of quality degradation |
-
-### 4. Expected Test Set Performance
-
-| Metric | Train Set (current) | Test Set (expected) |
-|--------|---------------------|---------------------|
-| Position 0-2 | ~100% | ~85-95% |
-| Consecutive tokens | 6.35 | 3-5 |
-| Speedup | 5.77x | 2-4x |
-
-**Why lower on test set:**
-- Training data may be overfitted
-- Adapter learns training distribution
-- Unseen samples have different characteristics
-
-### 5. Why Embedding-Level Works Where Token-Level Failed
-
-```
-Token-level (FAILED):
-  EGPT: "The key elements are..."
-  VL:   "Key features include..."
-  Position 0: "The" ≠ "Key" → REJECT → 0 tokens accepted
-
-Embedding-level (WORKS):
-  EGPT hidden[0] ≈ VL hidden[0]  (both encode "start of description")
-  cos_sim > 0.90 → ACCEPT
-
-  Even with different tokens, semantic meaning aligns!
-```
-
----
-
-## Current Status (Updated 2026-02-06 11:15)
-
-| Phase | Status | Progress |
-|-------|--------|----------|
-| **1. Extract Train** | ✅ Complete | 52,000 samples (52 chunks, ~80GB) |
-| **2. Extract Test** | ✅ Complete | 11,000 samples (11 chunks, ~17GB) |
-| **3. Train L1 Adapter** | 🔄 Running | Epoch 1/50 |
-| 4. Evaluate L1 | ⏳ Blocked by #3 | - |
-| 5. Train L2-L5 | ⏳ Auto-pipeline | L2→L3→L4→L5 sequential |
-| 6. Evaluate L2-L5 | ⏳ Auto-pipeline | After each adapter trains |
-
-**Data Location:** `/mnt/hdd/data/egpt/` (HDD storage for large features)
-
-**Training Configuration:**
-- Train: `/mnt/hdd/data/egpt/chunked_train_1s_4bit/` (52,000 samples, **1s train split**)
-- Val: `/mnt/hdd/data/egpt/hidden_states/chunked_test_1s_4bit/` (11,000 samples, **1s test split**)
-- Alignment direction: `adapter(EventGPT hidden) → Video-LLaVA hidden`
-- Both models 4-bit quantized (~8GB VRAM total)
-
-**Memory-Efficient Training:**
-- `ChunkedTrainLoader`: streams 1 chunk (~1.6GB) at a time, shuffles within chunks
-- `ChunkedValLoader`: streams all 11 val chunks sequentially (~1.6GB at a time)
-- Total RAM: ~3GB per epoch (was 80GB+ without streaming)
-- Val evaluated on **full 11,000 test samples** (not subset)
-
-**Auto-Training Pipeline:**
-- Script: `auto_train_pipeline.sh` (runs L1→L5 sequentially with eval after each)
-- Checkpoints: `feasible/feature_alignment/tasks/L{N}/`
-- Logs: `feasible/feature_alignment/logs/`
-
-**Dataset Sizes:**
-- Train: 5,208 samples × 10 questions = 52,000 pairs
-- Test: 1,100 samples × 10 questions = 11,000 pairs
-
-**Adapter Levels Implemented:**
-- ✅ L1: Simple Bottleneck (2.1M params)
-- ✅ L2: Multi-Layer Bottleneck (6.3M params)
-- ✅ L3: Wide Bottleneck (16.8M params)
-- ✅ L4: Attention (100M params)
-- ✅ L5: EAGLE-style Align+Predict (~100M params)
-
----
-
-## Architecture
-
-### Pipeline Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    FEATURE-LEVEL SPECULATIVE DECODING                │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  DRAFT PHASE (EventGPT)                                             │
-│  ───────────────────────                                            │
-│  Event Image → EventGPT → Generate γ tokens                         │
-│                              ↓                                       │
-│                   EGPT Hidden States [batch, γ, 4096]               │
-│                              ↓                                       │
-│                   ┌─────────────────────────┐                       │
-│                   │  HIDDEN STATE ADAPTER   │                       │
-│                   │  (~2M params, <0.5ms)   │                       │
-│                   │  LayerNorm → Down(256)  │                       │
-│                   │  → GELU → Up(4096)      │                       │
-│                   │  + α × Residual         │                       │
-│                   └───────────┬─────────────┘                       │
-│                               ↓                                      │
-│                   Aligned Hidden States [batch, γ, 4096]            │
-│                                                                      │
-│  VERIFY PHASE (Video-LLaVA)                                         │
-│  ──────────────────────────                                         │
-│  Video Frames → Video-LLaVA → VL Hidden States [batch, γ, 4096]    │
-│                                                                      │
-│  ACCEPT/REJECT                                                      │
-│  ─────────────                                                      │
-│  cos_sim[i] = cosine(aligned[i], vl[i])                            │
-│  accept[i] = cos_sim[i] > threshold (e.g., 0.90)                   │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Embedding → Token Flow (With vs Without Adapter)
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  WITHOUT ADAPTER: Direct Token Comparison (FAILS for cross-modal)               │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  EventGPT Path:                      Video-LLaVA Path:                          │
-│  ──────────────                      ────────────────                           │
-│                                                                                  │
-│  Event Image                         RGB Video Frames                           │
-│       ↓                                    ↓                                    │
-│  ┌─────────────┐                    ┌─────────────┐                            │
-│  │ EGPT Vision │                    │  VL Vision  │                            │
-│  │   Encoder   │                    │   Encoder   │                            │
-│  └──────┬──────┘                    └──────┬──────┘                            │
-│         ↓                                  ↓                                    │
-│  Visual Features                    Visual Features                            │
-│  [1, 576, 4096]                     [1, 4608, 4096]                            │
-│         ↓                                  ↓                                    │
-│  ┌─────────────┐                    ┌─────────────┐                            │
-│  │ LLM Decoder │                    │ LLM Decoder │                            │
-│  │  (Vicuna)   │                    │  (Vicuna)   │                            │
-│  └──────┬──────┘                    └──────┬──────┘                            │
-│         ↓                                  ↓                                    │
-│  Hidden States                      Hidden States                              │
-│  h_egpt [1, γ, 4096]               h_vl [1, γ, 4096]                          │
-│         ↓                                  ↓                                    │
-│  ┌─────────────┐                    ┌─────────────┐                            │
-│  │   LM Head   │                    │   LM Head   │                            │
-│  │ (4096→32k)  │                    │ (4096→32k)  │                            │
-│  └──────┬──────┘                    └──────┬──────┘                            │
-│         ↓                                  ↓                                    │
-│  Logits → Token                     Logits → Token                             │
-│  "The"                              "Key"                                       │
-│         ↓                                  ↓                                    │
-│         └──────────── COMPARE ────────────┘                                    │
-│                          ↓                                                      │
-│                   "The" ≠ "Key"                                                │
-│                          ↓                                                      │
-│                   ❌ REJECT (0 tokens accepted)                                │
-│                                                                                  │
-│  Problem: Different visual inputs → Different tokens → Always mismatch!        │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  WITH ADAPTER: Embedding-Level Comparison (WORKS for cross-modal)               │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  EventGPT Path:                      Video-LLaVA Path:                          │
-│  ──────────────                      ────────────────                           │
-│                                                                                  │
-│  Event Image                         RGB Video Frames                           │
-│       ↓                                    ↓                                    │
-│  ┌─────────────┐                    ┌─────────────┐                            │
-│  │ EGPT Vision │                    │  VL Vision  │                            │
-│  │   Encoder   │                    │   Encoder   │                            │
-│  └──────┬──────┘                    └──────┬──────┘                            │
-│         ↓                                  ↓                                    │
-│  Visual Features                    Visual Features                            │
-│         ↓                                  ↓                                    │
-│  ┌─────────────┐                    ┌─────────────┐                            │
-│  │ LLM Decoder │                    │ LLM Decoder │                            │
-│  └──────┬──────┘                    └──────┬──────┘                            │
-│         ↓                                  ↓                                    │
-│  Hidden States                      Hidden States                              │
-│  h_egpt [1, γ, 4096]               h_vl [1, γ, 4096]                          │
-│         ↓                                  │                                    │
-│  ┌─────────────────┐                       │                                    │
-│  │ HIDDEN ADAPTER  │ ← Only 2M params!     │                                    │
-│  │ ─────────────── │                       │                                    │
-│  │ LayerNorm       │                       │                                    │
-│  │ Down: 4096→256  │                       │                                    │
-│  │ GELU            │                       │                                    │
-│  │ Up: 256→4096    │                       │                                    │
-│  │ + α×Residual    │                       │                                    │
-│  └────────┬────────┘                       │                                    │
-│           ↓                                ↓                                    │
-│  Aligned Hidden                     Hidden States                              │
-│  h_aligned [1, γ, 4096]            h_vl [1, γ, 4096]                          │
-│           ↓                                ↓                                    │
-│           └──────── COMPARE (cosine) ──────┘                                   │
-│                          ↓                                                      │
-│              cos_sim(h_aligned, h_vl) = 0.95                                   │
-│                          ↓                                                      │
-│                   0.95 > 0.90 (threshold)                                      │
-│                          ↓                                                      │
-│                   ✅ ACCEPT                                                     │
-│                                                                                  │
-│  Key: Compare at EMBEDDING level, not TOKEN level!                             │
-│  Even though tokens differ, semantic meaning aligns.                           │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  WHY EMBEDDING COMPARISON WORKS                                                  │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  Token Space (Discrete):           Embedding Space (Continuous):                │
-│  ────────────────────────          ─────────────────────────────                │
-│                                                                                  │
-│  "street" → ID: 8952               "street" → [0.12, -0.34, 0.56, ...]         │
-│  "road"   → ID: 4703               "road"   → [0.15, -0.31, 0.58, ...]         │
-│                                                                                  │
-│  8952 ≠ 4703 → REJECT              cos_sim = 0.97 → ACCEPT                     │
-│                                                                                  │
-│  ─────────────────────────────────────────────────────────────────────────      │
-│                                                                                  │
-│  Embedding Space Visualization:                                                 │
-│                                                                                  │
-│     "street" ●───────● "road"      (close in embedding space)                  │
-│               \     /                                                           │
-│                \   /                                                            │
-│                 \ /                                                             │
-│                  ●                                                              │
-│              "avenue"                                                           │
-│                                                                                  │
-│         ●                                                                       │
-│       "cat"                        (far from road/street)                      │
-│                                                                                  │
-│  Semantically similar words cluster together in embedding space!               │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Adapter Module Designs (L1-L4)
-
-All adapters are implemented in `hidden_adapter.py` with unified API.
-
-#### L1: Simple Bottleneck (`HiddenStateAdapter`)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  L1: BOTTLENECK ADAPTER                                      │
-│  Class: HiddenStateAdapter                                   │
-│  Params: 2.1M | Memory: 8 MB | Latency: ~1.5ms              │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  INPUT: [batch, seq, 4096]                                  │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  LayerNorm(4096)            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Linear(4096 → 256)         │  ← 1.05M params            │
-│  │  (Down projection)          │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  GELU + Dropout(0.1)        │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Linear(256 → 4096)         │  ← 1.05M params            │
-│  │  (Up projection)            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Residual: out = in + α×up  │  ← α learnable (init 0.1) │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  OUTPUT: [batch, seq, 4096]                                 │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### L2: Multi-Layer Bottleneck (`MultiLayerBottleneckAdapter`)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  L2: MULTI-LAYER BOTTLENECK ADAPTER                         │
-│  Class: MultiLayerBottleneckAdapter                         │
-│  Params: 6.3M | Memory: 24 MB | Latency: ~4ms               │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  INPUT: [batch, seq, 4096]                                  │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  BottleneckBlock #1         │                            │
-│  │  ──────────────────         │                            │
-│  │  LayerNorm → Down(256)      │                            │
-│  │  → GELU → Up(4096)          │                            │
-│  │  + α₁ × Residual            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  BottleneckBlock #2         │                            │
-│  │  ──────────────────         │                            │
-│  │  LayerNorm → Down(256)      │                            │
-│  │  → GELU → Up(4096)          │                            │
-│  │  + α₂ × Residual            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  BottleneckBlock #3         │                            │
-│  │  ──────────────────         │                            │
-│  │  LayerNorm → Down(256)      │                            │
-│  │  → GELU → Up(4096)          │                            │
-│  │  + α₃ × Residual            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Final LayerNorm(4096)      │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  OUTPUT: [batch, seq, 4096]                                 │
-│                                                              │
-│  Benefit: More expressive nonlinear transformations         │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### L3: Wide Bottleneck (`WideBottleneckAdapter`)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  L3: WIDE BOTTLENECK ADAPTER                                 │
-│  Class: WideBottleneckAdapter                                │
-│  Params: 16.8M | Memory: 64 MB | Latency: ~10ms             │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  INPUT: [batch, seq, 4096]                                  │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Input LayerNorm(4096)      │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  WideBlock #1               │                            │
-│  │  ──────────────             │                            │
-│  │  Linear(4096 → 1024)        │  ← 4.2M params             │
-│  │  LayerNorm(1024)            │                            │
-│  │  GELU + Dropout             │                            │
-│  │  Linear(1024 → 4096)        │  ← 4.2M params             │
-│  │  + α₁ × Residual            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  WideBlock #2               │                            │
-│  │  ──────────────             │                            │
-│  │  Linear(4096 → 1024)        │                            │
-│  │  LayerNorm(1024)            │                            │
-│  │  GELU + Dropout             │                            │
-│  │  Linear(1024 → 4096)        │                            │
-│  │  + α₂ × Residual            │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Final LayerNorm(4096)      │                            │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  OUTPUT: [batch, seq, 4096]                                 │
-│                                                              │
-│  Benefit: 4× more capacity than L1 (1024 vs 256 bottleneck) │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### L4: Attention Adapter (`AttentionAdapter`)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  L4: ATTENTION ADAPTER                                       │
-│  Class: AttentionAdapter                                     │
-│  Params: 100M | Memory: 384 MB | Latency: ~56ms             │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  INPUT: [batch, seq, 4096]                                  │
-│           ↓                                                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  Transformer Layer                                    │   │
-│  │  ─────────────────                                    │   │
-│  │                                                       │   │
-│  │  ┌─────────────────────────────────────────────────┐ │   │
-│  │  │  Self-Attention Block                           │ │   │
-│  │  │  ─────────────────────                          │ │   │
-│  │  │  LayerNorm(4096)                                │ │   │
-│  │  │        ↓                                        │ │   │
-│  │  │  MultiHeadAttention(                            │ │   │
-│  │  │    embed_dim=4096,                              │ │   │
-│  │  │    num_heads=8,        ← 8 attention heads      │ │   │
-│  │  │    dropout=0.1                                  │ │   │
-│  │  │  )                     ← 67M params             │ │   │
-│  │  │        ↓                                        │ │   │
-│  │  │  + Residual                                     │ │   │
-│  │  └─────────────────────────────────────────────────┘ │   │
-│  │           ↓                                           │   │
-│  │  ┌─────────────────────────────────────────────────┐ │   │
-│  │  │  FFN Block                                      │ │   │
-│  │  │  ─────────                                      │ │   │
-│  │  │  LayerNorm(4096)                                │ │   │
-│  │  │        ↓                                        │ │   │
-│  │  │  Linear(4096 → 2048)   ← 8M params              │ │   │
-│  │  │  GELU + Dropout                                 │ │   │
-│  │  │  Linear(2048 → 4096)   ← 8M params              │ │   │
-│  │  │        ↓                                        │ │   │
-│  │  │  + Residual                                     │ │   │
-│  │  └─────────────────────────────────────────────────┘ │   │
-│  └─────────────────────────────────────────────────────┘   │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Output Projection          │                            │
-│  │  ─────────────────          │                            │
-│  │  LayerNorm(4096)            │                            │
-│  │  Linear(4096 → 4096)        │  ← 16M params              │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  ┌─────────────────────────────┐                            │
-│  │  Final Residual             │                            │
-│  │  out = in + α × (proj - in) │  ← α learnable             │
-│  └─────────────────────────────┘                            │
-│           ↓                                                  │
-│  OUTPUT: [batch, seq, 4096]                                 │
-│                                                              │
-│  Benefit: Captures token dependencies via self-attention    │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### Summary Table
-
-| Level | Class | Params | Memory | Latency | Use Case | Reference |
-|-------|-------|--------|--------|---------|----------|-----------|
-| L1 | `HiddenStateAdapter` | 2.1M | 8 MB | ~1.5ms | Fast, simple alignment | LoRA [1] |
-| L2 | `MultiLayerBottleneckAdapter` | 6.3M | 24 MB | ~4ms | Better nonlinearity | Adapter [2] |
-| L3 | `WideBottleneckAdapter` | 16.8M | 64 MB | ~10ms | More capacity | Adapter-v2 [3] |
-| L4 | `AttentionAdapter` | 100M | 384 MB | ~56ms | Token dependencies | EAGLE [4] |
-
-#### Design References
-
-| Level | Inspired By | Key Insight |
-|-------|-------------|-------------|
-| **L1** | LoRA [1] | Low-rank bottleneck (4096→256→4096) reduces params by 100x while preserving expressiveness |
-| **L2** | Serial Adapters [2] | Stacking multiple bottlenecks increases nonlinearity without attention overhead |
-| **L3** | Adapter-v2 [3] | Wider bottleneck (1024 vs 256) captures more complex cross-modal mappings |
-| **L4** | EAGLE [4] | Self-attention captures token dependencies; essential for sequence-level alignment |
-
-```
-[1] LoRA: h_out = h_in + α·(W_up · W_down · h_in)     ← Our L1
-[2] Adapter: h → [Bottleneck]×N → h'                  ← Our L2
-[3] Adapter-v2: h → Wide_Bottleneck → h'              ← Our L3
-[4] EAGLE: h → Self-Attention → FFN → h'              ← Our L4
-```
-
-### Parameter Comparison
-
-| Adapter | Parameters | Size | Overhead |
-|---------|------------|------|----------|
-| EAGLE Draft Head (7B) | 230M | 920 MB | ~2-3ms |
-| Token Adapter | 45M | 180 MB | ~1ms |
-| **Hidden State Adapter** | **2.1M** | **8.4 MB** | **<0.5ms** |
-| Raw Image Adapter (old) | 154M | 616 MB | ~3ms |
-
-### EAGLE vs Our Cross-Modal Approach
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  EAGLE-STYLE: Same Model Self-Speculation (PREDICT future hidden states)    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  Target Model (e.g., LLaMA-7B)                                              │
-│  ─────────────────────────────                                              │
-│  At timestep t, we have:                                                    │
-│    - h_t: current hidden state                                              │
-│    - x_t: current token embedding                                           │
-│                                                                              │
-│  Draft Head PREDICTS next hidden state:                                     │
-│    h_{t+1} = DraftHead(h_t, embed(x_t))                                    │
-│                     ↓                                                        │
-│            [Self-Attention + FFN]  ← ~230M params                           │
-│                     ↓                                                        │
-│            Predicted h_{t+1}                                                │
-│                     ↓                                                        │
-│            target_LM_head(h_{t+1}) → draft_token_{t+1}                     │
-│                                                                              │
-│  Key: SAME vocabulary, SAME LM head, just PREDICT ahead                    │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  OUR APPROACH: Cross-Modal Alignment (ALIGN current hidden states)          │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  Two Different Models:                                                      │
-│    - Draft: EventGPT (event camera input)                                   │
-│    - Target: Video-LLaVA (RGB video input)                                  │
-│                                                                              │
-│  Same scene, same question, DIFFERENT visual inputs:                        │
-│    EventGPT:    Event tensor → h_egpt[0..N]                                │
-│    Video-LLaVA: RGB frames  → h_vl[0..N]                                   │
-│                                                                              │
-│  Adapter ALIGNS hidden states:                                              │
-│    h_aligned = Adapter(h_egpt)                                             │
-│                   ↓                                                          │
-│          [LayerNorm → Down(256) → Up(4096)]  ← ~2M params                  │
-│                   ↓                                                          │
-│          Aligned h_aligned ≈ h_vl                                          │
-│                   ↓                                                          │
-│          cos_sim(h_aligned, h_vl) > τ → ACCEPT                             │
-│                                                                              │
-│  Key: DIFFERENT inputs, ALIGN to target's representation space             │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-| Aspect | EAGLE (Self-Speculation) | Our Adapter (Cross-Modal) |
-|--------|--------------------------|---------------------------|
-| **Task** | PREDICT h_{t+1} from h_t | ALIGN h_egpt to h_vl space |
-| **Models** | Same model | Two different models |
-| **Input** | h_t + embed(x_t) | h_egpt only |
-| **Output** | Future hidden state | Aligned current hidden state |
-| **Vocabulary** | Same (shared LM head) | Different (compare embeddings) |
-| **Parameters** | ~230M | **2.1M (110x smaller)** |
-| **Why smaller** | Prediction is harder | Alignment is simpler |
-| **Use case** | Speed up single model | Enable cross-modal SD |
-
-**Why Our Approach is Unique:**
-1. **Cross-modal**: Draft uses event camera, target uses RGB video
-2. **Parallel prefill**: EGPT and VL can prefill simultaneously
-3. **Complementary inputs**: Event = motion, RGB = appearance
-4. **Smaller adapter**: Alignment ≠ Prediction (simpler task)
-
-```
-EAGLE:  h_t + x_t → [Attention + FFN] → h_{t+1}     (PREDICT future)
-Ours:   h_egpt → [LayerNorm → Down → Up] → h_aligned (ALIGN cross-modal)
-```
-
-### L5: Hybrid Cross-Modal EAGLE (Implemented 2026-02-06)
-
-**Combines EAGLE-style prediction with cross-modal alignment!**
-
-```bash
-# Train L5 adapter (after extracting hidden states)
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data /mnt/hdd/data/egpt/hidden_states/chunked_train_1s_4bit \
-    --adapter_level 5 --num_epochs 10 --batch_size 64
-```
-
-**Can we combine EAGLE-style prediction with cross-modal alignment?** YES!
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  HYBRID: Cross-Modal EAGLE (Predictive Alignment)                            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  Current L1-L4 (Direct Alignment):                                          │
-│  ─────────────────────────────────                                          │
-│    h_egpt[t] → Adapter → h_aligned[t] ≈ h_vl[t]                            │
-│                                                                              │
-│    Problem: Only aligns CURRENT position, doesn't predict ahead            │
-│                                                                              │
-│  Proposed L5 (EAGLE-style Predictive Alignment):                            │
-│  ────────────────────────────────────────────────                           │
-│    h_egpt[t] + embed(x[t]) → CrossModalDraftHead → h_vl[t+1]              │
-│                                         ↓                                    │
-│    h_vl[t+1] + embed(x[t+1]) → CrossModalDraftHead → h_vl[t+2]            │
-│                                         ↓                                    │
-│                                        ...                                  │
-│                                                                              │
-│    Benefit: PREDICT multiple future tokens, higher acceptance              │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Comparison:**
-
-| Level | Type | Params | Method | Expected Accept |
-|-------|------|--------|--------|-----------------|
-| L1-L4 | Alignment | 2-100M | h_egpt → h_vl (same t) | ~20-30% |
-| **L5** | **Prediction** | **~50-200M** | **h_egpt[t] → h_vl[t+1..t+k]** | **~40-60%** |
-
-**L5 Implementation (Now Available!):**
-
-```python
-from hidden_adapter import create_adapter, EAGLEStyleAdapter
-
-# Create L5 adapter
-adapter = create_adapter(level=5, hidden_dim=4096)
-# Parameters: ~50M
-
-# L5 has TWO training objectives:
-# 1. Alignment loss: align to VL hidden states (same as L1-L4)
-# 2. Prediction loss: predict NEXT token's hidden state
-
-loss_dict = adapter.compute_loss(
-    egpt_hidden,      # [batch, seq, 4096]
-    vl_hidden,        # [batch, seq, 4096]
-    prediction_weight=0.5  # Balance alignment and prediction
-)
-
-# Loss breakdown:
-# - align_loss: MSE + 0.5 * cos_loss (same as L1-L4)
-# - pred_loss: MSE(predicted[:-1], target[1:]) (next-token prediction)
-# - total_loss: (1-w) * align_loss + w * pred_loss
-
-# L5-specific: Autoregressive draft generation (EAGLE-style)
-draft_hidden = adapter.speculative_decode(
-    initial_hidden,   # [batch, 1, 4096]
-    num_draft_tokens=5
-)  # Returns [batch, 5, 4096] draft hidden states
-```
-
-**Research Questions (to be validated):**
-1. Does EAGLE-style prediction improve cross-modal acceptance?
-2. Can we use EventGPT's fast inference to generate more draft tokens?
-3. What's the optimal architecture for cross-modal draft head?
-4. Can we leverage the complementary nature of event + RGB inputs?
-
-**Status:** L5 implemented, ready for training after L1-L4 validation.
-
-See full analysis: `research/pdf/EAGLE_FAMILY_ANALYSIS.md`
-
-### Why Cross-Modal SD Requires Temporal Data (Added 2026-02-06 03:00)
-
-**Key Question:** Will cross-modal SD outperform EAGLE with a single frame input?
-
-**Answer: NO.** The cross-modal advantage comes from **complementary temporal information**.
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  SINGLE FRAME vs VIDEO: Cross-Modal Advantage Analysis                      │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Single Frame Input:                                                        │
-│  ───────────────────                                                        │
-│  EventGPT sees:   [single frame of events] → similar to RGB snapshot       │
-│  Video-LLaVA sees: [single RGB frame]                                       │
-│                                                                             │
-│  Result: Both see ~same information → NO complementary advantage           │
-│          Cross-modal ≈ EAGLE (or worse, due to modality gap)               │
-│                                                                             │
-│  Video/Temporal Input (OUR CASE - 1 second):                                │
-│  ───────────────────────────────────────────                                │
-│  EventGPT sees:   [1 second of events] → motion, edges, fast changes       │
-│  Video-LLaVA sees: [8 RGB frames]       → appearance, color, texture       │
-│                                                                             │
-│  Result: COMPLEMENTARY information!                                         │
-│          Events = "what's moving, how fast, which direction"               │
-│          RGB = "what it looks like, colors, textures"                      │
-│                                                                             │
-│          Cross-modal >> EAGLE because of information diversity             │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Why Events + Video Works:**
-
-```
-                    TIME (1 second)
-                     │
-    Events:    ░░▓▓▓▓▓░░▓▓▓▓░░░░▓▓▓▓░░░    (μs resolution, motion-triggered)
-                     │
-    RGB:       █─────█─────█─────█─────█    (8 frames @ 8 fps)
-                     │
-                     ▼
-    Events capture WHAT HAPPENS BETWEEN RGB frames!
-    → EventGPT knows motion that Video-LLaVA must infer
-    → Higher acceptance because events "preview" video content
-```
-
-**Quantified Comparison:**
-
-| Input Type | Event Info | RGB Info | Overlap | Cross-Modal Benefit |
-|------------|------------|----------|---------|---------------------|
-| Single frame | Static edges | Appearance | ~90% | Low (≈ EAGLE) |
-| **1s video** | **Motion + speed** | **Appearance** | **~50%** | **High (>> EAGLE)** |
-
-**Bottom Line for Our System:**
-- Our dataset: **1 second duration** with events + 8 RGB frames
-- This is **ideal** for cross-modal advantage
-- Single-frame benchmarks would NOT show our method's strength
-- Always evaluate on **temporal sequences** to see true benefit
-
-### Adapter Complexity: Room for Improvement?
-
-**Key Insight:** If EAGLE's 230M params can PREDICT (harder), our ALIGN task (easier) could benefit from more complex adapters!
-
-| Level | Params | Structure | Expected Benefit |
-|-------|--------|-----------|------------------|
-| **L1** | 2M | Bottleneck MLP | Baseline |
-| **L2** | 8M | 3× Bottleneck | Better nonlinearity |
-| **L3** | 16M | 4096→1024→4096 | More capacity |
-| **L4** | 100M | Self-attention + MLP | Capture dependencies |
-| **L5** | **50M** | **Causal Attn + FFN + Predict** | **Align + Predict ahead** |
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  ADAPTER DESIGN OPTIONS                                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Level 1: Current (2M) - Simple bottleneck                          │
-│  ─────────────────────────────────────────                          │
-│  h → LayerNorm → Down(256) → GELU → Up(4096) → +Residual           │
-│                                                                      │
-│  Level 2: Multi-layer (8M) - Stacked bottlenecks                    │
-│  ───────────────────────────────────────────────                    │
-│  h → [Bottleneck] → [Bottleneck] → [Bottleneck] → +Residual        │
-│                                                                      │
-│  Level 3: Wide (16M) - Larger bottleneck                            │
-│  ───────────────────────────────────────────                        │
-│  h → Down(1024) → GELU → Up(4096) → +Residual                      │
-│                                                                      │
-│  Level 4: Attention (100M) - Self-attention + MLP                   │
-│  ───────────────────────────────────────────────                    │
-│  h → MultiHeadAttn(h,h,h) → FFN → +Residual                        │
-│                                                                      │
-│  Level 5: EAGLE-style (200M) - Full transformer layer               │
-│  ────────────────────────────────────────────────────               │
-│  h → SelfAttn → CrossAttn(h, context) → FFN → +Residual            │
-│                                                                      │
-│  Level 6: Cross-Modal Attention (100M) - Use VL as guidance         │
-│  ──────────────────────────────────────────────────────────         │
-│  h_egpt → CrossAttn(Q=h_egpt, K=h_vl, V=h_vl) → FFN                │
-│  (Requires paired training data)                                    │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-**Trade-off Analysis (Measured):**
-
-| Level | Params | Memory | Overhead | Description |
-|-------|--------|--------|----------|-------------|
-| L1 | 2.1M | 8 MB | ~1.5ms | Simple bottleneck |
-| L2 | 6.3M | 24 MB | ~4ms | 3× stacked bottlenecks |
-| L3 | 16.8M | 64 MB | ~10ms | Wide bottleneck (1024) |
-| L4 | 100M | 384 MB | ~56ms | Self-attention + FFN |
-| EAGLE | 230M | 920 MB | ~3ms (optimized) | Full transformer layer |
-
-**Recommendation:** Try Level 2-3 first (8-16M), then attention if needed.
-
-### Usage: Creating Adapters at Different Levels
-
-```python
-from feasible.feature_alignment.hidden_adapter import create_adapter, load_any_adapter
-
-# L1: Simple bottleneck (~2M params, <0.5ms) - Current baseline
-adapter_l1 = create_adapter(level=1, bottleneck_dim=256)
-
-# L2: Multi-layer bottleneck (~8M params, ~1ms) - Better nonlinearity
-adapter_l2 = create_adapter(level=2, num_blocks=3, bottleneck_dim=256)
-
-# L3: Wide bottleneck (~16M params, ~1ms) - More capacity
-adapter_l3 = create_adapter(level=3, bottleneck_dim=1024, num_blocks=2)
-
-# L4: Attention (~100M params, ~56ms) - Token dependencies
-adapter_l4 = create_adapter(level=4, num_heads=8, num_layers=1)
-
-# Forward pass (same API for all levels)
-aligned_hidden = adapter(egpt_hidden)  # [batch, seq, 4096] -> [batch, seq, 4096]
-
-# Compute loss (same API for all levels)
-losses = adapter.compute_loss(egpt_hidden, vl_hidden, attention_mask)
-# Returns: {'total_loss', 'mse_loss', 'cos_loss', 'cos_sim'}
-
-# Save checkpoint
-adapter.save_checkpoint('checkpoint.pt', optimizer, epoch, metrics)
-
-# Load any adapter type (auto-detects from checkpoint)
-adapter, checkpoint = load_any_adapter('checkpoint.pt', device='cuda')
-```
-
-### Training Different Levels
-
-```bash
-# Train L1 (baseline, ~2 min)
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 1 \
-    --bottleneck_dim 256
-
-# Train L2 (multi-layer, ~5 min)
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 2 \
-    --num_blocks 3
-
-# Train L3 (wide, ~5 min)
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 3 \
-    --bottleneck_dim 1024
-
-# Train L4 (attention, ~15 min)
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 4 \
-    --num_heads 8 \
-    --num_layers 1
-```
-
-### Testing Adapters
-
-```bash
-# Quick test all levels
-python feasible/feature_alignment/hidden_adapter.py
-
-# Output:
-# Level 1: 2.1M params, ~1.5ms
-# Level 2: 6.3M params, ~4ms
-# Level 3: 16.8M params, ~10ms
-# Level 4: 100M params, ~56ms
-```
-
----
-
-## Complete Bash Reference
-
-### 1. Data Extraction
-
-**Checkpoint Naming Format:**
-```
-hidden_states_{split}_{duration}_{quant}_{date}_top{N}q.pt
-```
-Examples:
-- `hidden_states_train_1s_4bit_20260131_top10q.pt`
-- `hidden_states_test_500ms_4bit_20260131_top5q.pt`
-- `hidden_states_train_1s_fp16_20260131_top10q.pt`
-
-```bash
-# === Quick Test (100 samples) ===
-python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples 100 \
-    --max_questions 10 \
-    --duration 1s \
-    --split train
-
-# === Full Train Set (background, ~24h) ===
-nohup python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples -1 \
-    --max_questions 10 \
-    --duration 1s \
-    --quant 4bit \
-    --save_interval 100 \
-    --split train \
-    > logs/extract_train.log 2>&1 &
-
-# === Full Test Set (background, ~5h) ===
-nohup python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_test/my_egpt_dsec_seq_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples -1 \
-    --max_questions 10 \
-    --duration 1s \
-    --quant 4bit \
-    --save_interval 100 \
-    --split test \
-    > logs/extract_test.log 2>&1 &
-
-# === Resume Extraction (if interrupted) ===
-python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples -1 \
-    --max_questions 10 \
-    --duration 1s \
-    --quant 4bit \
-    --save_interval 1000 \
-    --split train \
-    --resume
-
-# === RECOMMENDED: Chunked Mode (Memory Efficient) ===
-# Saves incrementally every 1000 samples, auto-resumes
-nohup python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples -1 \
-    --max_questions 10 \
-    --duration 1s \
-    --quant 4bit \
-    --chunked \
-    --chunk_size 1000 \
-    --split train \
-    > logs/extract_train_chunked.log 2>&1 &
-
-# Output structure:
-# hidden_states/chunked_train_1s_4bit/
-# ├── chunks/chunk_000000.pt, chunk_001000.pt, ...
-# └── index.json
-
-# Check progress
-tail -f logs/extract_train.log
-```
-
-### 2. Training Adapters
-
-```bash
-# === L1: Simple Bottleneck (2M params, ~2 min) ===
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 1 \
-    --bottleneck_dim 256 \
-    --num_epochs 50 \
-    --batch_size 64 \
-    --learning_rate 1e-3 \
-    --early_stopping 10
-
-# === L2: Multi-Layer Bottleneck (6M params, ~5 min) ===
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 2 \
-    --bottleneck_dim 256 \
-    --num_blocks 3 \
-    --num_epochs 50 \
-    --batch_size 64 \
-    --learning_rate 1e-3
-
-# === L3: Wide Bottleneck (17M params, ~5 min) ===
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 3 \
-    --bottleneck_dim 1024 \
-    --num_blocks 2 \
-    --num_epochs 50 \
-    --batch_size 32 \
-    --learning_rate 5e-4
-
-# === L4: Attention (100M params, ~15 min) ===
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 4 \
-    --num_heads 8 \
-    --num_layers 1 \
-    --ffn_dim 2048 \
-    --num_epochs 50 \
-    --batch_size 16 \
-    --learning_rate 1e-4
-```
-
-### 3. Evaluation
-
-```bash
-# === Evaluate on Training Data ===
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint ./feasible/feature_alignment/checkpoints/hidden_adapter/L1_*/best_model.pt \
-    --test_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt
-
-# === Evaluate on Test Data ===
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint ./feasible/feature_alignment/checkpoints/hidden_adapter/L1_*/best_model.pt \
-    --test_data ./feasible/feature_alignment/hidden_states/hidden_states_test_10q.pt \
-    --output_dir ./feasible/feature_alignment/results/test_eval
-```
-
-### 4. Full Pipeline (One-liner)
-
-```bash
-# Quick test pipeline (100 samples, L1 adapter)
-python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir /home/ps/Documents/code/EventGPT/data/my_egpt_dsec_train/my_egpt_dsec_train_1s \
-    --output_dir ./feasible/feature_alignment/hidden_states \
-    --max_samples 100 --max_questions 10 --split train && \
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-    --adapter_level 1 --num_epochs 50 && \
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint ./feasible/feature_alignment/checkpoints/hidden_adapter/L1_*/best_model.pt \
-    --test_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt
-```
-
-### 5. Compare All Adapter Levels
-
-```bash
-# Train all levels and compare
-for level in 1 2 3 4; do
-    echo "=== Training L${level} ==="
-    python feasible/feature_alignment/train_hidden_adapter.py \
-        --train_data ./feasible/feature_alignment/hidden_states/hidden_states_train_10q.pt \
-        --adapter_level $level \
-        --num_epochs 50
-done
-
-# Evaluate all
-for ckpt in ./feasible/feature_alignment/checkpoints/hidden_adapter/L*/best_model.pt; do
-    echo "=== Evaluating $ckpt ==="
-    python feasible/feature_alignment/measure_feature_acceptance.py \
-        --checkpoint $ckpt \
-        --test_data ./feasible/feature_alignment/hidden_states/hidden_states_test_10q.pt
-done
-```
-
-### 6. Module Testing
-
-```bash
-# Test all adapter levels (no data needed)
-python feasible/feature_alignment/hidden_adapter.py
-
-# Expected output:
-# ======================================================================
-# SUMMARY
-# ======================================================================
-# Level    Params       Size (MB)  Time (ms)
-# ----------------------------------------
-# L1       2,113,537      8.1       1.51
-# L2       6,324,227     24.1       4.21
-# L3       16,797,698     64.1       9.66
-# L4       100,714,497    384.2      56.20
-```
-
----
-
-## Theory
-
-### Embedding-Level Speculative Decoding Formulation
-
-#### Problem Setup
-
-Given:
-- **Draft model** $M_d$ (EventGPT): generates hidden states $h_d^{(t)} \in \mathbb{R}^{4096}$
-- **Target model** $M_t$ (Video-LLaVA): generates hidden states $h_t^{(t)} \in \mathbb{R}^{4096}$
-- **Alignment adapter** $f_\theta$: maps $h_d \to \tilde{h}_d$ to align with $h_t$
-
-#### Alignment Objective
-
-Train adapter $f_\theta$ to minimize:
-
-```
-L(θ) = λ₁ · MSE(f_θ(h_d), h_t) + λ₂ · (1 - cos(f_θ(h_d), h_t))
-```
-
-Where:
-- MSE loss ensures magnitude alignment
-- Cosine loss ensures directional alignment
-
-#### Acceptance Criterion
-
-For each position $i$, compute acceptance:
-
-```
-accept(i) = 𝟙[cos(f_θ(h_d^{(i)}), h_t^{(i)}) > τ]
-```
-
-Where $τ$ is threshold (e.g., 0.90).
-
-#### Acceptance Modes
-
-**Mode 1: Consecutive (Standard SD)**
-```
-n_accept = max{k : ∀i ∈ [0,k), accept(i) = 1}
-```
-Accept tokens 0 to first rejection.
-
-**Mode 2: Relaxed (Feature-Level)**
-```
-n_accept = Σᵢ accept(i)
-```
-Accept all positions above threshold independently.
-
-**Mode 3: Weighted**
-```
-n_accept = Σᵢ cos(f_θ(h_d^{(i)}), h_t^{(i)})
-```
-Weight by similarity score.
-
-#### Expected Speedup
-
-For consecutive mode with acceptance rate $\alpha$ and draft length $\gamma$:
-
-```
-E[n_accept] = (1 - α^(γ+1)) / (1 - α)
-
-Speedup = E[n_accept] / (1 + overhead)
-```
-
-For relaxed mode:
-```
-E[n_accept] = γ · α
-
-Speedup = (γ · α) / (1 + overhead)
-```
-
-### Why Token-Level SD Failed
-
-```
-Token-level requires EXACT match:
-  "street" ≠ "road" → REJECT
-  "The key" ≠ "Key" → REJECT at position 0 → 0 tokens accepted
-
-Our result: 0% consecutive acceptance → 1.0x speedup (no benefit)
-```
-
-### Why Embedding-Level SD Works
-
-```
-Embedding-level uses cosine similarity threshold:
-  embed("street") ≈ embed("road") → cos_sim > 0.90 → ACCEPT
-  embed("The key") ≈ embed("Key") → cos_sim > 0.90 → ACCEPT
-
-Our result: 6.35 consecutive tokens → 5.77x speedup
-```
-
-### Is Embedding-Level SD Lossy?
-
-**Key Question:** Does comparing hidden states (instead of tokens) sacrifice output quality?
-
-#### EAGLE: Lossless by Design
-
-EAGLE is **lossless** despite predicting hidden states because:
-
-1. **Uses target LM head**: Predicted hidden → target's vocabulary head → draft tokens
-2. **Full verification**: Target model verifies all draft tokens in forward pass
-3. **Standard rejection**: Rejected tokens replaced with target's output
-
-```
-EAGLE Flow (LOSSLESS):
-  predicted_hidden → target_LM_head → draft_tokens → target_verify → final_tokens
-                                                            ↓
-                                              Identical to autoregressive output
-```
-
-#### Our Approach: Lossiness Depends on Verification Mode
-
-**Mode A: Full Verification (Lossless)**
-```
-egpt_hidden → adapter → aligned_hidden → vl_LM_head → draft_tokens
-                                                            ↓
-                                         vl_verify (full forward) → final_tokens
-                                                            ↓
-                                              Identical to VL's autoregressive output
-```
-
-**Mode B: Relaxed Acceptance (Potentially Lossy)**
-```
-egpt_hidden → adapter → aligned_hidden → [accept if cos_sim > τ] → vl_LM_head → token
-                                                   ↓
-                                    Skip verification for high-similarity positions
-```
-
-#### Why High Cosine Similarity ≈ Same Token
-
-The LM head is a linear transformation: `token = argmax(W × hidden_state)`
-
-For two hidden states with high cosine similarity:
-```
-cos_sim(h₁, h₂) = 0.95
-    ↓
-logits₁ = W × h₁ ≈ W × h₂ = logits₂   (linear transform preserves similarity)
-    ↓
-argmax(logits₁) = argmax(logits₂)      (same token with high probability)
-```
-
-**Softmax concentration helps:** If top token probability is 0.7+, small perturbations don't change argmax.
-
-#### Lossiness by Threshold
-
-| Threshold | Cosine Sim | Token Match Rate | Quality |
-|-----------|------------|------------------|---------|
-| 0.95+ | Very high | ~99.9% | Lossless |
-| 0.90 | High | ~98% | Near-lossless |
-| 0.85 | Medium | ~90% | Slight degradation |
-| 0.80 | Lower | ~80% | Noticeable loss |
-
-#### Comparison: Token-Level vs Embedding-Level
-
-| Aspect | Token-Level SD | Embedding-Level SD |
-|--------|---------------|-------------------|
-| Verification | Exact token match | Cosine similarity |
-| Lossless? | Always (by design) | Yes at high τ |
-| Cross-modal | ❌ Fails (0%) | ✅ Works (6.35 tokens) |
-| Flexibility | None | Tunable threshold |
-
-#### Practical Recommendation
-
-```
-For production (quality-critical):
-  - Use τ = 0.95 or full verification
-  - Guaranteed identical output
-
-For research/prototyping:
-  - Use τ = 0.90 for better speedup
-  - Accept ~2% quality variation
-
-For exploration:
-  - Use τ = 0.85 to maximize acceptance
-  - Useful for draft generation experiments
-```
-
-### Break-even Analysis
-
-```
-For speedup > 1.0: α > (1 + overhead) / γ
-  Example (γ=5, overhead=0.1): α > 22%
-
-For speedup > 1.5: α > 1.5 × (1 + overhead) / γ = 33%
-
-For speedup > 2.0: α > 2.0 × (1 + overhead) / γ = 44%
-```
-
----
-
-## Scripts Reference
-
-### 1. extract_hidden_states.py
-
-Extract decoder hidden states from both EventGPT and Video-LLaVA.
-
-```bash
-python feasible/feature_alignment/extract_hidden_states.py \
-    --dataset_dir PATH           # Dataset directory (required)
-    --output_dir PATH            # Output directory (required)
-    --max_samples N              # -1 for all samples
-    --max_questions N            # Questions per sample (default: 10)
-    --max_new_tokens N           # Tokens to generate (default: 50)
-    --split {train,test}         # Split name for output file
-    --duration TAG               # Duration tag (e.g., 1s, 500ms)
-    --quant TAG                  # Quantization tag (e.g., 4bit, 8bit, fp16)
-    --save_interval N            # Save checkpoint every N samples (default: 100)
-    --resume                     # Resume from existing checkpoint
-```
-
-**Arguments:**
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `--dataset_dir` | required | Path to DSEC dataset |
-| `--output_dir` | required | Where to save extracted states |
-| `--max_samples` | -1 | Number of samples (-1 = all) |
-| `--max_questions` | 10 | Questions per sample |
-| `--max_new_tokens` | 50 | Tokens to generate |
-| `--split` | train | Split name (train/test) |
-| `--duration` | 1s | Duration tag for filename |
-| `--quant` | 4bit | Quantization tag for filename |
-| `--save_interval` | 1000 | Checkpoint save interval (batch mode) |
-| `--resume` | false | Resume from checkpoint (batch mode) |
-| `--chunked` | false | Use chunked incremental saving (recommended) |
-| `--chunk_size` | 1000 | Samples per chunk file |
-| `--checkpoint_name` | auto | Custom filename (optional) |
-
-**Saving Modes:**
-| Mode | Flag | Memory Usage | Resume | Best For |
-|------|------|--------------|--------|----------|
-| **Chunked** | `--chunked` | Low (~1GB) | Auto via index.json | Large datasets |
-| Batch | (default) | High (~40GB) | Manual `--resume` | Small datasets |
-
-**Output Filename Format:**
-```
-hidden_states_{split}_{duration}_{quant}_{date}_top{N}q.pt
-```
-Example: `hidden_states_train_1s_4bit_20260131_top10q.pt`
-
-**Checkpoint Contents:**
-```python
-{
-    'egpt_hidden': tensor,       # [N, max_seq, 4096]
-    'vl_hidden': tensor,         # [N, max_seq, 4096]
-    'seq_lens': tensor,          # [N] actual lengths
-    'metadata': [...],           # Per-sample info (sample_idx, question, texts)
-    'config': {
-        'split': 'train',
-        'duration': '1s',
-        'quant': '4bit',         # NEW: Quantization used for extraction
-        'date': '20260131',
-        'max_questions': 10,
-        'num_samples': 52080,
-        'hidden_dim': 4096,
-        'max_seq_len': 50,
-        'created': '2026-01-31T12:00:00',
-        'dataset_dir': '/path/to/dataset',
-        'questions_file': '/path/to/questions.json',
-    }
-}
-```
-
-### 2. train_hidden_adapter.py
-
-Train hidden state adapters at any complexity level (L1-L4).
-
-```bash
-python feasible/feature_alignment/train_hidden_adapter.py \
-    --train_data PATH            # Hidden states file (required)
-    --adapter_level {1,2,3,4}    # Adapter complexity level
-    --val_split 0.1              # Validation split ratio
-    --num_epochs 50              # Training epochs
-    --batch_size 64              # Batch size
-    --learning_rate 1e-3         # Learning rate
-    --early_stopping 10          # Early stopping patience
-```
-
-**Arguments by Level:**
-
-| Argument | L1 | L2 | L3 | L4 | Description |
-|----------|----|----|----|----|-------------|
-| `--adapter_level` | 1 | 2 | 3 | 4 | Complexity level |
-| `--bottleneck_dim` | 256 | 256 | 1024 | - | Bottleneck dimension |
-| `--num_blocks` | - | 3 | 2 | - | Number of blocks |
-| `--num_heads` | - | - | - | 8 | Attention heads |
-| `--num_layers` | - | - | - | 1 | Transformer layers |
-| `--ffn_dim` | - | - | - | 2048 | FFN dimension |
-
-**Output:** `checkpoints/hidden_adapter/L{level}_{timestamp}/`
-- `best_model.pt` - Best checkpoint
-- `final_model.pt` - Final checkpoint
-- `config.json` - Training config
-- `history.json` - Training history
-- `training_curves.png` - Loss/similarity plots
-
-### 3. measure_feature_acceptance.py
-
-Evaluate trained adapter on test data.
-
-```bash
-python feasible/feature_alignment/measure_feature_acceptance.py \
-    --checkpoint PATH            # Trained model checkpoint (required)
-    --test_data PATH             # Test hidden states (required)
-    --output_dir PATH            # Output directory (optional)
-```
-
-**Output:**
-- Acceptance rates at thresholds (0.80, 0.85, 0.90, 0.95)
-- Per-position acceptance analysis
-- Consecutive acceptance statistics
-- Cosine similarity histograms
-
-### 4. evaluate_e2e_sd.py
-
-End-to-end speculative decoding evaluation combining hidden-state metrics, token-level metrics (VL LM head projection), and two-phase speedup simulation.
-
-```bash
-# Cached mode (fast, uses pre-extracted hidden states)
-python feasible/feature_alignment/evaluate_e2e_sd.py \
-    --mode cached \
-    --adapter_checkpoint ./feasible/feature_alignment/tasks/L1/.../best_model.pt \
-    --cached_hidden_states /mnt/hdd/data/egpt/hidden_states/chunked_test_1s_4bit
-
-# Live mode (loads both models, generates fresh hidden states + timing)
-python feasible/feature_alignment/evaluate_e2e_sd.py \
-    --mode live \
-    --adapter_checkpoint ./feasible/feature_alignment/tasks/L1/.../best_model.pt \
-    --dataset_dir ./data/my_egpt_dsec_test/my_egpt_dsec_seq_1s \
-    --max_samples 50 --max_questions 10
-```
-
-**Three Metric Levels:**
-| Level | What | Key Metrics |
-|-------|------|-------------|
-| A. Hidden-State | cos_sim between adapter output and VL hidden | Accept@tau, consecutive accepts |
-| B. Token Level | argmax through VL LM head | token_match_rate, top5_match, consecutive |
-| C. Wall-Clock | Two-phase SD simulation | prefill hiding + decode speedup |
-
-**L1-L4 vs L5:** L1-L4 only gain speedup from prefill hiding. L5 additionally accelerates decode phase via EAGLE-style drafting at ~3ms/token.
-
-See also: `METRICS_COMPARISON.md` for detailed explanation.
-
----
-
-### 5. benchmark_e2e.py (E2E Benchmark Runner)
-
-Three phases: (0) debug validation, (1) VL standalone, (2) SD wallclock.
-
-```bash
-# Run all phases: debug → VL standalone → SD wallclock
-conda run -n egpt python feasible/feature_alignment/benchmark_e2e.py \
-    --max_samples 50 --max_new_tokens 50
-
-# Skip phases
-conda run -n egpt python feasible/feature_alignment/benchmark_e2e.py \
-    --max_samples 50 --skip_vl    # SD wallclock only
-conda run -n egpt python feasible/feature_alignment/benchmark_e2e.py \
-    --max_samples 50 --skip_debug # Skip adapter + 1-sample debug
-```
-
-**Phase 0 (Debug):** Loads all 7 adapter checkpoints, verifies forward pass with dummy data, then runs 1-sample E2E through all 6 SD configs with real data. Aborts if any fail.
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `--max_samples` | 50 | Samples to benchmark |
-| `--max_new_tokens` | 50 | Tokens to generate per sample |
-| `--gamma` | 5 | SD draft tokens per iteration |
-| `--warmup` | 3 | Warmup samples (excluded from results) |
-| `--questions_file` | auto (top 10) | Custom questions JSON |
-| `--adapter_dir` | `tasks/` | Directory with adapter checkpoints |
-| `--save_hidden` | false | Save VL hidden states to disk |
-| `--skip_vl` | false | Skip VL standalone benchmark |
-| `--skip_sd` | false | Skip SD wallclock benchmark |
-| `--skip_debug` | false | Skip debug validation phase |
-
-**Output:** `tasks/e2e_<timestamp>/` containing results from both benchmarks.
-
-**Sub-scripts:**
-
-#### 5a. benchmark_e2e_vl.py — Video-LLaVA Standalone
-
-Loads Video-LLaVA, processes raw MP4, measures 3-stage timing + extracts hidden states.
-
-```bash
-conda run -n egpt python feasible/feature_alignment/benchmark_e2e_vl.py \
-    --max_samples 50 --max_new_tokens 50
-```
-
-**Measures:**
-- Stage 1: Vision Encoder (CLIP ViT)
-- Stage 2: LLM Prefill
-- Stage 3: LLM Decode + hidden state extraction
-
-**Output:** JSON with per-sample timing, generated text, and optionally hidden states (`.pt`).
-
-#### 5b. benchmark_e2e_wallclock.py — True E2E Speculative Decoding
-
-Both models loaded simultaneously in 4-bit (~8GB VRAM). SD runs two models in parallel. Strictly from raw data.
-
-```bash
-conda run -n egpt python feasible/feature_alignment/benchmark_e2e_wallclock.py \
-    --max_samples 50 --max_new_tokens 50
-```
-
-**Pipeline (per sample, per question):**
-1. **3-stage timing:** Both models measured independently (vision/prefill/decode)
-2. **VL Baseline:** VL prefill + autoregressive decode (standalone)
-3. **Parallel prefill:** EGPT + VL via threading + CUDA streams
-4. **EGPT decode:** EGPT generates tokens autoregressively, collecting per-step decode hidden states (matches training data format)
-5. **SD decode:** Adapter uses EGPT/VL decode hidden states to draft → VL verifies
-6. Repeat for all adapter configs
-
-**Hidden state handling by adapter type:**
-- **B1 (VLM-only):** Uses VL hidden states accumulated during verification (`output_hidden_states=True`)
-- **L5F (fused):** Uses pre-generated EGPT decode hidden states + VL hidden states from verification
-- **L1-L4, L5:** Uses pre-generated EGPT decode hidden states only
-
-**Configs benchmarked (from TRAINING_RESULTS_20260207.md):**
-| Config | Type | Description |
-|--------|------|-------------|
-| VL baseline | No SD | Standard VL autoregressive |
-| B1-only | Decode-only | VLM-only EAGLE (VL hidden states) |
-| L5F-only | Decode-only | Fused EAGLE (EGPT + VL hidden states) |
-| L1+L5F | Two-phase | Prefill hiding (L1) + SD decode (L5F) |
-| L2+L5F | Two-phase | Prefill hiding (L2) + SD decode (L5F) |
-| L3+L5F | Two-phase | Prefill hiding (L3) + SD decode (L5F) |
-| L4+L5F | Two-phase | Prefill hiding (L4) + SD decode (L5F) |
-
-**Output:** JSON (per-sample timing + text), matplotlib graphs (speedup, timing breakdown, accept rate), markdown report.
-
----
-
-### 6. hidden_adapter.py
-
-Module containing all adapter implementations. Can be run directly to test.
-
-```bash
-# Test all adapter levels
-python feasible/feature_alignment/hidden_adapter.py
-```
-
-**Classes:**
-| Class | Level | Description |
-|-------|-------|-------------|
-| `HiddenStateAdapter` | L1 | Simple bottleneck |
-| `MultiLayerBottleneckAdapter` | L2 | 3× stacked bottlenecks |
-| `WideBottleneckAdapter` | L3 | Wide bottleneck (1024) |
-| `AttentionAdapter` | L4 | Self-attention + FFN |
-
-**Factory Functions:**
-| Function | Description |
-|----------|-------------|
-| `create_adapter(level, ...)` | Create adapter at any level |
-| `create_hidden_adapter(...)` | Create L1 adapter (legacy) |
-| `load_any_adapter(path)` | Load any adapter type |
-
----
-
-## Python API
-
-### Training
-
-```python
-from feasible.feature_alignment.hidden_adapter import create_hidden_adapter
-
-adapter = create_hidden_adapter(
-    hidden_dim=4096,
-    bottleneck_dim=256,
-    num_layers=1,
-    alpha=0.1,
-)
-# Parameters: 2,113,537
-```
-
-### Inference
-
-```python
-from feasible.feature_alignment.hidden_adapter import HiddenStateAdapter
-
-adapter, _ = HiddenStateAdapter.load_checkpoint('best_model.pt', device='cuda')
-adapter.eval()
-
-with torch.no_grad():
-    aligned = adapter(egpt_hidden)  # [batch, seq, 4096]
-    cos_sim = F.cosine_similarity(aligned, vl_hidden, dim=-1)
-    accepted = cos_sim > 0.90
-```
+### All 7 Adapters (Offline Metrics, 11K test samples)
+
+| Level | Params | Val Loss | Accept@0.90 | cos_sim |
+|-------|--------|----------|-------------|---------|
+| L1 | 2.1M | 1.2798 | 21.9% | 0.777 |
+| L2 | 6.3M | 1.2787 | 23.2% | 0.779 |
+| L3 | 16M | 1.2499 | 24.9% | 0.790 |
+| L4 | 101M | 1.2458 | 24.8% | 0.791 |
+| L5 | 103M | 1.3413 | 11.2% | 0.759 |
+| **B1** | 103M | 0.6812 | **61.2%** | 0.912 |
+| **L5F** | 170M | 0.7282 | **66.2%** | 0.896 |
+
+**Key insight:** B1 >> L5 shows the cross-modal gap is the dominant bottleneck. L5F > B1 shows fused input helps.
+
+### E2E Wall-Clock Benchmark (50 samples, 10 questions, max_new_tokens=50)
+
+| Config | Prefill | Decode | Total | Accept | Speedup | Free Tokens |
+|--------|---------|--------|-------|--------|---------|-------------|
+| VL baseline | 326ms | 691ms | 1017ms | --- | 1.00x | --- |
+| L1+VL | 326ms | 691ms | 1018ms | 15.9% | 1.00x | 21.9 |
+| L2+VL | 326ms | 681ms | 1007ms | 19.3% | 1.02x | 21.9 |
+| L3+VL | 326ms | 681ms | 1007ms | 19.6% | 1.02x | 21.9 |
+| **L4+VL** | 326ms | 679ms | 1005ms | **20.3%** | **1.02x** | 21.9 |
+
+- Per-sample speedup ranges from 1.00x to **1.24x** (best)
+- ~22 tokens generated for free, hidden behind VL prefill latency gap (~230ms)
+- Full 1100-sample benchmark in progress (30 tokens)
 
 ---
 
@@ -2010,88 +389,77 @@ with torch.no_grad():
 
 ```
 feasible/feature_alignment/
-├── README.md                       # This file
-├── hidden_adapter.py               # All adapter implementations (L1-L4)
-│   ├── HiddenStateAdapter          # L1: Simple bottleneck (2.1M)
-│   ├── MultiLayerBottleneckAdapter # L2: Stacked bottlenecks (6.3M)
-│   ├── WideBottleneckAdapter       # L3: Wide bottleneck (16.8M)
-│   ├── AttentionAdapter            # L4: Self-attention (100M)
-│   ├── create_adapter()            # Unified factory function
-│   └── load_any_adapter()          # Load any checkpoint
+├── README.md                          # This file
+├── hidden_adapter.py                  # All adapter architectures (L1-L5, B1, L5F)
+├── train_hidden_adapter.py            # Training script
+├── extract_hidden_states.py           # Hidden state extraction from both models
+├── extract_vl_lm_head.py             # Extract VL LM head weights
+├── measure_feature_acceptance.py      # Offline acceptance metrics
+├── eval_two_phase.py                  # Two-phase pipeline evaluation
+├── benchmark_e2e_wallclock.py         # True E2E wall-clock benchmark
+├── retrain_L4_converge.sh             # L4 retraining script (300 epochs)
 │
-├── extract_hidden_states.py        # Extract decoder hidden states
-├── train_hidden_adapter.py         # Training script (supports L1-L4)
-├── measure_feature_acceptance.py   # Hidden-state acceptance metrics
-├── evaluate_e2e_sd.py             # E2E SD eval (hidden + token + speedup)
-├── METRICS_COMPARISON.md           # Hidden-state vs token-level explainer
+├── data/                              # Symlinks to HDD storage
+│   ├── chunked_train_1s_4bit/         # 52K train samples (52 chunks, ~83GB)
+│   └── chunked_test_1s_4bit/          # 11K test samples (11 chunks, ~18GB)
 │
-├── hidden_states/                  # Extracted data
-│   ├── hidden_states_train_10q.pt  # Train: 52,080 pairs
-│   └── hidden_states_test_10q.pt   # Test: 11,000 pairs
+├── tasks/                             # Training runs and benchmark results
+│   ├── L1/L1_20260206_*/              # L1 adapter results
+│   ├── L2/L2_20260206_*/
+│   ├── L3/L3_20260206_*/
+│   ├── L4/L4_20260206_*/
+│   ├── L5/L5_20260206_*/
+│   ├── L5F/L5F_20260206_*/
+│   ├── B1/B1_20260206_*/
+│   ├── benchmark_30tok/               # E2E benchmark results
+│   ├── benchmark_50tok/
+│   └── starred/                       # Best results for quick reference
 │
-├── checkpoints/hidden_adapter/     # Trained models
-│   ├── L1_{timestamp}/             # L1 checkpoints
-│   │   ├── best_model.pt
-│   │   ├── final_model.pt
-│   │   ├── config.json
-│   │   ├── history.json
-│   │   └── training_curves.png
-│   ├── L2_{timestamp}/             # L2 checkpoints
-│   ├── L3_{timestamp}/             # L3 checkpoints
-│   └── L4_{timestamp}/             # L4 checkpoints
-│
-└── tasks/                          # Experiment results
-    └── task1_100samples_10q_{date}/
-        └── README.md
+├── vl_lm_head.pt                      # VL LM head weights (256MB)
+├── ADAPTER_ARCHITECTURES.md           # Detailed architecture docs
+├── METRICS_COMPARISON.md              # Cross-adapter comparison
+└── TASKS.md                           # Task tracking
 ```
 
 ---
 
-## Roadmap
+## Full Pipeline (Copy-Paste)
 
-- [x] Design hidden state extraction pipeline
-- [x] Implement HiddenStateAdapter (~2M params)
-- [x] Implement training script
-- [x] Implement evaluation script
-- [x] Pilot study (100 samples) → **5.77x speedup**
-- [🔄] Full dataset extraction (52,080 train + 11,000 test pairs)
-- [ ] Train on full dataset
-- [ ] Evaluate on held-out test set
-- [ ] Benchmark actual end-to-end speedup
+```bash
+cd /home/ps/Documents/code/EventGPT
 
----
+# === Stage 0: Extract LM Head (one-time, ~2min) ===
+python feasible/feature_alignment/extract_vl_lm_head.py \
+    --output_path ./feasible/feature_alignment/vl_lm_head.pt
 
-## References
+# === Stage 1a: Extract Train Hidden States (~24h) ===
+nohup python feasible/feature_alignment/extract_hidden_states.py \
+    --split train --chunked --quant 4bit \
+    --output_dir ./feasible/feature_alignment/data \
+    > extraction_train.log 2>&1 &
 
-### Speculative Decoding
-- **[Leviathan et al., 2023]** "Fast Inference from Transformers via Speculative Decoding" - Token-level SD
-  [arXiv:2211.17192](https://arxiv.org/abs/2211.17192)
+# === Stage 1b: Extract Test Hidden States (~5h) ===
+nohup python feasible/feature_alignment/extract_hidden_states.py \
+    --split test --chunked --quant 4bit \
+    --output_dir ./feasible/feature_alignment/data \
+    > extraction_test.log 2>&1 &
 
-### Feature-Level Speculation (EAGLE Family)
-- **[1] [Li et al., 2024]** "EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty" - ICML 2024
-  [arXiv:2401.15077](https://arxiv.org/abs/2401.15077)
-- **[Li et al., 2024]** "EAGLE-2: Faster Inference of Language Models with Dynamic Draft Trees" - EMNLP 2024
-  [arXiv:2406.16858](https://arxiv.org/abs/2406.16858)
+# === Stage 2: Train Adapter (e.g., L4, ~10h) ===
+python feasible/feature_alignment/train_hidden_adapter.py \
+    --train_data ./feasible/feature_alignment/data/chunked_train_1s_4bit \
+    --val_data   ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --adapter_level 4 --num_epochs 300 --early_stopping 50 --batch_size 64 \
+    --output_dir ./feasible/feature_alignment/tasks/L4
 
-### Adapter Design
-- **[1] [Hu et al., 2022]** "LoRA: Low-Rank Adaptation of Large Language Models" - ICLR 2022
-  [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
-  *→ Inspired our L1 bottleneck design (low-rank down/up projection)*
+# === Stage 3: Evaluate (offline metrics, ~20min) ===
+python feasible/feature_alignment/measure_feature_acceptance.py \
+    --checkpoint ./feasible/feature_alignment/tasks/L4/L4_*/best_model.pt \
+    --test_data  ./feasible/feature_alignment/data/chunked_test_1s_4bit \
+    --lm_head    ./feasible/feature_alignment/vl_lm_head.pt
 
-- **[2] [Houlsby et al., 2019]** "Parameter-Efficient Transfer Learning for NLP" - ICML 2019
-  [arXiv:1902.00751](https://arxiv.org/abs/1902.00751)
-  *→ Inspired our L2 serial adapter stacking*
-
-- **[3] [He et al., 2022]** "Towards a Unified View of Parameter-Efficient Transfer Learning" - ICLR 2022
-  [arXiv:2110.04366](https://arxiv.org/abs/2110.04366)
-  *→ Inspired our L3 scaled parallel adapter design*
-
-- **[4] [Li et al., 2024]** "EAGLE" (see above)
-  *→ Inspired our L4 attention-based adapter*
-
-### Cross-Modal Alignment
-- **[Liu et al., 2023]** "LLaVA: Visual Instruction Tuning" - NeurIPS 2023
-  [arXiv:2304.08485](https://arxiv.org/abs/2304.08485)
-
-- **[Lin et al., 2023]** "Video-LLaVA: Learning United Visual Representation by Alignment Before Projection"
-  [arXiv:2311.10122](https://arxiv.org/abs/2311.10122)
+# === Stage 4: E2E Wall-Clock Benchmark (50 samples, ~1h) ===
+python feasible/feature_alignment/benchmark_e2e_wallclock.py \
+    --max_samples 50 --max_new_tokens 50 \
+    --configs "vl_baseline,L4+VL" \
+    --output_dir ./feasible/feature_alignment/tasks/benchmark_50tok
+```

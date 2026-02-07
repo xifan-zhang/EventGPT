@@ -4,7 +4,66 @@ This file tracks all updates made to the research markdown files.
 
 ---
 
-## Latest Update (February 7, 2026) - E2E Wall-Clock Benchmark + Prefill Hiding
+## Latest Update (February 7, 2026) - Pipeline Reorganization + E2E Benchmark Analysis
+
+### Pipeline Reorganization
+
+Organized all cross-modal speculative decoding code into a clean 4-stage `pipeline/` folder:
+
+```
+pipeline/
+├── README.md                              # Overview, data flow, quick start
+├── feature_extraction/                    # Stage 1: Extract paired hidden states
+│   ├── extract_vl_lm_head.py
+│   ├── extract_hidden_states.py
+│   └── monitor_extraction.sh
+├── adapter_train/                         # Stage 2: Train adapters (L1-L5, B1, L5F)
+│   ├── hidden_adapter.py
+│   ├── train_hidden_adapter.py
+│   ├── auto_train_pipeline.sh
+│   └── retrain_L4_converge.sh
+├── evaluation/                            # Stage 3: Offline acceptance metrics
+│   ├── measure_feature_acceptance.py
+│   ├── eval_two_phase.py
+│   ├── run_all_eval.sh
+│   └── run_two_phase_eval.sh
+└── benchmark_e2e/                         # Stage 4: E2E wall-clock benchmark
+    └── benchmark_e2e_wallclock.py
+```
+
+### Changes
+- Copied all Python scripts and shell scripts from `feasible/feature_alignment/` into `pipeline/`
+- Added `Author: Alice Zhang` and `Date: 2026-02-07` to all 7 Python scripts
+- Updated default output paths: scripts now output to local `tasks/` or `data/` subdirs
+- Added comprehensive README.md for each stage with CLI reference, output formats, and results
+- Updated shell scripts to use `pipeline/` paths
+
+### E2E Benchmark Analysis (10,970 samples, max_new_tokens=30)
+
+Key finding: **1.03x speedup** despite ~22 free tokens during prefill. Root causes:
+
+| Component | Value |
+|-----------|-------|
+| Mean drafted tokens | 20.9 |
+| Mean accepted tokens | 4.4 (21.2%) |
+| Value of saved tokens | 5.4 × 14.0ms = **75ms** |
+| Verify batch cost | **~70ms** |
+| Net saving | **~5ms** per 736ms sample |
+
+32% of samples get 0-1 accepted tokens → net slowdown with SD overhead.
+
+| Accept% | Projected Speedup |
+|---------|----|
+| 21% (current L4) | 1.01x |
+| 50% | 1.14x |
+| 70% | 1.25x |
+| 100% | 1.47x |
+
+Bottleneck is acceptance rate. Improving adapter quality is the key path to higher speedup.
+
+---
+
+## Update (February 7, 2026) - E2E Wall-Clock Benchmark + Prefill Hiding
 
 ### True E2E Wall-Clock Benchmark (50 samples, 10 questions, max_new_tokens=50)
 
@@ -301,6 +360,13 @@ Created comprehensive research folder for cross-modal speculative decoding.
 
 | File | Last Update | Status | Next Update |
 |------|-------------|--------|-------------|
+| pipeline/README.md | 2026-02-07 | ✅ Complete | As needed |
+| pipeline/feature_extraction/README.md | 2026-02-07 | ✅ Complete | As needed |
+| pipeline/adapter_train/README.md | 2026-02-07 | ✅ Complete | As needed |
+| pipeline/evaluation/README.md | 2026-02-07 | ✅ Complete | As needed |
+| pipeline/benchmark_e2e/README.md | 2026-02-07 | ✅ Complete | As needed |
+| pipeline/**/*.py | 2026-02-07 | ✅ Complete | As needed |
+| pipeline/**/*.sh | 2026-02-07 | ✅ Complete | As needed |
 | feasible/token_alignment/README.md | 2026-01-28 | ✅ Complete | After 10q results |
 | feasible/token_alignment/extract_tokens_parallel.py | 2026-01-28 | ✅ Complete | As needed |
 | feasible/token_alignment/task/starred/ | 2026-01-28 | ✅ Results saved | After 10q results |
@@ -332,4 +398,4 @@ To contribute updates:
 ---
 
 **Last Updated:** February 7, 2026
-**Next Scheduled Update:** After true E2E wall-clock benchmark
+**Next Scheduled Update:** After L4 retraining convergence (300 epochs)

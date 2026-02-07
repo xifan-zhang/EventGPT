@@ -2,6 +2,9 @@
 """
 Train Hidden State Adapter for Cross-Modal Speculative Decoding.
 
+Author: Alice Zhang
+Date: 2026-02-07
+
 Trains a lightweight bottleneck adapter to align EventGPT decoder hidden states
 to Video-LLaVA hidden state space.
 
@@ -555,7 +558,7 @@ def main():
     parser.add_argument('--val_split', type=float, default=0.1,
                         help='Validation split ratio if val_data not provided')
     parser.add_argument('--output_dir', type=str,
-                        default='./feasible/feature_alignment/checkpoints/hidden_adapter')
+                        default=str(Path(__file__).parent / 'tasks'))
 
     # Adapter level selection
     parser.add_argument('--adapter_level', type=int, default=1, choices=[1, 2, 3, 4, 5, 6],
