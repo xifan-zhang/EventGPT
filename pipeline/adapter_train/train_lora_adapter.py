@@ -3,37 +3,234 @@
 L6: LoRA finetune EventGPT decoder to align hidden states with Video-LLaVA.
 
 Author: Alice Zhang
-Date: 2026-02-07
+Date: 2026-02-10
 
-Unlike L1-L5 (separate adapter on pre-extracted hidden states), L6 modifies
-the drafter model itself via QLoRA so its decoder hidden states natively
-align with Video-LLaVA's hidden state space.
+================================================================================
+OVERVIEW
+================================================================================
 
-Setup:
-    - EventGPT loaded in 4-bit (frozen base weights)
-    - LoRA applied to decoder q,k,v,o projections
-    - Vision encoder fully frozen (no grad)
-    - Gradient checkpointing enabled
-    - Target: pre-extracted VL hidden states from existing chunks
+Unlike L1-L5 (external adapter networks mapping pre-extracted EGPT hidden
+states -> VL hidden space), L6 modifies the drafter model ITSELF via QLoRA.
+After training, the LoRA weights can be merged into the base model, giving
+zero additional inference latency while producing hidden states that are
+natively closer to Video-LLaVA's hidden state space.
 
-Training:
-    For each sample:
-    1. Load event image from disk + question from metadata
-    2. Encode event image through frozen vision encoder
-    3. Teacher-forced forward pass through decoder with LoRA
-       (using original EGPT tokens so positions align)
-    4. Extract last-layer hidden states at generation positions
-    5. Loss = MSE + cosine vs VL hidden states
-    6. Backprop through LoRA params only
+    L1-L5 approach:        EGPT_hidden --> [Adapter Network] --> VL_hidden_approx
+    L6 approach:           EGPT_LoRA_hidden ~~~~ VL_hidden  (no adapter needed)
 
-Memory: ~8-10 GB on 4090 24GB (4-bit model + LoRA + grad checkpointing)
+Results after 1 epoch: val_cos_sim=0.816, val_accept@0.90=28.3% — already
+surpasses L4 external adapter (val_cos_sim=0.797) trained for 268 epochs.
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+    +----------------------------------------------------------+
+    |  EventGPT (4-bit NF4 quantized, ~3.9 GB)                |
+    |                                                          |
+    |  +----------------------------------------------------+  |
+    |  | Vision Encoder (FROZEN, no grad)                   |  |
+    |  |   event_image_1f/ --> [processor] --> [ViT]        |  |
+    |  |   --> [feature_adaptor] --> event_features          |  |
+    |  +----------------------------------------------------+  |
+    |                          |                                |
+    |                          v                                |
+    |  +----------------------------------------------------+  |
+    |  | Decoder (32 LLaMA layers)                          |  |
+    |  |                                                    |  |
+    |  |   For each layer:                                  |  |
+    |  |     q_proj: [W_frozen_4bit] + [LoRA_A * LoRA_B]   |  |
+    |  |     k_proj: [W_frozen_4bit] + [LoRA_A * LoRA_B]   |  |
+    |  |     v_proj: [W_frozen_4bit] + [LoRA_A * LoRA_B]   |  |
+    |  |     o_proj: [W_frozen_4bit] + [LoRA_A * LoRA_B]   |  |
+    |  |     mlp:    [W_frozen_4bit] (no LoRA)              |  |
+    |  |                                                    |  |
+    |  |   Only LoRA_A, LoRA_B have requires_grad=True      |  |
+    |  |   19.1M trainable / 3691M total (0.52%)            |  |
+    |  +----------------------------------------------------+  |
+    |                          |                                |
+    |                          v                                |
+    |              last_hidden_state [1, seq_len, 4096]         |
+    +----------------------------------------------------------+
+
+================================================================================
+DATA FLOW (per sample)
+================================================================================
+
+    Train chunks (52 chunks, 52K samples)       Dataset (disk)
+    chunked_train_1s_4bit_1f/                   my_egpt_dsec_train_1s/
+    +-----------------------+                   +------------------+
+    | vl_hidden [N,50,4096] |                   | event_image_1f/  |
+    | seq_lens  [N]         |                   | questions.json   |
+    | metadata  [N] {       |                   +------------------+
+    |   sample_idx,         |                            |
+    |   question_idx,       |                            v
+    |   egpt_text           |            1. prepare_input():
+    | }                     |               - Load 1-frame event image
+    +-----------+-----------+               - Encode through frozen ViT
+                |                           - Tokenize prompt + question
+                |                                    |
+                |                                    v
+                |                2. teacher_forced_forward():
+                |                   - Append egpt_text tokens to prompt
+                |                   - [prompt_tokens | gen_tokens]
+                |                   - Single forward pass with causal mask
+                |                   - Extract last gen_len hidden states
+                |                                    |
+                v                                    v
+         target: vl_hidden                   pred: egpt_hidden
+         [actual_len, 4096]                  [actual_len, 4096]
+                |                                    |
+                +--------+       +------------------+
+                         |       |
+                         v       v
+              3. Loss = MSE(pred, target)
+                       + 0.5 * CosineEmbeddingLoss(pred, target)
+                       + 0.1 * CE(lm_head(pred), lm_head(target).argmax)
+                                 |
+                                 v
+              4. loss.backward()  -->  grads flow to LoRA params only
+              5. Every gradient_accumulation steps: optimizer.step()
+
+    Val chunks (11 chunks, 11K samples)
+    chunked_test_1s_4bit_1f/ + my_egpt_dsec_seq_1s/
+    Same flow, but no backward pass. Metrics: val_loss, val_cos_sim,
+    val_accept@{80,85,90,95}
+
+================================================================================
+LOSS FUNCTION
+================================================================================
+
+    loss = MSE(pred, target)                          # hidden-state L2 distance
+         + 0.5 * CosineEmbeddingLoss(pred, target)   # angular alignment
+         + token_loss_weight * CE(                    # token-level agreement
+               lm_head(pred),                         #   logits from EGPT hidden
+               lm_head(target).argmax(-1)             #   pseudo-labels from VL hidden
+           )
+
+    The CE auxiliary loss (weight=0.1 by default) uses Video-LLaVA's frozen
+    LM head to project both predicted and target hidden states into token space.
+    This forces token-level agreement beyond just hidden-state similarity.
+
+    Logged separately: train_mse, train_cos_loss, train_ce in history.json.
+    Progress bar shows: mse, cos_l, sim, ce, tok (token top-1 match %).
+
+================================================================================
+TEACHER-FORCED FORWARD PASS
+================================================================================
+
+    Instead of autoregressive generation (slow, N forward passes), we use a
+    single teacher-forced forward pass. The causal attention mask ensures each
+    position can only attend to previous positions, making it mathematically
+    equivalent to sequential AR generation.
+
+    Input:  [SYS] [IMG_TOKENS] [Q: "What are the key elements?"] [The] [key] [elements] ...
+            |<-------- prompt (frozen visual + text) -------->| |<-- gen_tokens (from egpt_text) -->|
+                                                                                    |
+    Output hidden states extracted from these positions --------+
+    (last gen_len positions of last_hidden_state)
+
+    Speed: ~8x faster than AR generate() for 50-token sequences.
+    Equivalence: Causal mask guarantees h[t] depends only on tokens [0..t].
+
+================================================================================
+GRADIENT CHECKPOINTING
+================================================================================
+
+    With 4-bit base + LoRA, the input embeddings don't have requires_grad.
+    Standard (reentrant) gradient checkpointing would silently drop all
+    gradients. We use two fixes:
+      1. gradient_checkpointing_enable(use_reentrant=False)
+      2. inputs_embeds.requires_grad_(True) before the forward pass
+
+================================================================================
+TRAINING LOOP
+================================================================================
+
+    For each epoch:
+      For each train chunk (52 chunks, 1000 samples each):
+        - Load chunk: vl_hidden (targets), metadata
+        - Prefetch: ThreadPoolExecutor loads next sample's image while
+          GPU processes current sample
+        - For each sample:
+            a. CPU thread: load 1f event image, encode vision, tokenize
+            b. GPU: teacher_forced_forward() -> egpt_hidden
+            c. GPU: compute loss vs vl_hidden target (MSE + cos + CE)
+            d. GPU: loss.backward() (grads accumulate)
+            e. Every N steps: optimizer.step() + zero_grad()
+      Validate on all 11 test chunks (separate test set, 11K samples)
+      Log: val_loss, val_cos_sim, val_accept@{80,85,90,95}
+      Early stopping on val_loss (patience=5, default)
+
+    Optimizer: AdamW (lr=1e-4, weight_decay=0.01)
+    Scheduler: CosineAnnealingLR over num_epochs
+    Grad clipping: max_norm=1.0
+    Timing: ~5.7h per epoch on RTX 4090
+
+================================================================================
+MEMORY BUDGET (RTX 4090 24GB)
+================================================================================
+
+    Base model (4-bit):     ~3.9 GB
+    LoRA params:            ~0.08 GB
+    VL LM head (frozen):    ~0.5 GB  (for token CE loss)
+    Activations (1 sample): ~2-4 GB  (with grad checkpointing)
+    VL hidden (1 chunk):    ~0.8 GB
+    Optimizer states:       ~0.3 GB
+    ----------------------------------------
+    Total:                  ~8-10 GB peak
+
+================================================================================
+OUTPUT
+================================================================================
+
+    tasks/L6/L6_<timestamp>/
+      config.json         - Hyperparameters
+      history.json        - Per-epoch metrics (train_mse, train_cos_loss,
+                            train_ce, val_loss, val_cos_sim, val_accept@90, ...)
+      best_model/         - PEFT adapter (LoRA weights only, ~77 MB)
+        adapter_config.json
+        adapter_model.safetensors
+      final_model/        - Same format, last epoch
+
+    At inference, merge LoRA into base: model.merge_and_unload() -> zero overhead.
+
+================================================================================
+CLI
+================================================================================
+
+    # Default: 1f event images, token CE loss, separate test set for validation
+    python pipeline/adapter_train/train_lora_adapter.py \\
+        --lora_rank 16 --lora_alpha 32 \\
+        --num_epochs 20 --gradient_accumulation 16 --early_stopping 5
+
+    # Explicit paths (these are the defaults):
+    python pipeline/adapter_train/train_lora_adapter.py \\
+        --existing_chunks pipeline/feature_extraction/data/chunked_train_1s_4bit_1f \\
+        --dataset_dir data/my_egpt_dsec_train/my_egpt_dsec_train_1s \\
+        --val_chunks pipeline/feature_extraction/data/chunked_test_1s_4bit_1f \\
+        --val_dataset_dir data/my_egpt_dsec_test/my_egpt_dsec_seq_1s \\
+        --event_image_key event_image_1f \\
+        --token_loss_weight 0.1 \\
+        --lm_head_path feasible/feature_alignment/data/vl_lm_head.pt
+
+    # Disable token CE loss:
+        --token_loss_weight 0.0
+
+    # Use 5-frame event images instead:
+        --existing_chunks pipeline/feature_extraction/data/chunked_train_1s_4bit \\
+        --event_image_key event_image
 """
 
 import os
 import sys
 import json
+import warnings
+warnings.filterwarnings("ignore")
+os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import gc
 import numpy as np
 from pathlib import Path
@@ -62,7 +259,7 @@ class LoRATrainer:
         dataset_dir: str,
         questions_file: str,
         max_questions: int = 10,
-        event_image_key: str = 'event_image',
+        event_image_key: str = 'event_image_1f',
         lora_rank: int = 16,
         lora_alpha: int = 32,
         lora_dropout: float = 0.05,
@@ -72,6 +269,10 @@ class LoRATrainer:
         num_epochs: int = 20,
         early_stopping: int = 5,
         output_dir: str = 'pipeline/adapter_train/tasks/L6',
+        token_loss_weight: float = 0.0,
+        lm_head_path: str = '',
+        val_chunks_dir: str = '',
+        val_dataset_dir: str = '',
     ):
         self.device = "cuda"
         self.existing_chunks_dir = Path(existing_chunks_dir)
@@ -86,11 +287,23 @@ class LoRATrainer:
         self.num_epochs = num_epochs
         self.early_stopping = early_stopping
         self.output_dir = Path(output_dir)
+        self.token_loss_weight = token_loss_weight
+        self.lm_head_path = lm_head_path
+        self.val_chunks_dir = Path(val_chunks_dir) if val_chunks_dir else None
+        self.val_dataset_dir = Path(val_dataset_dir) if val_dataset_dir else None
 
         # Load dataset JSON
         json_path = self.dataset_dir / "EventGPT_Instruction_Subset.json"
         with open(json_path) as f:
             self.dataset = json.load(f)
+
+        # Load val dataset JSON (separate test set)
+        if self.val_dataset_dir:
+            val_json = self.val_dataset_dir / "EventGPT_Instruction_Subset.json"
+            with open(val_json) as f:
+                self.val_dataset = json.load(f)
+        else:
+            self.val_dataset = None
 
         # Load questions
         questions_file = Path(questions_file)
@@ -106,9 +319,18 @@ class LoRATrainer:
         with open(index_path) as f:
             self.chunk_index = json.load(f)
 
+        # Load val chunk index
+        if self.val_chunks_dir:
+            val_index_path = self.val_chunks_dir / "index.json"
+            with open(val_index_path) as f:
+                self.val_chunk_index = json.load(f)
+        else:
+            self.val_chunk_index = None
+
         self.model = None
         self.tokenizer = None
         self.processor = None
+        self.vl_lm_head = None
 
     def load_model(self):
         """Load EventGPT in 4-bit with LoRA adapters."""
@@ -164,6 +386,20 @@ class LoRATrainer:
                 trainable += p.numel()
         print(f"  Trainable: {trainable/1e6:.1f}M / {total/1e6:.0f}M ({100*trainable/total:.2f}%)")
         print(f"  GPU after LoRA: {torch.cuda.memory_allocated()/1024/1024:.0f} MB")
+
+        # Load VL LM head for token-level auxiliary loss
+        if self.token_loss_weight > 0 and self.lm_head_path:
+            print(f"\n  Loading VL LM head for token auxiliary loss (weight={self.token_loss_weight})...")
+            lm_head_data = torch.load(self.lm_head_path, map_location=self.device)
+            w = lm_head_data.get('lm_head_weight', lm_head_data.get('weight'))
+            self.vl_lm_head = nn.Linear(w.shape[1], w.shape[0], bias=False)
+            self.vl_lm_head.weight.data = w.float()
+            self.vl_lm_head = self.vl_lm_head.to(self.device)
+            self.vl_lm_head.eval()
+            for p in self.vl_lm_head.parameters():
+                p.requires_grad = False
+            print(f"  VL LM head loaded: {w.shape}")
+            print(f"  GPU after LM head: {torch.cuda.memory_allocated()/1024/1024:.0f} MB")
 
     def prepare_input(self, sample: Dict, query: str) -> Optional[Dict]:
         """Prepare model input from event image + question.
@@ -306,6 +542,7 @@ class LoRATrainer:
             'num_epochs': self.num_epochs,
             'early_stopping': self.early_stopping,
             'event_image_key': self.event_image_key,
+            'token_loss_weight': self.token_loss_weight,
             'existing_chunks': str(self.existing_chunks_dir),
             'dataset_dir': str(self.dataset_dir),
             'timestamp': timestamp,
@@ -328,18 +565,26 @@ class LoRATrainer:
         cos_loss_fn = nn.CosineEmbeddingLoss()
 
         # Load chunk list
-        chunks_dir = self.existing_chunks_dir / "chunks"
+        train_chunks_dir = self.existing_chunks_dir / "chunks"
         chunk_files = self.chunk_index['chunks']
 
-        # Split chunks into train/val (last chunk = val)
-        if len(chunk_files) > 1:
-            train_chunks = chunk_files[:-1]
-            val_chunks = chunk_files[-1:]
+        # Use separate test set for validation if provided
+        if self.val_chunk_index is not None:
+            train_chunks = chunk_files  # all train chunks
+            val_chunks = self.val_chunk_index['chunks']  # all test chunks
+            val_chunks_dir = self.val_chunks_dir / "chunks"
+            print(f"\nTraining: {len(train_chunks)} chunks (full train set)")
+            print(f"Validation: {len(val_chunks)} chunk(s) from test set")
         else:
-            train_chunks = chunk_files
-            val_chunks = []
-
-        print(f"\nTraining: {len(train_chunks)} chunks, Validation: {len(val_chunks)} chunks")
+            # Fallback: split last train chunk as val
+            if len(chunk_files) > 1:
+                train_chunks = chunk_files[:-1]
+                val_chunks = chunk_files[-1:]
+            else:
+                train_chunks = chunk_files
+                val_chunks = []
+            val_chunks_dir = train_chunks_dir
+            print(f"\nTraining: {len(train_chunks)} chunks, Validation: {len(val_chunks)} chunks")
         print(f"Output: {save_dir}")
 
         best_val_loss = float('inf')
@@ -350,7 +595,11 @@ class LoRATrainer:
             # === TRAIN ===
             self.model.train()
             epoch_loss = 0
+            epoch_mse_loss = 0
+            epoch_cos_loss = 0
+            epoch_ce_loss = 0
             epoch_cos_sim = 0
+            epoch_token_match = 0
             epoch_samples = 0
             optimizer.zero_grad()
 
@@ -390,7 +639,7 @@ class LoRATrainer:
             prefetch_pool = ThreadPoolExecutor(max_workers=1)
 
             for chunk_idx, chunk_info in enumerate(train_chunks):
-                chunk_path = chunks_dir / chunk_info['path']
+                chunk_path = train_chunks_dir / chunk_info['path']
                 chunk_data = torch.load(chunk_path, map_location='cpu')
                 vl_hidden = chunk_data['vl_hidden']
                 seq_lens = chunk_data['seq_lens']
@@ -446,14 +695,33 @@ class LoRATrainer:
                     cos = cos_loss_fn(pred, target, cos_target)
                     loss = mse + 0.5 * cos
 
+                    # Token-level auxiliary CE loss
+                    token_match = None
+                    if self.vl_lm_head is not None:
+                        with torch.no_grad():
+                            vl_tokens = self.vl_lm_head(target).argmax(dim=-1)  # [seq_len]
+                        pred_logits = self.vl_lm_head(pred)  # [seq_len, vocab] — grad flows through pred
+                        ce_aux = F.cross_entropy(pred_logits, vl_tokens)
+                        loss = loss + self.token_loss_weight * ce_aux
+                        with torch.no_grad():
+                            token_match = (pred_logits.argmax(dim=-1) == vl_tokens).float().mean().item()
+
+                    # Metrics before backward (pred is freed after .backward())
+                    with torch.no_grad():
+                        cos_sim = nn.functional.cosine_similarity(pred, target, dim=-1).mean().item()
+
                     # Scale for gradient accumulation
                     loss = loss / self.gradient_accumulation
                     loss.backward()
 
                     epoch_loss += loss.item() * self.gradient_accumulation
-                    with torch.no_grad():
-                        cos_sim = nn.functional.cosine_similarity(pred, target, dim=-1).mean().item()
+                    epoch_mse_loss += mse.item()
+                    epoch_cos_loss += cos.item()
+                    if self.vl_lm_head is not None:
+                        epoch_ce_loss += ce_aux.item()
                     epoch_cos_sim += cos_sim
+                    if token_match is not None:
+                        epoch_token_match += token_match
                     epoch_samples += 1
 
                     # Optimizer step
@@ -465,13 +733,21 @@ class LoRATrainer:
                         optimizer.step()
                         optimizer.zero_grad()
 
-                    pbar.set_postfix({
-                        'loss': f'{epoch_loss/max(epoch_samples,1):.4f}',
-                        'cos': f'{epoch_cos_sim/max(epoch_samples,1):.4f}',
-                    })
+                    n = max(epoch_samples, 1)
+                    postfix = {
+                        'mse': f'{epoch_mse_loss/n:.3f}',
+                        'cos_l': f'{epoch_cos_loss/n:.3f}',
+                        'sim': f'{epoch_cos_sim/n:.4f}',
+                    }
+                    if self.vl_lm_head is not None:
+                        postfix['ce'] = f'{epoch_ce_loss/n:.3f}'
+                        postfix['tok'] = f'{epoch_token_match/n:.3f}'
+                    pbar.set_postfix(postfix)
 
                     # Free memory
                     del input_data, gen_hidden, pred, target, loss
+                    if self.vl_lm_head is not None:
+                        del pred_logits, vl_tokens
                     if epoch_samples % 100 == 0:
                         torch.cuda.empty_cache()
 
@@ -487,25 +763,43 @@ class LoRATrainer:
 
             scheduler.step()
 
-            avg_train_loss = epoch_loss / max(epoch_samples, 1)
-            avg_train_cos = epoch_cos_sim / max(epoch_samples, 1)
+            n = max(epoch_samples, 1)
+            avg_train_loss = epoch_loss / n
+            avg_train_mse = epoch_mse_loss / n
+            avg_train_cos_l = epoch_cos_loss / n
+            avg_train_ce = epoch_ce_loss / n if self.vl_lm_head else 0
+            avg_train_cos = epoch_cos_sim / n
+            avg_train_tok = epoch_token_match / n if self.vl_lm_head else 0
 
             print(f"\nEpoch {epoch+1}/{self.num_epochs}")
-            print(f"  Train loss: {avg_train_loss:.4f}, cos_sim: {avg_train_cos:.4f}")
+            train_msg = f"  Train — loss: {avg_train_loss:.4f} (mse: {avg_train_mse:.4f}, cos: {avg_train_cos_l:.4f}"
+            if self.vl_lm_head is not None:
+                train_msg += f", ce: {avg_train_ce:.4f}"
+            train_msg += f"), cos_sim: {avg_train_cos:.4f}"
+            if self.vl_lm_head is not None:
+                train_msg += f", token_match: {avg_train_tok:.4f}"
+            print(train_msg)
             print(f"  Samples: {epoch_samples}, LR: {scheduler.get_last_lr()[0]:.2e}")
 
             # === VALIDATE ===
             val_loss = 0
             val_cos_sim = 0
             val_accept_90 = 0
+            val_token_match = 0
             val_samples = 0
 
             if val_chunks:
                 self.model.eval()
+                # Use val dataset/dir for prepare_input if separate test set
+                orig_dataset = self.dataset
+                orig_dataset_dir = self.dataset_dir
+                if self.val_dataset is not None:
+                    self.dataset = self.val_dataset
+                    self.dataset_dir = self.val_dataset_dir
                 val_pool = ThreadPoolExecutor(max_workers=1)
                 with torch.no_grad():
                     for chunk_info in val_chunks:
-                        chunk_path = chunks_dir / chunk_info['path']
+                        chunk_path = val_chunks_dir / chunk_info['path']
                         chunk_data = torch.load(chunk_path, map_location='cpu')
                         vl_hidden = chunk_data['vl_hidden']
                         seq_lens = chunk_data['seq_lens']
@@ -550,10 +844,19 @@ class LoRATrainer:
                             cos_target = torch.ones(actual_len, device=self.device)
                             cos = cos_loss_fn(pred, target, cos_target)
 
-                            val_loss += (mse + 0.5 * cos).item()
+                            sample_loss = mse + 0.5 * cos
+                            if self.vl_lm_head is not None:
+                                vl_tokens = self.vl_lm_head(target).argmax(dim=-1)
+                                pred_logits = self.vl_lm_head(pred)
+                                ce_aux = F.cross_entropy(pred_logits, vl_tokens)
+                                sample_loss = sample_loss + self.token_loss_weight * ce_aux
+                                pred_tokens = pred_logits.argmax(dim=-1)
+                                val_token_match += (pred_tokens == vl_tokens).float().mean().item()
+
+                            val_loss += sample_loss.item()
                             cos_sims = nn.functional.cosine_similarity(pred, target, dim=-1)
                             val_cos_sim += cos_sims.mean().item()
-                            val_accept_90 += (cos_sims > 0.90).float().mean().item()
+                            val_accept_90 += (cos_sims > 0.90).float().mean().item() 
                             val_samples += 1
 
                             del input_data, gen_hidden, pred, target
@@ -562,12 +865,19 @@ class LoRATrainer:
                         gc.collect()
                         torch.cuda.empty_cache()
                 val_pool.shutdown(wait=False)
+                # Restore train dataset
+                self.dataset = orig_dataset
+                self.dataset_dir = orig_dataset_dir
 
                 avg_val_loss = val_loss / max(val_samples, 1)
                 avg_val_cos = val_cos_sim / max(val_samples, 1)
                 avg_val_accept = val_accept_90 / max(val_samples, 1)
+                avg_val_tok = val_token_match / max(val_samples, 1) if self.vl_lm_head else 0
 
-                print(f"  Val loss: {avg_val_loss:.4f}, cos_sim: {avg_val_cos:.4f}")
+                val_msg = f"  Val loss: {avg_val_loss:.4f}, cos_sim: {avg_val_cos:.4f}"
+                if self.vl_lm_head is not None:
+                    val_msg += f", token_match: {avg_val_tok:.4f}"
+                print(val_msg)
                 print(f"  Accept@0.90: {avg_val_accept:.2%}")
 
                 # Save best
@@ -589,15 +899,22 @@ class LoRATrainer:
                 avg_val_accept = 0
 
             # History
-            history.append({
+            epoch_record = {
                 'epoch': epoch + 1,
                 'train_loss': avg_train_loss,
+                'train_mse': avg_train_mse,
+                'train_cos_loss': avg_train_cos_l,
                 'train_cos_sim': avg_train_cos,
                 'val_loss': avg_val_loss,
                 'val_cos_sim': avg_val_cos,
                 'val_accept_90': avg_val_accept,
                 'lr': scheduler.get_last_lr()[0],
-            })
+            }
+            if self.vl_lm_head is not None:
+                epoch_record['train_ce'] = avg_train_ce
+                epoch_record['train_token_match'] = avg_train_tok
+                epoch_record['val_token_match'] = avg_val_tok
+            history.append(epoch_record)
             with open(save_dir / 'history.json', 'w') as f:
                 json.dump(history, f, indent=2)
 
@@ -611,20 +928,35 @@ def main():
     parser = argparse.ArgumentParser(description="L6: LoRA finetune EventGPT for VL alignment")
 
     # Data
-    parser.add_argument('--existing_chunks', type=str, required=True,
-                        help='Path to existing chunked data with VL hidden states')
-    parser.add_argument('--dataset_dir', type=str, required=True,
-                        help='Path to DSEC dataset with event images')
+    parser.add_argument('--existing_chunks', type=str,
+                        default=str(ROOT / 'pipeline/feature_extraction/data/chunked_train_1s_4bit_1f'),
+                        help='Path to train chunked data with VL hidden states')
+    parser.add_argument('--dataset_dir', type=str,
+                        default=str(ROOT / 'data/my_egpt_dsec_train/my_egpt_dsec_train_1s'),
+                        help='Path to train DSEC dataset with event images')
+    parser.add_argument('--val_chunks', type=str,
+                        default=str(ROOT / 'pipeline/feature_extraction/data/chunked_test_1s_4bit_1f'),
+                        help='Path to val/test chunked data (separate test set)')
+    parser.add_argument('--val_dataset_dir', type=str,
+                        default=str(ROOT / 'data/my_egpt_dsec_test/my_egpt_dsec_seq_1s'),
+                        help='Path to val/test DSEC dataset with event images')
     parser.add_argument('--questions_file', type=str,
                         default=str(ROOT / 'feasible/token_alignment/top50_questions.json'))
     parser.add_argument('--max_questions', type=int, default=10)
-    parser.add_argument('--event_image_key', type=str, default='event_image',
+    parser.add_argument('--event_image_key', type=str, default='event_image_1f',
                         help='JSON key for event images (event_image or event_image_1f)')
 
     # LoRA
     parser.add_argument('--lora_rank', type=int, default=16)
     parser.add_argument('--lora_alpha', type=int, default=32)
     parser.add_argument('--lora_dropout', type=float, default=0.05)
+
+    # Loss
+    parser.add_argument('--token_loss_weight', type=float, default=0.1,
+                        help='Weight for token-level CE auxiliary loss (0=disabled, 0.1=recommended)')
+    parser.add_argument('--lm_head_path', type=str,
+                        default=str(ROOT / 'feasible/feature_alignment/data/vl_lm_head.pt'),
+                        help='Path to VL LM head weights (for token auxiliary loss)')
 
     # Training
     parser.add_argument('--learning_rate', type=float, default=1e-4)
@@ -655,6 +987,10 @@ def main():
         num_epochs=args.num_epochs,
         early_stopping=args.early_stopping,
         output_dir=args.output_dir,
+        token_loss_weight=args.token_loss_weight,
+        lm_head_path=args.lm_head_path if args.token_loss_weight > 0 else '',
+        val_chunks_dir=args.val_chunks,
+        val_dataset_dir=args.val_dataset_dir,
     )
 
     trainer.load_model()
