@@ -538,7 +538,7 @@ class HiddenAdapterTrainer:
                     axes[2].plot(self.history[key], label=f'@0.{thresh}')
             axes[2].set_xlabel('Epoch')
             axes[2].set_ylabel('Acceptance Rate')
-            axes[2].set_title('Token Acceptance Rate (SD)')
+            axes[2].set_title('Token Match Rate (SD)')
             axes[2].legend()
             axes[2].grid(True)
             axes[2].set_ylim(0, 1)

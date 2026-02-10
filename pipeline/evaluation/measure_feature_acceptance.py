@@ -763,16 +763,16 @@ def compute_token_level_metrics(
 
     # --- Top-1 match ---
     top1_match = (aligned_tokens == vl_tokens) & mask_bool
-    metrics['token_top1_match'] = top1_match.float().sum().item() / valid_count
+    metrics['token_match_rate'] = top1_match.float().sum().item() / valid_count
 
     # --- Top-5 match ---
     vl_expanded = vl_tokens.unsqueeze(-1)  # [N, S, 1]
     top5_hit = (aligned_topk[:, :, :5] == vl_expanded).any(dim=-1) & mask_bool
-    metrics['token_top5_match'] = top5_hit.float().sum().item() / valid_count
+    metrics['token_match_rate_top5'] = top5_hit.float().sum().item() / valid_count
 
     # --- Top-10 match ---
     top10_hit = (aligned_topk == vl_expanded).any(dim=-1) & mask_bool
-    metrics['token_top10_match'] = top10_hit.float().sum().item() / valid_count
+    metrics['token_match_rate_top10'] = top10_hit.float().sum().item() / valid_count
 
     # --- Consecutive token accepts (cumprod trick) ---
     accept_int = top1_match.int()
@@ -923,8 +923,8 @@ def print_token_metrics_report(metrics: Dict):
 
     print("\n[T1] TOKEN MATCH RATES")
     print("-" * 40)
-    for k, label in [('token_top1_match', 'Top-1'), ('token_top5_match', 'Top-5'),
-                     ('token_top10_match', 'Top-10')]:
+    for k, label in [('token_match_rate', 'Top-1'), ('token_match_rate_top5', 'Top-5'),
+                     ('token_match_rate_top10', 'Top-10')]:
         rate = metrics.get(k, 0)
         bar = "\u2588" * int(rate * 20)
         print(f"  {label:>6}: {rate:6.2%} {bar}")
@@ -976,12 +976,12 @@ def generate_metrics_comparison_md(metrics: Dict, output_dir: Path):
         "",
         "## Summary",
         "",
-        "| Metric | Hidden-State (@0.90) | Token-Level (Top-1) |",
+        "| Metric | Hidden-State (@0.90) | Token Match Rate |",
         "|--------|---------------------|---------------------|",
     ]
 
     hs_accept = metrics.get('accept_90', 0)
-    tk_accept = metrics.get('token_top1_match', 0)
+    tk_accept = metrics.get('token_match_rate', 0)
     lines.append(f"| Overall Accept Rate | {hs_accept:.2%} | {tk_accept:.2%} |")
 
     hs_consec = metrics.get('consecutive_mean_90', 0)
@@ -1012,7 +1012,7 @@ def generate_metrics_comparison_md(metrics: Dict, output_dir: Path):
         "",
         "## Per-Position Comparison (First 10)",
         "",
-        "| Position | Hidden Accept @0.90 | Token Top-1 |",
+        "| Position | Hidden Accept @0.90 | Token Match Rate |",
         "|----------|--------------------:|------------:|",
     ])
     hs_pos = metrics.get('position_accept_90', [])
@@ -1047,9 +1047,9 @@ def plot_token_metrics(
     # 1. Token match rates bar chart
     ax1 = axes[0]
     labels = ['Top-1', 'Top-5', 'Top-10']
-    values = [metrics.get('token_top1_match', 0),
-              metrics.get('token_top5_match', 0),
-              metrics.get('token_top10_match', 0)]
+    values = [metrics.get('token_match_rate', 0),
+              metrics.get('token_match_rate_top5', 0),
+              metrics.get('token_match_rate_top10', 0)]
     colors = ['#e74c3c', '#f39c12', '#2ecc71']
     bars = ax1.bar(labels, values, color=colors, alpha=0.8, edgecolor='black')
     for bar, val in zip(bars, values):
@@ -1067,7 +1067,7 @@ def plot_token_metrics(
     n_pos = min(len(tk_pos), len(hs_pos), 20)
     if n_pos > 0:
         positions = list(range(n_pos))
-        ax2.plot(positions, tk_pos[:n_pos], 'o-', color='#e74c3c', label='Token Top-1', alpha=0.8)
+        ax2.plot(positions, tk_pos[:n_pos], 'o-', color='#e74c3c', label='Token Match Rate', alpha=0.8)
         ax2.plot(positions, hs_pos[:n_pos], 's--', color='#3498db', label='Hidden @0.90', alpha=0.8)
         ax2.set_xlabel('Position in Sequence')
         ax2.set_ylabel('Acceptance Rate')
