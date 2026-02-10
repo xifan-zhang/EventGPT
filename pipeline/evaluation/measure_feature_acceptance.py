@@ -635,7 +635,7 @@ def load_chunked_data(data_path: Path, device: str) -> Tuple[torch.Tensor, torch
     data_path = Path(data_path)
 
     if data_path.is_dir():
-        # Chunked format
+        # Chunked format — stream chunks one at a time to limit peak memory
         index_path = data_path / 'index.json'
         if not index_path.exists():
             raise ValueError(f"No index.json found in {data_path}")
@@ -648,17 +648,19 @@ def load_chunked_data(data_path: Path, device: str) -> Tuple[torch.Tensor, torch
         all_vl = []
         all_lens = []
 
-        print(f"Loading {len(index['chunks'])} chunks...")
+        print(f"Loading {len(index['chunks'])} chunks (streaming)...")
         for chunk_info in tqdm(index['chunks']):
             chunk_path = chunks_dir / chunk_info['path']
             chunk = torch.load(chunk_path, map_location='cpu')
-            all_egpt.append(chunk['egpt_hidden'])
-            all_vl.append(chunk['vl_hidden'])
+            all_egpt.append(chunk['egpt_hidden'].half())
+            all_vl.append(chunk['vl_hidden'].half())
             all_lens.append(chunk['seq_lens'])
+            del chunk
 
-        egpt_hidden = torch.cat(all_egpt, dim=0).to(device).float()
-        vl_hidden = torch.cat(all_vl, dim=0).to(device).float()
+        egpt_hidden = torch.cat(all_egpt, dim=0)
+        vl_hidden = torch.cat(all_vl, dim=0)
         seq_lens = torch.cat(all_lens, dim=0)
+        del all_egpt, all_vl, all_lens
 
     else:
         # Single file format
@@ -1196,21 +1198,30 @@ def main():
     with torch.no_grad():
         for i in tqdm(range(0, len(egpt_hidden), args.batch_size)):
             if is_fused:
-                batch_egpt = egpt_hidden[i:i+args.batch_size].to(device)
-                batch_vl = vl_hidden[i:i+args.batch_size].to(device)
-                out = model(batch_egpt, batch_vl).cpu()
+                batch_egpt = egpt_hidden[i:i+args.batch_size].to(device).float()
+                batch_vl = vl_hidden[i:i+args.batch_size].to(device).float()
+                out = model(batch_egpt, batch_vl).cpu().half()
             elif is_vlm_only:
-                batch_vl = vl_hidden[i:i+args.batch_size].to(device)
-                out = model(batch_vl).cpu()
+                batch_vl = vl_hidden[i:i+args.batch_size].to(device).float()
+                out = model(batch_vl).cpu().half()
             else:
-                batch = egpt_hidden[i:i+args.batch_size].to(device)
-                out = model(batch).cpu()
+                batch = egpt_hidden[i:i+args.batch_size].to(device).float()
+                out = model(batch).cpu().half()
             aligned_list.append(out)
-    aligned_hidden = torch.cat(aligned_list, dim=0)
+    aligned_hidden = torch.cat(aligned_list, dim=0).float()
+    del aligned_list
+
+    # Free egpt_hidden — no longer needed after alignment
+    del egpt_hidden
+    import gc; gc.collect()
+
+    # Cast vl_hidden to float32 for metrics
+    vl_hidden = vl_hidden.float()
 
     # =====================================================================
     # HIDDEN-STATE METRICS
     # =====================================================================
+
     print("\n[HIDDEN-STATE METRICS]")
     print("Computing metrics (parallel)...")
     metrics, cos_sim, valid_sims = compute_all_metrics_parallel(

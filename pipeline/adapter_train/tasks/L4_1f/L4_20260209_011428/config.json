@@ -1,0 +1,36 @@
+{
+  "task": "train_L4_Attention",
+  "vlm_only": false,
+  "adapter": {
+    "level": 4,
+    "name": "Attention",
+    "hidden_dim": 4096,
+    "bottleneck_dim": 256,
+    "num_blocks": 3,
+    "num_heads": 8,
+    "num_layers": 1,
+    "ffn_dim": 2048,
+    "params": 100714497
+  },
+  "data": {
+    "train_path": "pipeline/feature_extraction/data/chunked_train_1s_4bit_1f",
+    "val_path": "pipeline/feature_extraction/data/chunked_test_1s_4bit_1f",
+    "train_samples": 52000,
+    "val_samples": 11000,
+    "questions_per_sample": 10,
+    "duration": "1s",
+    "quant": "4bit",
+    "alignment": "EventGPT \u2192 Video-LLaVA (hidden states)"
+  },
+  "training": {
+    "epochs": 300,
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "early_stopping": 50,
+    "optimizer": "AdamW",
+    "scheduler": "CosineAnnealingLR",
+    "loss": "MSE + 0.5 * CosLoss"
+  },
+  "timestamp": "20260209_011428",
+  "best_val_loss": 1.209481423551386
+}

@@ -100,6 +100,7 @@ python pipeline/benchmark_e2e/benchmark_e2e_wallclock.py \
 | L5 | EAGLE | 103M | `CausalAttn + FFN, dual loss` | Align + predict next h |
 | L5F | Fused EAGLE | 170M | `Gate(h_egpt, h_vl) + L5` | Both input streams |
 | B1 | VLM-only | 103M | Same as L5, `--vlm_only` | Upper bound (no gap) |
+| L6 | LoRA | 16.8M | `QLoRA on decoder q,k,v,o` | Modifies drafter model itself |
 
 ---
 
@@ -119,16 +120,35 @@ python pipeline/benchmark_e2e/benchmark_e2e_wallclock.py \
 
 B1 >> L5 confirms the cross-modal gap is the dominant bottleneck.
 
-### E2E Wall-Clock (10,970 samples, max_new_tokens=30, L4 adapter)
+### E2E Wall-Clock (10,970 samples, L4 adapter)
+
+**30-token generation (5f event images):**
 
 | Config | Prefill (ms) | Decode (ms) | Total (ms) | Accept | Speedup |
 |--------|-------------|------------|-----------|--------|---------|
 | VL baseline | 317 | 419 | 736 | --- | 1.00x |
 | L4+VL SD | 317 | 404 | 721 | 21.2% | 1.03x |
 
+**512-token / EOS generation (1f event images):**
+
+| Config | Prefill (ms) | Decode (ms) | Total (ms) | Accept | Speedup |
+|--------|-------------|------------|-----------|--------|---------|
+| VL baseline | 316 | 1086 | 1401 | --- | 1.00x |
+| L4+VL SD | 316 | 1062 | 1378 | 23.7% | 1.03x |
+
+### 5f vs 1f Comparison
+
+1-frame EventGPT produces equivalent hidden states to 5-frame:
+
+| Metric | 5f | 1f | Delta |
+|--------|----|----|-------|
+| cos_sim | 0.789 | 0.790 | +0.1% |
+| Accept@0.90 | 27.8% | 28.0% | +0.2% |
+| E2E Speedup | 1.03x | 1.03x | same |
+
 ### Speedup Analysis
 
-EGPT generates ~22 tokens free during VL prefill, but VL only accepts 4.4 of them (21%).
+EGPT generates ~22 tokens free during VL prefill, but VL only accepts ~5 of them.
 
 | Component | Value |
 |-----------|-------|
@@ -162,9 +182,11 @@ pipeline/
 ├── adapter_train/                         # Stage 2
 │   ├── README.md
 │   ├── hidden_adapter.py                  # All adapter architectures
-│   ├── train_hidden_adapter.py            # Training loop
+│   ├── train_hidden_adapter.py            # Training loop (L1-L5, B1, L5F)
+│   ├── train_lora_adapter.py              # L6 LoRA training
 │   ├── auto_train_pipeline.sh             # Train all levels automatically
 │   ├── retrain_L4_converge.sh             # L4 retraining (300 epochs)
+│   ├── TEACHER_FORCED_VS_AR.md            # Teacher-forced vs AR comparison
 │   └── tasks/                             # Output: checkpoints + training curves
 ├── evaluation/                            # Stage 3
 │   ├── README.md

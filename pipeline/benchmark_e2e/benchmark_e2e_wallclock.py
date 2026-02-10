@@ -98,18 +98,18 @@ class VisionTimingHooks:
 # =========================================================================
 
 def time_egpt_3stage(model, tokenizer, processor, sample, dataset_dir,
-                     query, device, max_new_tokens):
+                     query, device, max_new_tokens, event_image_key='event_image'):
     """Measure EGPT vision/prefill/decode separately. Returns dict or None."""
     from model.EventChatModel import get_spatio_temporal_features
     from common.common import load_image, tokenizer_event_token
     from dataset.conversation import prepare_event_prompt
     from dataset.constants import EVENT_TOKEN_INDEX
 
-    event_paths = sample.get('event_image', [])
+    event_paths = sample.get(event_image_key, [])
     if not event_paths:
         return None
 
-    img_path = os.path.join(dataset_dir, 'event_image', event_paths[0])
+    img_path = os.path.join(dataset_dir, event_image_key, event_paths[0])
     try:
         img = load_image(img_path)
     except Exception:
@@ -334,18 +334,18 @@ def load_all_models(device='cuda'):
 # =========================================================================
 
 def egpt_prefill(model, tokenizer, processor, sample, dataset_dir, query,
-                 device='cuda'):
+                 device='cuda', event_image_key='event_image'):
     """EventGPT vision + prefill. Returns dict or None."""
     from model.EventChatModel import get_spatio_temporal_features
     from common.common import load_image, tokenizer_event_token
     from dataset.conversation import prepare_event_prompt
     from dataset.constants import EVENT_TOKEN_INDEX
 
-    event_paths = sample.get('event_image', [])
+    event_paths = sample.get(event_image_key, [])
     if not event_paths:
         return None
 
-    img_path = os.path.join(dataset_dir, 'event_image', event_paths[0])
+    img_path = os.path.join(dataset_dir, event_image_key, event_paths[0])
     img = load_image(img_path)
     img_array = np.array(img)
     event_image_size = list(img_array.shape[:2])
@@ -643,7 +643,8 @@ def vl_verify_batch(model, last_accepted_id, draft_token_ids, kv_cache, kv_len,
 
 def parallel_prefill(egpt_model, egpt_tokenizer, egpt_processor,
                      vl_model, vl_processor,
-                     sample, dataset_dir, query, device='cuda'):
+                     sample, dataset_dir, query, device='cuda',
+                     event_image_key='event_image'):
     """Run EGPT and VL prefills in parallel. Returns dict or None."""
     egpt_stream = torch.cuda.Stream(device=device)
     vl_stream = torch.cuda.Stream(device=device)
@@ -658,7 +659,8 @@ def parallel_prefill(egpt_model, egpt_tokenizer, egpt_processor,
             with torch.cuda.stream(egpt_stream):
                 egpt_box[0] = egpt_prefill(
                     egpt_model, egpt_tokenizer, egpt_processor,
-                    sample, dataset_dir, query, device)
+                    sample, dataset_dir, query, device,
+                    event_image_key=event_image_key)
         except Exception as e:
             egpt_err[0] = e
 
@@ -721,7 +723,8 @@ def sequential_egpt_vl_prefill(
         egpt_model, egpt_tokenizer, egpt_processor,
         vl_model, vl_processor,
         sample, dataset_dir, query, gamma,
-        max_new_tokens, device='cuda'):
+        max_new_tokens, device='cuda',
+        event_image_key='event_image'):
     """EGPT prefill+decode then VL prefill — sequential, no GPU contention.
 
     Records per-token timestamps during EGPT decode so we can precisely
@@ -740,7 +743,8 @@ def sequential_egpt_vl_prefill(
     # Phase 1: EGPT prefill (alone, accurate timing)
     egpt_result = egpt_prefill(
         egpt_model, egpt_tokenizer, egpt_processor,
-        sample, dataset_dir, query, device)
+        sample, dataset_dir, query, device,
+        event_image_key=event_image_key)
     if egpt_result is None:
         return None
 
@@ -1066,6 +1070,27 @@ def find_adapter_checkpoints(base_dir):
         if candidates:
             configs[level] = str(candidates[0])
 
+    # Flat layout: adapter_dir itself or its subdirs contain best_model.pt
+    # with names like L4_20260209_011428/best_model.pt
+    if not configs:
+        # Check if best_model.pt is directly in base_dir
+        direct = base_dir / 'best_model.pt'
+        if direct.exists():
+            # Infer level from dir name (e.g. L4_20260209_011428 → L4)
+            level = base_dir.name.split('_')[0]
+            if level in ['L1', 'L2', 'L3', 'L4', 'L5', 'B1', 'L5F']:
+                configs[level] = str(direct)
+        else:
+            # Check subdirs named like L4_timestamp/best_model.pt
+            for subdir in sorted(base_dir.iterdir(), reverse=True):
+                if not subdir.is_dir():
+                    continue
+                ckpt = subdir / 'best_model.pt'
+                if ckpt.exists():
+                    level = subdir.name.split('_')[0]
+                    if level in ['L1', 'L2', 'L3', 'L4', 'L5', 'B1', 'L5F']:
+                        configs.setdefault(level, str(ckpt))
+
     return configs
 
 
@@ -1352,6 +1377,8 @@ def main():
     parser.add_argument('--output_dir', type=str, default=None)
     parser.add_argument('--configs', type=str, default=None,
                         help='Comma-separated config names to run (default: all)')
+    parser.add_argument('--event_image_key', type=str, default='event_image',
+                        help='JSON key + subfolder for event images (default: event_image)')
     args = parser.parse_args()
 
     device = 'cuda'
@@ -1427,7 +1454,7 @@ def main():
         et = time_egpt_3stage(
             egpt_model, egpt_tokenizer, egpt_processor,
             sample, args.dataset_dir, timing_query, device,
-            args.max_new_tokens)
+            args.max_new_tokens, event_image_key=args.event_image_key)
         if et is not None:
             egpt_timings.append(et)
         torch.cuda.empty_cache()
@@ -1634,7 +1661,8 @@ def main():
                         egpt_model, egpt_tokenizer, egpt_processor,
                         vl_model, vl_processor,
                         sample, args.dataset_dir, query, args.gamma,
-                        args.max_new_tokens, device)
+                        args.max_new_tokens, device,
+                        event_image_key=args.event_image_key)
 
                 # For SD configs (B1-only, L5F-only, etc.): standard
                 # parallel prefill + full EGPT decode
@@ -1645,7 +1673,8 @@ def main():
                     par = parallel_prefill(
                         egpt_model, egpt_tokenizer, egpt_processor,
                         vl_model, vl_processor,
-                        sample, args.dataset_dir, query, device)
+                        sample, args.dataset_dir, query, device,
+                        event_image_key=args.event_image_key)
                     if par is not None:
                         egpt_tokens, egpt_decode_hidden, egpt_decode_ms = \
                             egpt_decode_collect_hidden(
